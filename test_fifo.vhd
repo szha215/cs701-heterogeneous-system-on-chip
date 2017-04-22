@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity test_fifo is
 end test_fifo;
 
-architecture b1 of test_fifo is 
+architecture behaviour of test_fifo is 
     
     -- component declaration for the unit under test (uut)
     component fifo
@@ -39,7 +39,7 @@ architecture b1 of test_fifo is
     signal t_full     : std_logic;
     
     -- clock period definitions
-    constant t_clk_period : time := 10 ns;
+    constant t_clk_period : time := 20 ns;
 
 begin
 
@@ -137,4 +137,4 @@ begin
         wait;
     end process;
 
-end b1;
+end behaviour;
