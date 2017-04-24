@@ -2,14 +2,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
+use ieee.math_real.all;
 
 ---------------------------------------------------------------------------------------------------
 entity ani is
 	generic(
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
-		constant in_depth			: positive := 16;
-		constant out_depth		: positive := 8
+		constant in_depth			: positive := 16;  -- minimum 16
+		constant out_depth		: positive := 16
 	);
 	port(
 		-- control inputs
@@ -35,7 +36,7 @@ architecture behaviour of ani is
 -- type, signal declarations
 
 	signal s_inc_rd_en, s_inc_wr_en, s_inc_empty, s_inc_full		: std_logic := '0';
-	signal s_inc_q_buf	: std_logic_vector(data_width - 1 downto 0) := (others => '0');
+	signal s_inc_q_buf, s_to_asp	: std_logic_vector(data_width - 1 downto 0) := (others => '0');
 
 	signal s_out_rd_en, s_out_wr_en, s_out_empty, s_out_full		: std_logic := '0';
 	signal s_out_q_buf	: std_logic_vector(data_width - 1 downto 0) := (others => '0');
@@ -74,6 +75,34 @@ architecture behaviour of ani is
 			q			: out std_logic_vector (31 downto 0)
 		);
 	end component;
+
+	component scfifo
+	generic (
+		add_ram_output_register		: string;
+		intended_device_family		: string;
+
+		lpm_numwords	: natural;
+		lpm_showahead	: string;
+		lpm_type			: string;
+		lpm_width		: natural;
+		lpm_widthu		: natural;
+
+		overflow_checking		: string;
+		underflow_checking	: string;
+		use_eab					: string
+	);
+	port (
+			clock	: in std_logic;
+			aclr	: in std_logic;
+			rdreq	: in std_logic;
+			wrreq	: in std_logic;
+			data	: in std_logic_vector (31 downto 0);
+
+			empty	: out std_logic;
+			full	: out std_logic;
+			q		: out std_logic_vector (31 downto 0)
+	);
+	end component;
 ---------------------------------------------------------------------------------------------------
 begin
 -- component wiring
@@ -94,33 +123,69 @@ begin
 	--		full  => s_inc_full
 	--	);
 
-	incoming_fifo : mega_fifo
-		port map(
-			clock	=> clk,
-			aclr	=> reset,
-			data	=> s_inc_q_buf,
-			rdreq	=> s_inc_rd_en,
-			wrreq	=> s_inc_wr_en,
-			empty	=> s_inc_empty,
-			full	=> s_inc_full,
-			q		=> d_to_asp
-		);
+	--incoming_fifo : mega_fifo
+	--	port map(
+	--		clock	=> clk,
+	--		aclr	=> reset,
+	--		data	=> s_inc_q_buf,
+	--		rdreq	=> s_inc_rd_en,
+	--		wrreq	=> s_inc_wr_en,
+	--		empty	=> s_inc_empty,
+	--		full	=> s_inc_full,
+	--		q		=> d_to_asp
+	--	);
 
-	outgoing_fifo : fifo
-		generic map(
-			data_width	=> data_width,
-			fifo_depth	=> out_depth
-		)
-		port map(
-			clk 	=> clk,
-			reset => reset,
-			wr_en	=> s_inc_wr_en,
-			d_in	=> d_from_asp,
-			rd_en => s_out_rd_en,
-			d_out => d_to_noc,
-			empty => s_out_empty,
-			full  => s_out_full
-		);	
+	incoming_fifo : scfifo
+	generic map (
+		add_ram_output_register => "ON",
+		intended_device_family => "Cyclone IV E",
+		lpm_numwords => in_depth,
+		lpm_showahead => "ON",
+		lpm_type => "scfifo",
+		lpm_width => data_width,
+		lpm_widthu => integer(ceil(log2(real(in_depth)))),
+		overflow_checking => "ON",
+		underflow_checking => "ON",
+		use_eab => "ON"
+	)
+	port map (
+		clock => clk,
+		aclr => reset,
+		rdreq => s_inc_rd_en,
+		wrreq => s_inc_wr_en,
+		data => s_inc_q_buf,
+
+		empty => s_inc_empty,
+		full => s_inc_full,
+		q => s_to_asp
+	);
+
+
+
+	outgoing_fifo : scfifo
+	generic map (
+		add_ram_output_register => "ON",
+		intended_device_family => "Cyclone IV E",
+		lpm_numwords => in_depth,
+		lpm_showahead => "ON",
+		lpm_type => "scfifo",
+		lpm_width => data_width,
+		lpm_widthu => integer(ceil(log2(real(out_depth)))),
+		overflow_checking => "ON",
+		underflow_checking => "ON",
+		use_eab => "ON"
+	)
+	port map (
+		clock => clk,
+		aclr => reset,
+		rdreq => s_out_rd_en,
+		wrreq => s_out_wr_en,
+		data => s_out_q_buf,
+
+		empty => s_out_empty,
+		full => s_out_full,
+		q => s_out_q_buf
+	);
 
 ---------------------------------------------------------------------------------------------------
 --from_noc : process(clk, d_from_noc)
@@ -169,6 +234,7 @@ end process;
 
 ---------------------------------------------------------------------------------------------------
 
+
 ---------------------------------------------------------------------------------------------------
 -- combinational logic
 
@@ -181,4 +247,6 @@ end process;
 --asp_valid	<= '1' when asp_busy = '0' and s_inc_empty = '0' else
 --					'0';
 
+d_to_asp <= s_to_asp;
+d_to_noc <= s_out_q_buf;
 end architecture;

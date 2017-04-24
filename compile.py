@@ -12,7 +12,7 @@ def asp():
     args = []
 
     # start simulation without optimisation
-    args.append('vsim -c -novopt work.asp -do')
+    args.append('vsim -c -novopt work.test_asp -do')
     args.append('"add wave -position insertpoint')
 
     # waves to add
@@ -44,8 +44,8 @@ def ani():
 
     args.append('sim:/test_ani/t_clk')
     args.append('sim:/test_ani/t_reset')
-    args.append('sim:/test_ani/t_tdm_slot')
-    args.append('sim:/test_ani/t_d_from_noc')
+    args.append('-radix unsigned sim:/test_ani/t_tdm_slot')
+    args.append('-radix hexadecimal sim:/test_ani/t_d_from_noc')
     args.append('sim:/test_ani/t_ani/s_inc_wr_en')
     # args.append('sim:/test_ani/t_ani/incoming_fifo/queue')
     args.append('sim:/test_ani/t_ani/s_inc_empty')
@@ -54,11 +54,11 @@ def ani():
     args.append('sim:/test_ani/t_d_to_asp')
     args.append('sim:/test_ani/t_asp_valid')
     args.append('sim:/test_ani/t_asp_busy')
-    # # args.append('sim:/test_ani/my_asp/A')
-    # # args.append('sim:/test_ani/my_asp/B')
-    # # args.append('sim:/test_ani/my_asp/op_code')
-    # # args.append('sim:/test_ani/my_asp/current_state')
-    # # args.append('sim:/test_ani/my_asp/next_state')
+    args.append('sim:/test_ani/t_asp/s_A')
+    args.append('sim:/test_ani/t_asp/s_B')
+    args.append('sim:/test_ani/t_asp/s_op_code')
+    args.append('sim:/test_ani/t_asp/CS')
+    args.append('sim:/test_ani/t_asp/NS')
     args.append('sim:/test_ani/t_asp_res_ready')
     args.append('sim:/test_ani/t_d_from_asp')
     args.append('sim:/test_ani/t_d_to_noc')
@@ -75,7 +75,7 @@ def copy_to_clipboard(arg):
     if (arg.lower() == "asp"):
         txt = asp()  # ASP only
     elif (arg.lower() == "ani"):
-        txt = ani()  # ANI and TOP
+        txt = ani()  # ANI and ASP
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -91,10 +91,12 @@ def compile_and_link():
     # compile_list.append('./altera_mf/altera_mf_components.vhd')
     # compile_list.append('./altera_mf/altera_mf.vhd')
     compile_list.append('./fifo.vhd')
-    compile_list.append('./ani.vhd')
-    compile_list.append('./test_ani.vhd')
     compile_list.append('./mega_fifo.vhd')
+
+    compile_list.append('./ani.vhd')
     compile_list.append('./asp.vhd')
+    compile_list.append('./test_ani.vhd')
+    # compile_list.append('./test_asp.vhd')
 
 
     compile_str = ' '.join(compile_list)
