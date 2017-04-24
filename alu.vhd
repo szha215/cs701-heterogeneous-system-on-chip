@@ -28,21 +28,25 @@ signal t_data_out : std_logic_vector(16 downto 0) := (others => '0');
 ---------------------------------------------------------------------------------------------------
 begin
 
-t_data_out <=  '0' & data_A 						when opcode = "0000" else
-'0' & (data_A + '1') 								when opcode = "0001" else
-('0' & data_A) + ('0' & data_B)					when opcode = "0010" else
-'0' & (data_A + data_B + 1) 						when opcode = "0011" else
-'0' & (data_A + (NOT data_B))		 				when opcode = "0100" else
-(('0' & data_A) + (NOT ('0' & data_B)) + '1')when opcode = "0101" else
-'0' & (data_A - '1')									when opcode = "0110" else
-'0' & data_B											when opcode = "0111" else
-'0' & (data_A AND data_B)							when opcode = "1000" else
-'0' & (data_A AND data_B) 							when opcode = "1001" else
-'0' & (data_A OR data_B)							when opcode = "1010" else
-'0' & (data_A OR data_B)							when opcode = "1011" else
-'0' & (data_A XOR data_B)							when opcode = "1100" else
-'0' & (NOT data_A)									when opcode = "1110" else
-'0' & (NOT data_B)									when opcode = "1111";
+
+
+with opcode select
+t_data_out <=  '0' & data_A 						when "0000",
+'0' & (data_A + '1') 								when "0001",
+('0' & data_A) + ('0' & data_B)					when "0010",
+'0' & (data_A + data_B + 1) 						when "0011",
+'0' & (data_A + (NOT data_B))		 				when "0100",
+(('0' & data_A) + (NOT ('0' & data_B)) + '1')when "0101",
+'0' & (data_A - '1')									when "0110",
+'0' & data_B											when "0111",
+'0' & (data_A AND data_B)							when "1000",
+'0' & (data_A AND data_B) 							when "1001",
+'0' & (data_A OR data_B)							when "1010",
+'0' & (data_A OR data_B)							when "1011",
+'0' & (data_A XOR data_B)							when "1100",
+'0' & (NOT data_A)									when "1110",
+'0' & (NOT data_B)									when "1111",
+"XXXXXXXXXXXXXXXXX"									when others;
 
 data_out <= t_data_out(15 downto 0);
 overflow <= t_data_out(16);
