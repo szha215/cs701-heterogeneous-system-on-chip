@@ -60,7 +60,19 @@ def reg_file():
 def mux():
     args = []
 
+    args.append('vsim -novopt work.test_mux;')
+    args.append('add wave -position insertpoint')
 
+    args.append('sim:/test_mux/t_clk')
+    args.append('sim:/test_mux/t_inputs_4_bit')
+    args.append('sim:/test_mux/t_inputs_16_bit')
+    args.append('sim:/test_mux/t_sel_4_bit')
+    args.append('sim:/test_mux/t_sel_16_bit')
+    args.append('sim:/test_mux/t_output_4_bit')
+    args.append('sim:/test_mux/t_output_16_bit')
+
+
+    args.append('; run 1000 ns')
     return ' '.join(args)
 
 
@@ -72,7 +84,7 @@ def copy_to_clipboard(arg):
         txt = reg_file()  # REG_FILE
 
     elif (arg.lower() == "mux"):
-        txt = mux()
+        txt = mux() #MUX
 
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
