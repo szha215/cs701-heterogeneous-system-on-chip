@@ -1,0 +1,1 @@
+C:\Python27\python.exe components_compile.py %1
