@@ -148,12 +148,18 @@ begin
 	t_d_from_noc <= (others => '0');
 	wait for t_clk_period * 4;
 
-	t_d_from_noc <= x"F3333333";
+	t_d_from_noc <= x"C8020101";
 	wait for t_clk_period;
-	t_d_from_noc <= x"F4444444";
+	t_d_from_noc <= x"C8030103";
 	wait for t_clk_period;
-	t_d_from_noc <= x"F5555555";
+	t_d_from_noc <= x"C8040105";
 	wait for t_clk_period;
+	t_d_from_noc <= x"C8050107";
+	wait for t_clk_period;
+	t_d_from_noc <= x"C8060109";
+	wait for t_clk_period;
+	--t_d_from_noc <= x"C8070112";
+	--wait for t_clk_period;
 
 	t_d_from_noc <= (others => '0');
 	wait;

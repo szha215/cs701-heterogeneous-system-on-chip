@@ -50,6 +50,7 @@ begin
 		if(wr_en = '1') then
 			--write 
 			registers(to_integer(unsigned(wr_reg))) <= wr_data;
+			--output addr when write 
 			s_data_out_a <= "000000000000" & rd_reg1;
 			s_data_out_b <= "000000000000" & rd_reg2;
 		else
