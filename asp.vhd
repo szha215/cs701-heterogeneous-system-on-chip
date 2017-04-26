@@ -46,6 +46,7 @@ signal s_store_addr	: std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0
 
 signal s_invoke_en, s_invoke_init, s_invoke_done	: std_logic := '0';
 signal s_start_addr, s_end_addr		: std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
+signal s_src_port	: std_logic_vector(3 downto 0) := (others => '0');
 
 signal s_op_code	: std_logic_vector(3 downto 0) := (others => '0');
 signal s_pointer : std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
@@ -157,6 +158,7 @@ begin
 			--s_B <= (others => (others =>'0'));
 			report "STORE INIT: words to store = " & integer'image(conv_integer(unsigned(d_in_copy(integer(ceil(log2(real(N)))) - 1  downto 0))));
 			s_words_to_store <= d_in_copy(integer(ceil(log2(real(N)))) - 1  downto 0) - '1';
+			s_src_port <= d_in_copy(21 downto 18);
 			s_mem_sel <= d_in_copy(17);
 
 		when STORE_WAIT =>
@@ -198,6 +200,7 @@ begin
 
 			busy <= '1';
 			res_ready <= '1';
+			d_out <= "11001000010001000000000000000001";
 
 		when SEND_PAUSE =>
 
