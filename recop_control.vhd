@@ -71,7 +71,7 @@ begin
 				NS <= IF2;
 			elsif (opcode = "001000" or opcode = "001100" or opcode = "111000" or opcode = "000011" or
 				   opcode = "000100" or opcode = "011000" or opcode = "011100" or opcode = "101000" or
-				   opcode = "101001" or opcode = "010100" or opcode = "011110") then
+				   opcode = "101001" or opcode = "010100") then
 				NS <= EX;
 			else
 			 	NS <= CM;
@@ -79,7 +79,7 @@ begin
 		when IF2 => -- Operand Fetch
 			if (opcode = "001000" or opcode = "001100" or opcode = "111000" or opcode = "000011" or
 				opcode = "000100" or opcode = "011000" or opcode = "011100" or opcode = "101000" or
-				opcode = "101001" or opcode = "010100" or opcode = "011110") then
+				opcode = "101001" or opcode = "010100") then
 				NS <= EX;
 			else
 			 	NS <= CM;
@@ -116,20 +116,22 @@ begin
 	m_addr_sel 	<= "00";	m_data_sel	<= "00";
 	m_rd		<= '0';		m_wr		<= '0';
 	ir_wr		<= '0';		r_wr_sel	<= "000";
-	r_rd_sel	<= "00"; 	r_wr 		<= '0';
-	alu_src_A	<= "00"; 	alu_src_B	<= "00";
-	alu_op		<= "00"; 	pc_src		<= "00";
-	set_EOT		<= '0'; 	reset_EOT	<= '0';
-	reset_Z		<= '0';		pc_wr		<= '0';
-	pc_wr_cond	<= '0';		wr_SVOP		<= '0';
-	wr_SOP 		<= '0';
+	r_wr 		<= '0'; 	alu_src_A	<= "00";
+	alu_src_B	<= "00";	alu_op		<= "00";
+	pc_src		<= "00";	set_EOT		<= '0';
+	reset_EOT	<= '0';		reset_Z		<= '0';
+	pc_wr		<= '0';		pc_wr_cond	<= '0';
+	wr_SVOP		<= '0';		wr_SOP 		<= '0';
+
 	
 	case CS is	-- must cover all states
 		when IF1 =>
 			alu_src_A <= "00";
 			alu_src_B <= "01";
 			ir_wr <= "01";
+			m_rd <= '1';
 			pc_wr <= '1';
+			alu_op <= "00";
 		when ID =>
 			null;
 		when IF2 =>
@@ -137,10 +139,65 @@ begin
 			alu_src_B <= "01";
 			ir_wr <= "10";
 			pc_wr <= '1';
-			null;
 		when EX =>
-			null;
+			case opcode is
+				when "011000" => -- jump
+					pc_wr <= '1';
+					if (am = "01") then -- operand
+						pc_src <= "01";
+					else -- Rx
+						pc_src <= "10";
+					end if;
+				when "010100" => -- sz
+					pc_wr_cond <= '1';
+					pc_src <= "01";
+				when "011100" => -- present
+					-- Rx | 0
+					alu_src_A <= "10";
+					alu_src_B <= "10";
+					alu_op <= "11";
+				when "001000" => -- AND
+					if (am = "01") then
+						alu_src_A <= "01";
+					else
+						alu_src_A <= "10";
+					end if;
+					alu_src_B <= "00";
+					alu_op <= "10";
+				when "001100" => -- OR
+					if (am = "01") then
+						alu_src_A <= "01";
+					else
+						alu_src_A <= "10";
+					end if;
+					alu_src_B <= "00";
+					alu_op <= "11";
+				when "111000" => -- ADD
+					if (am = "01") then
+						alu_src_A <= "01";
+					else
+						alu_src_A <= "10";
+					end if;
+					alu_src_B <= "00";
+					alu_op <= "00";
+				when "000011" => -- SUBV
+					-- Rx - Operand
+					alu_src_A <= "11";
+					alu_src_B <= "11";
+					alu_op <= "01"
+				when "000100" => -- SUB
+					alu_src_A <= "10";
+					alu_src_B <= "11";
+					alu_op <= "01"
+				when "" =>
+				when "" =>
+
+				when others =>
+					null;
+			end case;
 		when PW =>
+			pc_wr_cond <= '1';
+			pc_src <= "01";
 			null;
 		when CM =>
 			null;
@@ -149,7 +206,6 @@ begin
 		when others =>
 			report "STATE OUTPUT: BAD STATE";
 			null;
-			
 	end case;
 
 end process output_logic;
