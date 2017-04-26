@@ -4,9 +4,12 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use ieee.math_real.all;
 
+library work;
+use work.min_ports_pkg.all;
 ---------------------------------------------------------------------------------------------------
 entity ani is
 	generic(
+		constant tdm_port_id		: std_logic_vector(3 downto 0) := "0001";
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
 		constant in_depth			: positive := 16;  -- minimum 16
@@ -41,6 +44,7 @@ architecture behaviour of ani is
 	signal s_out_rd_en, s_out_wr_en, s_out_empty, s_out_full		: std_logic := '0';
 	signal s_out_q_buf	: std_logic_vector(data_width - 1 downto 0) := (others => '0');
 
+	signal s_d_to_noc_sel	: std_logic := '0';
 
 ---------------------------------------------------------------------------------------------------
 -- component declarations
@@ -180,7 +184,7 @@ begin
 		aclr => reset,
 		rdreq => s_out_rd_en,
 		wrreq => s_out_wr_en,
-		data => s_out_q_buf,
+		data => d_from_asp,
 
 		empty => s_out_empty,
 		full => s_out_full,
@@ -247,6 +251,20 @@ end process;
 --asp_valid	<= '1' when asp_busy = '0' and s_inc_empty = '0' else
 --					'0';
 
+s_d_to_noc_sel <= '1' when ((tdm_port_id(0) & tdm_port_id(1) & tdm_port_id(2) & tdm_port_id(3)) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26) else
+						'0';
+
+s_out_rd_en <= '1' when s_d_to_noc_sel = '1' and s_out_empty = '0' else
+					'0';
+
+s_out_wr_en <= asp_res_ready;
+
 d_to_asp <= s_to_asp;
-d_to_noc <= s_out_q_buf;
+
+with s_d_to_noc_sel select d_to_noc <=
+	s_out_q_buf	when '1',
+	x"00000000"	when others;
+
+
+
 end architecture;

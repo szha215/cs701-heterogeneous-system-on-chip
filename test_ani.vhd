@@ -12,7 +12,7 @@ architecture behaviour of test_ani is
 -- type, signal declarations
 
 constant t_clk_period : time := 20 ns;
-constant t_tdm_slot_width : positive := 2;
+constant t_tdm_slot_width : positive := 4;
 
 signal t_clk, t_reset, t_asp_valid, t_asp_busy, t_asp_res_ready : std_logic := '0';
 signal t_d_from_noc, t_d_to_asp, t_d_from_asp, t_d_to_noc : std_logic_vector(31 downto 0) := (others => '0');
@@ -23,6 +23,7 @@ signal t_tdm_slot : std_logic_vector(t_tdm_slot_width - 1 downto 0) := (others =
 -- component declarations
 component ani
 	generic(
+		constant tdm_port_id		: std_logic_vector(3 downto 0) := "0001";
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
 		constant in_depth			: positive := 16;
@@ -70,6 +71,7 @@ begin
 
 t_ani : ani
 	generic map(
+		tdm_port_id		=> "0001",
 		tdm_slot_width	=> t_tdm_slot_width,
 		data_width		=> 32,
 		in_depth			=> 16,
