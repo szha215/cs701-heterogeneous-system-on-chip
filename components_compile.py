@@ -75,6 +75,20 @@ def mux():
     args.append('; run 1000 ns')
     return ' '.join(args)
 
+def gen_reg():
+    args = []
+
+
+    args.append('vsim -novopt work.test_gen_reg;')
+    args.append('add wave -position insertpoint')
+
+    args.append('sim:/test_gen_reg/t_clk')
+    args.append('sim:/test_gen_reg/t_reset')
+    args.append('sim:/test_gen_reg/t_wr_en')
+    args.append('sim:/test_gen_reg/t_data_in')
+    args.append('sim:/test_gen_reg/t_data_out')
+    args.append('; run 1000 ns')
+    return ' '.join(args)
 
 def copy_to_clipboard(arg):
 
@@ -86,6 +100,8 @@ def copy_to_clipboard(arg):
     elif (arg.lower() == "mux"):
         txt = mux() #MUX
 
+    elif(arg.lower() == "gen_reg"):
+        txt = gen_reg()
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -97,13 +113,15 @@ def copy_to_clipboard(arg):
 def compile_and_link():
 
     compile_list = []
+    compile_list.append('./ajs_pkgs.vhd')
     compile_list.append('./alu.vhd')
     compile_list.append('./test_alu.vhd')
     compile_list.append('./reg_file.vhd')
     compile_list.append('./test_reg_file.vhd')
     compile_list.append('./mux.vhd')
     compile_list.append('./test_mux.vhd')
-
+    compile_list.append('./gen_reg.vhd')
+    compile_list.append('./test_gen_reg.vhd')
     compile_str = ' '.join(compile_list)
 
     try:
