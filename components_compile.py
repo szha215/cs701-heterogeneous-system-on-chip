@@ -104,6 +104,22 @@ def data_mem():
     args.append('; run 1000 ns')
     return ' '.join(args)
 
+def ins_reg():
+    args = []
+    args.append('vsim -novopt work.test_ins_reg;')
+    args.append('add wave -position insertpoint')
+
+    args.append('sim:/test_ins_reg/t_clk')
+    args.append('sim:/test_ins_reg/t_reset')
+    args.append('sim:/test_ins_reg/t_ir_wr_en')
+    args.append('sim:/test_ins_reg/t_data_in')
+    args.append('sim:/test_ins_reg/t_lower0')
+    args.append('sim:/test_ins_reg/t_upper0')
+    args.append('sim:/test_ins_reg/t_upper1')
+    args.append('sim:/test_ins_reg/t_upper2')
+    args.append('; run 1000 ns')
+    return ' '.join(args)
+
 def copy_to_clipboard(arg):
 
     if (arg.lower() == "alu"):
@@ -119,6 +135,9 @@ def copy_to_clipboard(arg):
 
     elif(arg.lower() == "data_mem"):
         txt = data_mem()
+
+    elif(arg.lower() == "ins_reg"):
+        txt = ins_reg()
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -141,6 +160,8 @@ def compile_and_link():
     compile_list.append('./test_gen_reg.vhd')
     compile_list.append('./data_mem.vhd')
     compile_list.append('./test_data_mem.vhd')
+    compile_list.append('./ins_reg.vhd')
+    compile_list.append('./test_ins_reg.vhd')
     compile_str = ' '.join(compile_list)
 
     try:
