@@ -71,7 +71,7 @@ begin
 end process state_updater;
 
 ---------------------------------------------------------------------------------------------------
-state_transition_logic : process(CS, valid)
+state_transition_logic : process(CS, valid, s_words_stored, s_invoke_done, s_words_sent)
 begin
 	case CS is	-- must cover all states
 		when IDLE =>
@@ -156,15 +156,37 @@ begin
 		when STORE_INIT =>
 			--s_A <= (others => (others =>'0'));
 			--s_B <= (others => (others =>'0'));
+			
+			s_invoke_init <= '1';
+			busy <= '0';
+			
 			report "STORE INIT: words to store = " & integer'image(conv_integer(unsigned(d_in_copy(integer(ceil(log2(real(N)))) - 1  downto 0))));
-			s_words_to_store <= d_in_copy(integer(ceil(log2(real(N)))) - 1  downto 0) - '1';
+			s_words_to_store <= d_in_copy(integer(ceil(log2(real(N)))) - 1  downto 0);
 			s_src_port <= d_in_copy(21 downto 18);
 			s_mem_sel <= d_in_copy(17);
 
 		when STORE_WAIT =>
+			s_invoke_en <= '0';
+			s_invoke_init <= '1';
 
+			s_words_stored <= s_words_stored;
+			s_words_sent <= (others => '0');
+
+			busy <= '0';
+			res_ready <= '0';
+			d_out <= (others => '0');
 
 		when STORE_DATA =>
+			s_invoke_en <= '0';
+			s_invoke_init <= '1';
+
+			-- s_words_stored <= (others => '0');
+			s_words_sent <= (others => '0');
+
+			busy <= '1';
+			res_ready <= '0';
+			d_out <= (others => '0');
+			
 			report "STORE ADDR = " & integer'image(conv_integer(unsigned(d_in_copy(24 downto 16))));
 			report "STORE DATA = " & integer'image(conv_integer(unsigned(d_in_copy(15 downto 0))));
 			if (s_mem_sel = '1') then  -- B
@@ -200,7 +222,7 @@ begin
 
 			busy <= '1';
 			res_ready <= '1';
-			d_out <= "11001000010001000000000000000001";
+			d_out <= "11000100010010000000000000000001";
 
 		when SEND_PAUSE =>
 
@@ -211,8 +233,17 @@ begin
 			res_ready <= '0';
 
 		when others =>
+			s_invoke_en <= '0';
+			s_invoke_init <= '1';
+
+			s_words_stored <= (others => '0');
+			s_words_sent <= (others => '0');
+
+			busy <= '0';
+			res_ready <= '0';
+			d_out <= (others => '0');
+			
 			report "STATE OUTPUT: BAD STATE" severity error;
-			null;
 			
 	end case;
 end process output_logic;
@@ -232,7 +263,10 @@ end process;
 ---------------------------------------------------------------------------------------------------
 invoke_process : process(clk, s_invoke_en)
 begin
+	s_invoke_done <= '0';
+
 	if (rising_edge(clk)) then
+
 		if (s_invoke_en = '1') then
 
 			if (s_invoke_init = '1') then

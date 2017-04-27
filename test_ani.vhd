@@ -18,12 +18,36 @@ signal t_clk, t_reset, t_asp_valid, t_asp_busy, t_asp_res_ready : std_logic := '
 signal t_d_from_noc, t_d_to_asp, t_d_from_asp, t_d_to_noc : std_logic_vector(31 downto 0) := (others => '0');
 signal t_tdm_slot : std_logic_vector(t_tdm_slot_width - 1 downto 0) := (others => '0');
 
+signal t_b_0, t_b_1, t_b_2, t_b_3	: std_logic := '0';
 
 ---------------------------------------------------------------------------------------------------
 -- component declarations
+component fake_tdm_counter is
+	generic(
+		constant tdm_slot_width	: positive := 4
+	);
+	port(
+		clk	: in std_logic;
+
+		tdm_slot	: out std_logic_vector(tdm_slot_width - 1 downto 0)
+	);
+end component;
+
+component fake_jop is
+	port(
+		clk	: in std_logic;
+		b_0	: in std_logic;
+		b_1	: in std_logic;
+		b_2	: in std_logic;
+		b_3	: in std_logic;
+
+		data	: out std_logic_vector(31 downto 0)
+	);
+end component;
+
 component ani
 	generic(
-		constant tdm_port_id		: std_logic_vector(3 downto 0) := "0001";
+		constant tdm_port_id		: std_logic_vector(3 downto 0) := "0010";
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
 		constant in_depth			: positive := 16;
@@ -69,9 +93,29 @@ end component asp;
 begin
 --- component wiring
 
+fake_tdm_slot : fake_tdm_counter
+	generic map(
+		tdm_slot_width	=> t_tdm_slot_width
+	)
+	port map(
+		clk		=> t_clk,
+		tdm_slot	=> t_tdm_slot
+	);
+
+fake_jop_1	: fake_jop
+	port map(
+		clk	=> t_clk,
+		b_0	=> t_b_0,
+		b_1	=> t_b_1,
+		b_2	=> t_b_2,
+		b_3	=> t_b_3,
+
+		data	=> t_d_from_noc
+	);
+
 t_ani : ani
 	generic map(
-		tdm_port_id		=> "0001",
+		tdm_port_id		=> "0010",
 		tdm_slot_width	=> t_tdm_slot_width,
 		data_width		=> 32,
 		in_depth			=> 16,
@@ -129,46 +173,57 @@ begin
 end process;
 
 ---------------------------------------------------------------------------------------------------
-t_tdm_slot_process : process
-begin
-	wait for t_clk_period;
-	t_tdm_slot <= t_tdm_slot + "01";
-end process;
+--t_tdm_slot_process : process
+--begin
+--	wait for t_clk_period;
+--	t_tdm_slot <= t_tdm_slot + '1';
+--end process;
 
 ---------------------------------------------------------------------------------------------------
-t_d_from_noc_process : process
+--t_d_from_noc_process : process
+--begin
+--	wait for t_clk_period * 6;
+
+--	t_d_from_noc <= x"C8460006";  -- STORE
+--	wait for t_clk_period;
+--	t_d_from_noc <= (others => '0');
+--	wait for t_clk_period * 4;
+
+--	t_d_from_noc <= x"C8010099";
+--	wait for t_clk_period;
+--	t_d_from_noc <= (others => '0');
+--	wait for t_clk_period * 4;
+
+--	t_d_from_noc <= x"C8020101";
+--	wait for t_clk_period;
+--	t_d_from_noc <= x"C8030103";
+--	wait for t_clk_period;
+--	t_d_from_noc <= x"C8040105";
+--	wait for t_clk_period;
+--	t_d_from_noc <= x"C8050107";
+--	wait for t_clk_period;
+--	t_d_from_noc <= x"C8060109";
+--	wait for t_clk_period;
+--	--t_d_from_noc <= x"C8070112";
+--	--wait for t_clk_period;
+
+--	t_d_from_noc <= (others => '0');
+--	wait;
+
+--end process;
+---------------------------------------------------------------------------------------------------
+t_b_gen : process
 begin
 	wait for t_clk_period * 6;
 
-	t_d_from_noc <= x"C8460006";  -- STORE
-	wait for t_clk_period;
-	t_d_from_noc <= (others => '0');
-	wait for t_clk_period * 4;
+	t_b_1 <= '1';
+	wait for t_clk_period * 10;
+	t_b_1 <= '0';
+	wait for t_clk_period * 2;
 
-	t_d_from_noc <= x"C8010099";
-	wait for t_clk_period;
-	t_d_from_noc <= (others => '0');
-	wait for t_clk_period * 4;
-
-	t_d_from_noc <= x"C8020101";
-	wait for t_clk_period;
-	t_d_from_noc <= x"C8030103";
-	wait for t_clk_period;
-	t_d_from_noc <= x"C8040105";
-	wait for t_clk_period;
-	t_d_from_noc <= x"C8050107";
-	wait for t_clk_period;
-	t_d_from_noc <= x"C8060109";
-	wait for t_clk_period;
-	--t_d_from_noc <= x"C8070112";
-	--wait for t_clk_period;
-
-	t_d_from_noc <= (others => '0');
 	wait;
 
 end process;
----------------------------------------------------------------------------------------------------
-
 
 ---------------------------------------------------------------------------------------------------
 -- combinational logic

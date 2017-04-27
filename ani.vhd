@@ -208,11 +208,9 @@ begin
 ---------------------------------------------------------------------------------------------------
 update_inc_q_buf : process (d_from_noc)
 begin
-	if (d_from_noc(31) = '1') then
-		s_inc_q_buf <= d_from_noc;
+	if (d_from_noc(31) = '1' and d_from_noc(29 downto 26) = tdm_port_id(3 downto 0)) then
 		s_inc_wr_en <= '1';
 	else
-		s_inc_q_buf <= (others => '0');
 		s_inc_wr_en <= '0';
 	end if;
 
@@ -251,11 +249,12 @@ end process;
 --asp_valid	<= '1' when asp_busy = '0' and s_inc_empty = '0' else
 --					'0';
 
-s_d_to_noc_sel <= '1' when ((tdm_port_id(0) & tdm_port_id(1) & tdm_port_id(2) & tdm_port_id(3)) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26) else
+s_inc_q_buf <= d_from_noc;
+
+s_d_to_noc_sel <= '1' when ((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0' else
 						'0';
 
-s_out_rd_en <= '1' when s_d_to_noc_sel = '1' and s_out_empty = '0' else
-					'0';
+s_out_rd_en <= s_d_to_noc_sel;
 
 s_out_wr_en <= asp_res_ready;
 
@@ -263,7 +262,7 @@ d_to_asp <= s_to_asp;
 
 with s_d_to_noc_sel select d_to_noc <=
 	s_out_q_buf	when '1',
-	x"00000000"	when others;
+	x"00000000"	when '0';
 
 
 
