@@ -90,6 +90,20 @@ def gen_reg():
     args.append('; run 1000 ns')
     return ' '.join(args)
 
+def data_mem():
+    args = []
+    args.append('vsim -novopt work.test_data_mem;')
+    args.append('add wave -position insertpoint')
+
+    args.append('sim:/test_data_mem/t_clk')
+    args.append('sim:/test_data_mem/t_reset')
+    args.append('sim:/test_data_mem/t_wr_en')
+    args.append('sim:/test_data_mem/t_addr')
+    args.append('sim:/test_data_mem/t_data_in')
+    args.append('sim:/test_data_mem/t_data_out')
+    args.append('; run 1000 ns')
+    return ' '.join(args)
+
 def copy_to_clipboard(arg):
 
     if (arg.lower() == "alu"):
@@ -102,6 +116,9 @@ def copy_to_clipboard(arg):
 
     elif(arg.lower() == "gen_reg"):
         txt = gen_reg()
+
+    elif(arg.lower() == "data_mem"):
+        txt = data_mem()
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -122,6 +139,8 @@ def compile_and_link():
     compile_list.append('./test_mux.vhd')
     compile_list.append('./gen_reg.vhd')
     compile_list.append('./test_gen_reg.vhd')
+    compile_list.append('./data_mem.vhd')
+    compile_list.append('./test_data_mem.vhd')
     compile_str = ' '.join(compile_list)
 
     try:
