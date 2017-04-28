@@ -43,9 +43,9 @@ package recop_opcodes is
 	constant strpc_op: std_logic_vector(5 downto 0) := "011101";
 
 	-- address modes
-	constant in_am: std_logic_vector(1 downto 0) := "00";
-	constant im_am: std_logic_vector(1 downto 0) := "01";
-	constant d_am: std_logic_vector(1 downto 0) := "10";
-	constant r_am: std_logic_vector(1 downto 0) := "11";
+	constant inherent_am: std_logic_vector(1 downto 0) := "00";
+	constant immediate_am: std_logic_vector(1 downto 0) := "01";
+	constant direct_am: std_logic_vector(1 downto 0) := "10";
+	constant register_am: std_logic_vector(1 downto 0) := "11";
 
 end recop_opcodes;
