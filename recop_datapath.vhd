@@ -469,5 +469,8 @@ s_pc_wr_en <= ((s_z_out and pc_wr_cond) or pc_wr);
 EOT_out <= '1' when set_EOT = '1' else
 			  '0' when reset_EOT = '1' else
 			  '0';
+
+am <= s_ir_upper0(7 downto 6);
+opcode <= s_ir_upper0(5 downto 0);
  
 end architecture;
