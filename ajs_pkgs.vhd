@@ -10,6 +10,12 @@ package mux_pkg is
 	type mux_16_bit_arr is array(integer range <>) of std_logic_vector(15 downto 0);
 end mux_pkg;
 
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 package recop_opcodes is
 	-- instruction opcodes
 	constant and_op: std_logic_vector(5 downto 0) := "001000";
@@ -42,4 +48,4 @@ package recop_opcodes is
 	constant d_am: std_logic_vector(1 downto 0) := "10";
 	constant r_am: std_logic_vector(1 downto 0) := "11";
 
-end recop_opcodes
+end recop_opcodes;
