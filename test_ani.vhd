@@ -217,9 +217,14 @@ begin
 	wait for t_clk_period * 6;
 
 	t_b_1 <= '1';
-	wait for t_clk_period * 10;
+	wait for t_clk_period * 12;
 	t_b_1 <= '0';
-	wait for t_clk_period * 2;
+	wait for t_clk_period * 4;
+
+	--t_b_2 <= '1';
+	--wait for t_clk_period * 10;
+	--t_b_2 <= '0';
+	--wait for t_clk_period * 2;
 
 	wait;
 
