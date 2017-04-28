@@ -23,7 +23,7 @@ def alu():
     args.append('sim:/test_alu/t_data_A')
     args.append('sim:/test_alu/t_data_B')
     args.append('sim:/test_alu/t_data_out')
-    args.append('sim:/test_alu/t_opcode')
+    args.append('sim:/test_alu/t_alu_op')
 
 
     # run duration

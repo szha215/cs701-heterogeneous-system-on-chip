@@ -10,10 +10,10 @@ use work.mux_pkg.all;
 entity mux_4_bit is
 -- generic and port declration here
 generic(
-	constant port_num 	 : positive := 4
+	constant sel_num 	 : positive := 2
 );
-port(	inputs 	: in mux_4_bit_arr(port_num - 1 downto 0);
-		sel		: in std_logic_vector(integer(ceil(log2(real(port_num)))) - 1 downto 0);
+port(	inputs 	: in mux_4_bit_arr(2 ** sel_num - 1 downto 0);
+		sel		: in std_logic_vector(sel_num - 1 downto 0);
 		
 		output	: out std_logic_vector(3 downto 0)
 		);
@@ -41,10 +41,10 @@ use work.mux_pkg.all;
 ---------------------------------------------------------------------------------------------------
 entity mux_16_bit is
 generic(
-	constant port_num 	 : positive := 4
+	constant sel_num 	 : positive := 2
 );
-port(	inputs 	: in mux_16_bit_arr(port_num - 1 downto 0);
-		sel		: in std_logic_vector(integer(ceil(log2(real(port_num)))) - 1 downto 0);
+port(	inputs 	: in mux_16_bit_arr(2 ** sel_num - 1 downto 0);
+		sel		: in std_logic_vector(sel_num - 1 downto 0);
 		
 		output	: out std_logic_vector(15 downto 0)
 		);
