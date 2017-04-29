@@ -44,7 +44,7 @@ def ani():
 
     args.append('sim:/test_ani/t_clk')
     args.append('sim:/test_ani/t_reset')
-    args.append('-radix unsigned sim:/test_ani/t_tdm_slot')
+    args.append('-radix binary sim:/test_ani/t_tdm_slot')
     args.append('-radix hexadecimal sim:/test_ani/t_d_from_noc')
     args.append('sim:/test_ani/t_ani/s_inc_wr_en')
     # args.append('sim:/test_ani/t_ani/incoming_fifo/queue')
@@ -57,18 +57,46 @@ def ani():
     args.append('sim:/test_ani/t_asp/s_A')
     args.append('sim:/test_ani/t_asp/s_B')
     args.append('sim:/test_ani/t_asp/s_op_code')
+    args.append('sim:/test_ani/t_asp/s_invoke_en')
     args.append('sim:/test_ani/t_asp/CS')
-    args.append('sim:/test_ani/t_asp/NS')
+    # args.append('sim:/test_ani/t_asp/NS')
     args.append('sim:/test_ani/t_asp_res_ready')
     args.append('sim:/test_ani/t_d_from_asp')
+    args.append('sim:/test_ani/t_ani/s_out_wr_en')
+    args.append('sim:/test_ani/t_ani/s_out_empty')
+    args.append('sim:/test_ani/t_ani/s_out_full')
+    args.append('sim:/test_ani/t_ani/s_out_rd_en')
     args.append('sim:/test_ani/t_d_to_noc')
+    args.append('sim:/test_ani/t_asp/s_words_stored')
+    args.append('sim:/test_ani/t_asp/s_words_to_store')
+    args.append('sim:/test_ani/t_asp/words_stored_inc_en')
+    args.append('sim:/test_ani/t_asp/words_stored_reset')
 
-    args.append('; run 1 us')
+    args.append('; run 1.5 us')
 
     txt = ' '.join(args)
 
     return txt
 
+def alu():
+    args = []
+
+    args.append('vsim -novopt work.test_alu;')
+    args.append('add wave -position insertpoint -radix hexadecimal')
+
+    args.append('sim:/test_alu/t_clk')
+    args.append('sim:/test_alu/t_data_A')
+    args.append('sim:/test_alu/t_data_B')
+    args.append('sim:/test_alu/t_alu_op')
+    args.append('sim:/test_alu/t_overflow')
+    args.append('sim:/test_alu/t_zero')
+    args.append('sim:/test_alu/t_data_out')
+
+    args.append('; run 400 ns')
+
+    txt = ' '.join(args)
+
+    return txt
 
 def copy_to_clipboard(arg):
 
@@ -76,8 +104,10 @@ def copy_to_clipboard(arg):
         txt = asp()  # ASP only
     elif (arg.lower() == "ani"):
         txt = ani()  # ANI and ASP
+    elif (arg.lower() == "alu"):
+        txt = alu()
     else:
-        print '\n***BAD ARGUMENT: "asp" or "ani" only'
+        print '\n***BAD ARGUMENT: "asp", "ani" or "alu" only'
         exit()
 
     # copy to clipboard
@@ -91,12 +121,19 @@ def compile_and_link():
     # compile_list.append('./altera_mf/altera_mf_components.vhd')
     # compile_list.append('./altera_mf/altera_mf.vhd')
     compile_list.append('./fifo.vhd')
-    compile_list.append('./mega_fifo.vhd')
+    # compile_list.append('./mega_fifo.vhd')
+    compile_list.append('./work/HMPSoC_config.vhd')
+    compile_list.append('./work/min_ports_pkg.vhd')
 
+    compile_list.append('./fake_tdm_counter.vhd')
+    compile_list.append('./fake_jop.vhd')
     compile_list.append('./ani.vhd')
     compile_list.append('./asp.vhd')
     compile_list.append('./test_ani.vhd')
     # compile_list.append('./test_asp.vhd')
+
+    compile_list.append('./alu.vhd')
+    compile_list.append('./test_alu.vhd')
 
 
     compile_str = ' '.join(compile_list)

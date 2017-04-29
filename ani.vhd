@@ -260,12 +260,12 @@ s_out_wr_en <= asp_res_ready;
 
 d_to_asp <= s_to_asp;
 
-d_to_noc <=	s_out_q_buf	when s_d_to_noc_sel = '1' else
-				x"00000000";
+--d_to_noc <=	s_out_q_buf	when s_d_to_noc_sel = '1' else
+--				x"00000000";
 
---with s_d_to_noc_sel select d_to_noc <=
---	s_out_q_buf	when '1',
---	x"00000000"	when '0';
+with s_d_to_noc_sel select d_to_noc <=
+	s_out_q_buf	when '1',
+	x"00000000"	when others;
 
 
 

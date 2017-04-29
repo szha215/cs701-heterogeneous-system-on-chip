@@ -18,7 +18,8 @@ signal t_clk, t_reset, t_asp_valid, t_asp_busy, t_asp_res_ready : std_logic := '
 signal t_d_from_noc, t_d_to_asp, t_d_from_asp, t_d_to_noc : std_logic_vector(31 downto 0) := (others => '0');
 signal t_tdm_slot : std_logic_vector(t_tdm_slot_width - 1 downto 0) := (others => '0');
 
-signal t_b_0, t_b_1, t_b_2, t_b_3	: std_logic := '0';
+signal t_key	: std_logic_vector(3 downto 0) := (others => '0');
+signal t_sw		: std_logic_vector(15 downto 0) := (others => '0');
 
 ---------------------------------------------------------------------------------------------------
 -- component declarations
@@ -36,12 +37,11 @@ end component;
 component fake_jop is
 	port(
 		clk	: in std_logic;
-		b_0	: in std_logic;
-		b_1	: in std_logic;
-		b_2	: in std_logic;
-		b_3	: in std_logic;
+		sw		: in std_logic_vector(15 downto 0);
+		key	: in std_logic_vector(3 downto 0);
 
-		data	: out std_logic_vector(31 downto 0)
+		data	: out std_logic_vector(31 downto 0);
+		sw_v	: out std_logic_vector(15 downto 0)
 	);
 end component;
 
@@ -105,10 +105,8 @@ fake_tdm_slot : fake_tdm_counter
 fake_jop_1	: fake_jop
 	port map(
 		clk	=> t_clk,
-		b_0	=> t_b_0,
-		b_1	=> t_b_1,
-		b_2	=> t_b_2,
-		b_3	=> t_b_3,
+		sw		=> t_sw,
+		key	=> t_key,
 
 		data	=> t_d_from_noc
 	);
@@ -216,15 +214,17 @@ t_b_gen : process
 begin
 	wait for t_clk_period * 6;
 
-	t_b_1 <= '1';
+	t_sw <= x"0001";  -- STORE B[1] to B[6]
+	t_key <= "1000";
 	wait for t_clk_period * 12;
-	t_b_1 <= '0';
+	t_key <= "0000";
 	wait for t_clk_period * 4;
 
-	--t_b_2 <= '1';
-	--wait for t_clk_period * 10;
-	--t_b_2 <= '0';
-	--wait for t_clk_period * 2;
+	t_sw <= x"0002";  -- STORE A[0] too A[7]
+	t_key <= "1000";
+	wait for t_clk_period * 10;
+	t_key <= "1000";
+	wait for t_clk_period * 2;
 
 	wait;
 
