@@ -6,11 +6,17 @@ use ieee.math_real.all;
 use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
 
+--library lpm;
+--use lpm.lpm_components.all;
+
+library altera_mf;
+use altera_mf.all;
+
 ---------------------------------------------------------------------------------------------------
 entity asp is
 -- generic and port declration here
 generic(
-	constant N : positive := 8;
+	constant N : positive := 16;
 	constant L : positive := 4
 );
 port(	clk		: in std_logic;
@@ -28,7 +34,7 @@ end entity asp;
 architecture behaviour of asp is
 -- type, signal, constant declarations here
 
-type states is (IDLE, STORE_INIT, STORE_WAIT, STORE_DATA, INVOKE, INVOKE_BUSY, SEND_DATA, SEND_PAUSE);	-- states
+type states is (IDLE, STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA, INVOKE_INIT, INVOKE, INVOKE_BUSY, SEND_ACC, SEND_DATA, SEND_PAUSE);	-- states
 signal CS, NS	: states := IDLE;
 
 signal d_in_copy	: std_logic_vector(31 downto 0) := (others => '0');
@@ -37,13 +43,13 @@ type data_vector is array (0 to N - 1) of std_logic_vector(15 downto 0);
 signal s_A, s_B : data_vector := (others => (others =>'0'));
 
 -- Control signals
-signal words_stored_inc_en	: std_logic := '0';
-signal op_ld, start_addr_ld, end_addr_ld, mem_sel_ld, src_port_ld, dest_port_ld, a_ld, vector_ld	: std_logic := '0';
-signal words_stored_reset	: std_logic := '0';
-signal d_out_sel 	: std_logic_vector(1 downto 0) := (others => '0');
-signal vector_addr_sel, vector_d_sel	: std_logic := '0';
+signal words_stored_inc_en, packet_id_inc_en	: std_logic := '0';
+signal op_ld, start_addr_ld, end_addr_ld, mem_sel_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld	: std_logic := '0';
+signal words_stored_reset, vectors_reset, packet_id_reset	: std_logic := '0';
+signal d_packet_sel, calc_res_sel 	: std_logic_vector(1 downto 0) := (others => '0');
+signal d_out_sel, vector_addr_sel, vector_d_sel	: std_logic := '0';
 
-signal cmp_store : std_logic := '0';
+signal cmp_store, cmp_sent : std_logic := '0';
 
 
 -- Datapath
@@ -52,14 +58,20 @@ signal s_op_code	: std_logic_vector(3 downto 0) := (others => '0');
 signal s_start_addr, s_end_addr		: std_logic_vector(8 downto 0) := (others => '0');
 signal s_mem_sel		: std_logic := '0';
 
+signal s_packet_id		: std_logic_vector(1 downto 0) := (others => '0');
+signal s_packet, s_data	: std_logic_vector(15 downto 0) := (others => '0');
+signal s_d_out				: std_logic_vector(31 downto 0) := (others => '0');
+
 signal s_addr_to_store	: std_logic_vector(8 downto 0) := (others => '0');
 signal s_d_to_store	:std_logic_vector(15 downto 0) := (others => '0');
+
+signal s_reg_a_out, s_reg_b_out	: std_logic_vector(15 downto 0) := (others => '0');
 signal s_calc_res	: std_logic_vector(63 downto 0) := (others => '0');
+signal s_xor_res, s_xor_a	: std_logic_vector(15 downto 0) := (others => '0');
 
 
-
-type output_vector is array (0 to 3) of std_logic_vector(31 downto 0);
-signal s_output_buffer 							: output_vector := (others => (others =>'0'));
+--type output_vector is array (0 to 3) of std_logic_vector(31 downto 0);
+--signal s_output_buffer 							: output_vector := (others => (others =>'0'));
 signal s_words_sent, s_words_to_send		: std_logic_vector(1 downto 0) := (others => '0');  -- max 4 packets
 signal s_words_stored, s_words_to_store	: std_logic_vector(8 downto 0) := (others => '0');
 
@@ -68,16 +80,244 @@ signal s_store_addr	: std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0
 signal s_invoke_en, s_invoke_init, s_invoke_done	: std_logic := '0';
 signal s_src_port, s_dest_port	: std_logic_vector(3 downto 0) := (others => '0');
 
-signal s_pointer : std_logic_vector(8 downto 0) := (others => '0');
+signal s_pointer, s_pointer_2 : std_logic_vector(8 downto 0) := (others => '0');
 
 ---------------------------------------------------------------------------------------------------
 -- component declaration here
+component reg_file is
+-- generic and port declration here
+generic(
+	constant reg_num 	 : positive := 16;
+	constant reg_width : positive := 16
+);
+port(	clk			: 	in std_logic;
+		reset			: 	in std_logic;
+		wr_en			:	in std_logic; 
+		rd_reg1		:	in std_logic_vector(integer(ceil(log2(real(reg_num)))) - 1 downto 0);
+		rd_reg2		:	in std_logic_vector(integer(ceil(log2(real(reg_num)))) - 1 downto 0);
+		wr_reg		:	in std_logic_vector(integer(ceil(log2(real(reg_num)))) - 1 downto 0);
+		wr_data		: 	in std_logic_vector(reg_width - 1 downto 0);
 
+		data_out_a	:	out std_logic_vector(reg_width - 1 downto 0);
+		data_out_b	:	out std_logic_vector(reg_width - 1 downto 0)
+		);
+end component reg_file;
+
+component altsyncram
+	generic (
+		address_aclr_b		: string;
+		address_reg_b		: string;
+		clock_enable_input_a		: string;
+		clock_enable_input_b		: string;
+		clock_enable_output_b		: string;
+		intended_device_family		: string;
+		lpm_type		: string;
+		numwords_a		: natural;
+		numwords_b		: natural;
+		operation_mode		: string;
+		outdata_aclr_b		: string;
+		outdata_reg_b		: string;
+		power_up_uninitialized		: string;
+		read_during_write_mode_mixed_ports		: string;
+		widthad_a		: natural;
+		widthad_b		: natural;
+		width_a		: natural;
+		width_b		: natural;
+		width_byteena_a		: natural
+	);
+	port (
+			aclr0	: in std_logic ;
+			address_a	: in std_logic_vector (8 downto 0);
+			clock0	: in std_logic ;
+			data_a	: in std_logic_vector (15 downto 0);
+			q_b	: out std_logic_vector (15 downto 0);
+			wren_a	: in std_logic ;
+			address_b	: in std_logic_vector (8 downto 0)
+	);
+	end component;
+
+component data_mem is
+generic(
+	constant ram_addr_width : positive := 16;
+	constant ram_data_width : positive := 16
+);
+
+port (
+	wr_en		:	in std_logic;
+	addr		:	in std_logic_vector(ram_addr_width - 1 downto 0);
+	data_in	:	in std_logic_vector(ram_data_width - 1 downto 0);
+
+	data_out	:	out std_logic_vector(ram_data_width - 1 downto 0)		
+) ;
+end component ; -- data_mem
 
 ---------------------------------------------------------------------------------------------------
 begin
 -- component wiring here
 
+-- REGISTER
+
+--reg_a : reg_file
+--	generic map(
+--		reg_num 		=> N,
+--		reg_width	=> 16
+--	)
+--	port map(
+--		clk		=> clk,
+--		reset		=> vectors_reset,
+--		wr_en		=> reg_a_ld,
+--		rd_reg1	=> s_pointer(integer(ceil(log2(real(N)))) - 1 downto 0),
+--		rd_reg2	=> (others => '0'),
+--		wr_reg	=> s_addr_to_store(integer(ceil(log2(real(N)))) - 1 downto 0),
+--		wr_data	=> s_d_to_store,
+
+--		data_out_a	=> s_reg_a_out,
+--		data_out_b	=> open
+--	);
+
+--reg_b : reg_file
+--	generic map(
+--		reg_num 		=> N,
+--		reg_width	=> 16
+--	)
+--	port map(
+--		clk		=> clk,
+--		reset		=> vectors_reset,
+--		wr_en		=> reg_b_ld,
+--		rd_reg1	=> s_pointer(integer(ceil(log2(real(N)))) - 1 downto 0),
+--		rd_reg2	=> (others => '0'),
+--		wr_reg	=> s_addr_to_store(integer(ceil(log2(real(N)))) - 1 downto 0),
+--		wr_data	=> s_d_to_store,
+
+--		data_out_a	=> s_reg_b_out,
+--		data_out_b	=> open
+--	);
+
+-- LPM
+
+--ram_a : lpm_ram_dq
+--	generic map(
+--		lpm_widthad	=> integer(ceil(log2(real(N)))),
+--		lpm_width	=> 16
+--	)
+--	port map(
+--		data		=> s_d_to_store,
+--		address	=> s_addr_to_store(integer(ceil(log2(real(N))))-1 downto 0),
+--		we			=> reg_a_ld,
+--		q			=> s_reg_a_out,
+--		inclock	=> clk,
+--		outclock	=> clk
+--	);
+
+--ram_a : ram
+--	port map(
+--		aclr	=> vectors_reset,
+--		clock	=> clk,
+--		data	=> s_d_to_store,
+--		rdaddress	=> s_pointer,
+--		wraddress	=> s_addr_to_store(integer(ceil(log2(real(N))))-1 downto 0),
+--		wren	=> reg_a_ld,
+--		q		=> s_reg_a_out
+--	);
+
+
+-- ALT RAM
+
+--ram_a : altsyncram
+--	generic map (
+--		address_aclr_b => "CLEAR0",
+--		address_reg_b => "clock0",
+--		clock_enable_input_a => "BYPASS",
+--		clock_enable_input_b => "BYPASS",
+--		clock_enable_output_b => "BYPASS",
+--		intended_device_family => "CYCLONE IV E",
+--		lpm_type => "ALTSYNCRAM",
+--		numwords_a => N,
+--		numwords_b => N,
+--		operation_mode => "DUAL_PORT",
+--		outdata_aclr_b => "CLEAR0",
+--		outdata_reg_b => "CLOCK0",
+--		power_up_uninitialized => "FALSE",
+--		read_during_write_mode_mixed_ports => "OLD_DATA",
+--		widthad_a => integer(ceil(log2(real(N)))),
+--		widthad_b => integer(ceil(log2(real(N)))),
+--		width_a => 16,
+--		width_b => 16,
+--		width_byteena_a => 1
+--	)
+--	port map (
+--		clock0 => clk,
+--		aclr0 => vectors_reset,
+--		address_a => s_addr_to_store(integer(ceil(log2(real(N))))-1 downto 0),
+--		data_a => s_d_to_store,
+--		wren_a => reg_a_ld,
+--		address_b => s_pointer(integer(ceil(log2(real(N))))-1 downto 0),
+--		q_b => s_reg_a_out
+--	);
+
+ram_a : altsyncram
+	generic map (
+		address_aclr_b => "CLEAR0",
+		address_reg_b => "CLOCK0",
+		clock_enable_input_a => "BYPASS",
+		clock_enable_input_b => "BYPASS",
+		clock_enable_output_b => "BYPASS",
+		intended_device_family => "Cyclone IV E",
+		lpm_type => "altsyncram",
+		numwords_a => N,
+		numwords_b => N,
+		operation_mode => "DUAL_PORT",
+		outdata_aclr_b => "CLEAR0",
+		outdata_reg_b => "UNREGISTERED",
+		power_up_uninitialized => "FALSE",
+		read_during_write_mode_mixed_ports => "DONT_CARE",
+		widthad_a => integer(ceil(log2(real(N)))),
+		widthad_b => integer(ceil(log2(real(N)))),
+		width_a => 16,
+		width_b => 16,
+		width_byteena_a => 1
+	)
+	port map (
+		clock0 => clk,
+		aclr0 => vectors_reset,
+		address_a => s_addr_to_store(integer(ceil(log2(real(N)))) - 1 downto 0),
+		data_a => s_d_to_store,
+		wren_a => reg_a_ld,
+		address_b => s_pointer(integer(ceil(log2(real(N)))) - 1 downto 0),
+		q_b => s_reg_a_out
+	);
+
+ram_b : altsyncram
+	generic map (
+		address_aclr_b => "CLEAR0",
+		address_reg_b => "CLOCK0",
+		clock_enable_input_a => "BYPASS",
+		clock_enable_input_b => "BYPASS",
+		clock_enable_output_b => "BYPASS",
+		intended_device_family => "Cyclone IV E",
+		lpm_type => "altsyncram",
+		numwords_a => N,
+		numwords_b => N,
+		operation_mode => "DUAL_PORT",
+		outdata_aclr_b => "CLEAR0",
+		outdata_reg_b => "UNREGISTERED",
+		power_up_uninitialized => "FALSE",
+		read_during_write_mode_mixed_ports => "DONT_CARE",
+		widthad_a => integer(ceil(log2(real(N)))),
+		widthad_b => integer(ceil(log2(real(N)))),
+		width_a => 16,
+		width_b => 16,
+		width_byteena_a => 1
+	)
+	port map (
+		clock0 => clk,
+		aclr0 => vectors_reset,
+		address_a => s_addr_to_store(integer(ceil(log2(real(N)))) - 1 downto 0),
+		data_a => s_d_to_store,
+		wren_a => reg_b_ld,
+		address_b => s_pointer(integer(ceil(log2(real(N)))) - 1 downto 0),
+		q_b => s_reg_b_out
+	);	
 
 ---------------------------------------------------------------------------------------------------
 state_updater: process(clk, reset)
@@ -97,7 +337,7 @@ begin
 			if (valid = '1') then
 				case (d_in(25 downto 22)) is
 					when "0000" =>
-						NS <= INVOKE;
+						NS <= STORE_RESET;
 
 					when "0001" =>
 						NS <= STORE_INIT;
@@ -113,6 +353,9 @@ begin
 				NS <= IDLE;
 			end if;
 
+		when STORE_RESET =>
+			NS <= SEND_ACC;
+
 		when STORE_INIT =>
 			NS <= STORE_WAIT;
 
@@ -125,10 +368,13 @@ begin
 
 		when STORE_DATA =>
 			if (cmp_store = '1') then
-				NS <= SEND_DATA;
+				NS <= SEND_ACC;
 			else
 				NS <= STORE_WAIT;
 			end if;
+
+		when INVOKE_INIT =>
+			NS <= INVOKE;
 
 		when INVOKE =>
 			NS <= INVOKE_BUSY;
@@ -140,8 +386,11 @@ begin
 				NS <= INVOKE_BUSY;
 			end if;
 
+		when SEND_ACC =>
+			NS <= IDLE;
+
 		when SEND_DATA =>
-			if (s_words_sent = s_words_to_send) then
+			if (cmp_sent = '1') then
 				NS <= IDLE;
 			else
 				NS <= SEND_PAUSE;
@@ -160,15 +409,25 @@ end process state_transition_logic;
 ---------------------------------------------------------------------------------------------------
 output_logic : process(CS)
 begin
+	dest_port_ld <= '0';
 	op_ld <= '0';
+	end_addr_ld <= '0';
 	start_addr_ld <= '0';
 	mem_sel_ld <= '0';
-	words_stored_reset <= '0';
-	words_stored_inc_en <= '0';
 	src_port_ld <= '0';
-	dest_port_ld <= '0';
+
 	vector_ld <= '0';
 	vector_d_sel <= '0';
+	vectors_reset <= '0';
+	words_stored_reset <= '0';
+	words_stored_inc_en <= '0';
+
+	busy <= '0';
+	res_ready <= '0';
+
+	packet_id_reset <= '0';
+	packet_id_inc_en <= '0';
+	d_out_sel <= '1';
 
 	case CS is
 		when IDLE =>
@@ -176,18 +435,18 @@ begin
 			s_invoke_init <= '1';
 
 			words_stored_reset <= '1';
+			packet_id_reset <= '1';
 			s_words_sent <= (others => '0');
 
-			busy <= '0';
-			res_ready <= '0';
-			d_out <= (others => '0');
+		when STORE_RESET =>
+			vectors_reset <= '1';
+
+			start_addr_ld <= '1';
+			src_port_ld <= '1';
+			mem_sel_ld <= '1';
 
 		when STORE_INIT =>
-			--s_A <= (others => (others =>'0'));
-			--s_B <= (others => (others =>'0'));
-			
 			s_invoke_init <= '1';
-			busy <= '0';
 			
 			--report "STORE INIT: words to store = " & integer'image(to_integer(unsigned(d_in_copy(integer(ceil(log2(real(N))))) - 1  downto 0)));
 			start_addr_ld <= '1';
@@ -200,10 +459,6 @@ begin
 
 			s_words_sent <= (others => '0');
 
-			busy <= '0';
-			res_ready <= '0';
-			d_out <= (others => '0');
-
 		when STORE_DATA =>
 			s_invoke_en <= '0';
 			s_invoke_init <= '1';
@@ -215,8 +470,6 @@ begin
 			s_words_sent <= (others => '0');
 
 			busy <= '1';
-			res_ready <= '0';
-			d_out <= (others => '0');
 			
 			--report "STORE ADDR = " & integer'image(conv_integer(unsigned(d_in_copy(24 downto 16))));
 			--report "STORE DATA = " & integer'image(conv_integer(unsigned(d_in_copy(15 downto 0))));
@@ -226,16 +479,30 @@ begin
 			--	s_A(conv_integer(unsigned(d_in_copy(24 downto 16)))) <= (d_in_copy(15 downto 0));
 			--end if;
 
+		when INVOKE_INIT =>
+			s_invoke_init <= '1';
+
+			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
+			src_port_ld <= '1';
+
+			vector_addr_sel <= '1';
+
+			busy <= '1';
 
 		when INVOKE =>
 			s_invoke_en <= '1';
 			s_invoke_init <= '1';
 
 			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
 			src_port_ld <= '1';
 
+			vector_addr_sel <= '1';
+
 			busy <= '1';
-			res_ready <= '0';
 
 		when INVOKE_BUSY =>
 			report "OP CODE = " & integer'image(to_integer(unsigned(s_op_code)));
@@ -243,39 +510,46 @@ begin
 			s_invoke_en <= '1';
 			s_invoke_init <= '0';
 
+			vector_addr_sel <= '1';
+
 			busy <= '1';
-			res_ready <= '0';
+
+		when SEND_ACC =>
+			s_invoke_en <= '0';
+
+			d_out_sel <= '0';
+
+			busy <= '1';
+			res_ready <= '1';
 
 		when SEND_DATA =>
 
 			s_invoke_en <= '0';
 			s_invoke_init <= '0';
 
+			d_out_sel <= '1';
+
 			busy <= '1';
 			res_ready <= '1';
-			if (s_mem_sel = '1') then  -- B
-				d_out <= "1100010001001000" & s_B(6);
-			else
-				d_out <= "1100010001001000" & s_A(6);
-			end if;
+			--if (s_mem_sel = '1') then  -- B
+			--	d_out <= "1100010001001000" & s_B(6);
+			--else
+			--	d_out <= "1100010001001000" & s_A(6);
+			--end if;
 
 		when SEND_PAUSE =>
 
-			s_invoke_en <= '1';
+			s_invoke_en <= '0';
 			s_invoke_init <= '0';
 
 			busy <= '1';
-			res_ready <= '0';
+			packet_id_inc_en <= '1';
 
 		when others =>
 			s_invoke_en <= '0';
 			s_invoke_init <= '1';
 
 			s_words_sent <= (others => '0');
-
-			busy <= '0';
-			res_ready <= '0';
-			d_out <= (others => '0');
 			
 			report "STATE OUTPUT: BAD STATE" severity error;
 			
@@ -289,7 +563,6 @@ begin
 	if (rising_edge(clk)) then
 		if (valid = '1') then
 			d_in_copy <= d_in;
-			--report "Coping d_in = " & integer'image(conv_integer(unsigned(d_in(30 downto 0))));
 		end if;
 	end if;
 end process;
@@ -297,25 +570,23 @@ end process;
 ---------------------------------------------------------------------------------------------------
 invoke_process : process(clk, s_invoke_en)
 begin
-	s_invoke_done <= '0';
-
 	if (rising_edge(clk)) then
 
+		--if (s_invoke_init = '1') then
+		--	s_pointer <= d_in_copy(8 downto 0);
+		--elsif (s_invoke_done = '0') then
+		--	s_pointer <= s_pointer + '1';
+		--end if;	
 		if (s_invoke_en = '1') then
-
-			if (s_invoke_init = '1') then
-				s_pointer <= s_start_addr;
-			else
-				s_pointer <= s_pointer + '1';
-			end if;
-
 			case(s_op_code) is
 			
 				when "0010" =>	-- XOR A
-
+					--s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_a_out;
+					calc_res_sel <= "01";
 
 				when "0011" => -- XOR B
-
+					--s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_b_out;
+					calc_res_sel <= "01";
 
 				when "0100" => -- MAC
 
@@ -329,10 +600,10 @@ begin
 				when others =>
 					report "INVOKE: bad OP" severity error;
 			
-			end case ;
+			end case;
+
 		else
-			s_output_buffer <= (others => (others => '0'));
-			s_pointer <= (others => '0');
+			calc_res_sel <= "01";
 		end if;
 	end if;
 
@@ -437,25 +708,115 @@ begin
 	end if;
 end process ; -- store_complete
 
----------------------------------------------------------------------------------------------------
-vector_a_store : process(clk, vector_addr_sel, a_ld, d_in_copy)
-begin
-	
-end process ; -- vector_a_store
+-----------------------------------------------------------------------------------------------------
+--vector_store : process(clk, vector_ld, vectors_reset, s_mem_sel, d_in_copy)
+--begin
+--	if (rising_edge(clk)) then
+--		if (vectors_reset = '1') then
+--			s_A <= (others => (others => '0'));
+--			s_B <= (others => (others => '0'));
+--		elsif (vector_ld = '1') then
+--			null;
+--		end if;
+--	end if;
+--end process ; -- vector_b_store
 
 ---------------------------------------------------------------------------------------------------
-vector_store : process(clk, vector_ld, s_mem_sel, d_in_copy)
+sent_complete : process(s_words_to_send, s_words_sent)
+begin
+	if (s_words_to_send = s_words_sent) then
+		cmp_sent <= '1';
+	else
+		cmp_sent <= '0';
+	end if;
+end process ; -- sent_complete
+
+---------------------------------------------------------------------------------------------------
+invoke_complete : process(clk, s_pointer, s_end_addr)
 begin
 	if (rising_edge(clk)) then
-		if (vector_ld = '1') then
-			if (s_mem_sel = '1') then
-				s_B(to_integer(unsigned(s_addr_to_store))) <= s_d_to_store;
-			else
-				s_A(to_integer(unsigned(s_addr_to_store))) <= s_d_to_store;
-			end if;
+		if (s_pointer = s_end_addr) then
+			s_invoke_done <= '1';
+		else
+			s_invoke_done <= '0';
 		end if;
 	end if;
-end process ; -- vector_b_store
+end process ; -- invoke_complete
+
+---------------------------------------------------------------------------------------------------
+packet_id_process : process(clk, packet_id_reset, packet_id_inc_en)
+begin
+	if (rising_edge(clk)) then
+		if (packet_id_reset = '1') then
+			s_packet_id <= (others => '0');
+		elsif (packet_id_inc_en = '1') then
+			s_packet_id <= s_packet_id + '1';
+		else 
+			s_packet_id <= s_packet_id;
+		end if;
+	end if;
+end process ; -- packet_id_process
+
+---------------------------------------------------------------------------------------------------
+pointer_process : process(clk, s_invoke_init, d_in_copy)
+begin
+	if (rising_edge(clk)) then
+		if (s_invoke_init = '1') then
+			s_pointer <= d_in_copy(8 downto 0);
+		else
+			s_pointer <= s_pointer + '1';
+		end if;
+	end if;
+end process ; -- pointer_process
+
+---------------------------------------------------------------------------------------------------
+--xor_a_process : process(clk, s_invoke_en, s_reg_a_out)
+--begin
+--	if (rising_edge(clk)) then
+--		if (s_invoke_en = '1') then
+--			--s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_a_out;
+--			--if (and s_mem_sel = '1') then
+--			calc_res_sel <= "01";
+--		else
+--			calc_res_sel <= "00";
+--		end if;
+--	end if;
+--end process ; -- xor_a_process
+
+---------------------------------------------------------------------------------------------------
+--xor_b_process : process(clk, s_invoke_en, s_reg_b_out)
+--begin
+--	if (rising_edge(clk)) then
+--		if (s_invoke_en = '1' and s_mem_sel = '1') then
+--			s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_b_out;
+--		end if;
+--	end if;
+--end process ; -- xor_b_process
+
+---------------------------------------------------------------------------------------------------
+result_store : process(clk, calc_res_sel)
+begin
+	if (rising_edge(clk)) then
+		case(calc_res_sel) is
+		
+			when "00" =>
+				s_calc_res(15 downto 0) <= x"0100";
+
+			when "01" =>
+				s_calc_res(15 downto 0) <= s_xor_res;
+
+			when "10" =>
+				s_calc_res(15 downto 0) <= x"0110";
+
+			when "11" =>
+				s_calc_res(15 downto 0) <= x"0111";
+		
+			when others =>
+				s_calc_res(15 downto 0) <= x"abcd";
+
+		end case ;
+	end if;
+end process ; -- result_store
 
 ---------------------------------------------------------------------------------------------------
 -- concurrent signal assignments here
@@ -468,6 +829,46 @@ with vector_d_sel select s_d_to_store <=
 with vector_addr_sel select s_addr_to_store <=
 	s_pointer when '1',
 	d_in_copy(24 downto 16) when others;
+
+with s_mem_sel select s_xor_a <=
+	s_reg_b_out when '1',
+	s_reg_a_out when others;
+
+s_xor_res <= s_xor_a xor s_calc_res(15 downto 0);
+
+--with calc_res_sel select s_calc_res(15 downto 0) <=
+--	x"0000" when "00",
+--	s_xor_res when "01",
+--	x"1111" when others;
+
+
+with s_packet_id select s_packet <=
+	s_calc_res(15 downto 0) when "00",
+	s_calc_res(31 downto 16) when "01",
+	s_calc_res(47 downto 32) when "10",
+	s_calc_res(63 downto 48) when "11",
+	x"0000" when others;
+
+with d_out_sel select s_data <=
+	s_packet when '1',  -- data[ID]
+	x"0001" when others;  -- access granted
+
+reg_a_ld <= '1' when vector_ld = '1' and s_mem_sel = '0' else
+				'0';
+
+reg_b_ld <= '1' when vector_ld = '1' and s_mem_sel = '1' else
+				'0';
+
+
+s_d_out <=
+	"11" & 
+	s_src_port(3 downto 0) &
+	s_op_code(3 downto 0) &
+	s_dest_port(3 downto 0) &
+	s_packet_id(1 downto 0) &
+	s_data(15 downto 0);
+
+d_out <= s_d_out;
 
 ---------------------------------------------------------------------------------------------------
 end architecture;

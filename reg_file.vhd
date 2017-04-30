@@ -10,7 +10,7 @@ use ieee.math_real.all;
 entity reg_file is
 -- generic and port declration here
 generic(
-	constant reg_num 	 : positive := 16;
+	constant reg_num 	 : positive := 8;
 	constant reg_width : positive := 16
 );
 port(	clk			: 	in std_logic;
@@ -37,7 +37,7 @@ signal s_data_out_a, s_data_out_b : std_logic_vector(reg_width - 1 downto 0) := 
 begin
 
 
-reg_file_proc : process( clk,reset )
+reg_file_proc : process(clk, reset)
 begin
 	if(reset = '1') then
 		--clean all the registers
@@ -51,17 +51,17 @@ begin
 			--output addr when write 
 			s_data_out_a <= (reg_width - 1 downto rd_reg1'length => '0') & rd_reg1;
 			s_data_out_b <= (reg_width - 1 downto rd_reg2'length => '0') & rd_reg2;
-		else
-			--read
-			--s_data_out_a <= 
-			s_data_out_b <= registers(to_integer(unsigned(rd_reg2)));
+		--else
+		----	--read
+		--	s_data_out_a <= registers(to_integer(unsigned(rd_reg1)));
+		--	s_data_out_b <= registers(to_integer(unsigned(rd_reg2)));
 		end if;
 
 	end if;
 end process ; -- reg_file_proc
 
-data_out_a <= registers(to_integer(unsigned(rd_reg1)));
-data_out_b <= s_data_out_b;
+data_out_a <= registers(to_integer(unsigned(rd_reg1)));  -- asynchronous read
+data_out_b <= registers(to_integer(unsigned(rd_reg2)));
 
 ---------------------------------------------------------------------------------------------------
 

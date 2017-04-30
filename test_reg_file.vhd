@@ -127,20 +127,22 @@ begin
 	t_wr_reg <= "1111";
 	wait for t_clk_period * 4;
 
+	wait for 1 ns;
+
 	t_wr_en <= '0';
 	t_rd_reg1 <= "0100";
 	t_rd_reg2 <= "1000";
-	wait for t_clk_period * 4;
+	wait for t_clk_period;
 
 	t_wr_en <= '0';
 	t_rd_reg1 <= "0110";
 	t_rd_reg2 <= "1010";
-	wait for t_clk_period * 4;
+	wait for t_clk_period;
 
 	t_wr_en <= '0';
 	t_rd_reg1 <= "0000";
 	t_rd_reg2 <= "1111";
-	wait for t_clk_period * 4;
+	wait for t_clk_period;
 
 	wait;
 
