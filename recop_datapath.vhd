@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 USE ieee.numeric_std.ALL;
-use ieee.math_real.all
+use ieee.math_real.all;
 
 use work.all;
 use work.mux_pkg.all;
@@ -27,7 +27,7 @@ port (
 
 
 	--control signals for Memory, IR and RegFile
-	ir_wr				:	in std_logic(1 downto 0);
+	ir_wr				:	in std_logic_vector(1 downto 0);
 	m_wr				:	in std_logic;
 	r_wr				:	in std_logic;	
 
@@ -38,12 +38,10 @@ port (
 	wr_SOP			:	in std_logic;
 	wr_DPCR			:	in std_logic;
 
-	--SIP input
-	SIP_in			:	in std_logic;
 
 	--register inputs for ER and SIP
 	resetER_in		:	in std_logic;
-	SIP_in			:	in	std_logic(reg_width - 1 downto 0);
+	SIP_in			:	in	std_logic_vector(reg_width - 1 downto 0);
 
 	--mux control signals
 	m_addr_sel		:	in std_logic_vector(1 downto 0);
@@ -73,47 +71,48 @@ end entity ; --
 
 architecture behaviour of recop_datapath is
 
-constant s_data_width : positive := 16;
+constant s_data_width,s_ram_addr_width,s_regfile_regnum : positive := 16;
 
 signal s_DPCR_in : std_logic_vector(31 downto 0) := (others => '0');
 
-signal s_pc_output, s_mem_data_out, s_ir_upper0 ,s_ir_upper1, s_ir_upper2, s_ir_lower_0, s_SIP_out, s_regfile_out_a, s_regfile_out_b, s_alu_out : std_logic_vector(s_data_width - 1 downto 0) := (others => '0'); 
+signal s_pc_output, s_mem_data_out, s_ir_lower_0, s_SIP_out, s_regfile_out_a, s_regfile_out_b, s_alu_out : std_logic_vector(s_data_width - 1 downto 0) := (others => '0'); 
 signal s_m_addr_mux_output, s_m_data_mux_output, s_r_wr_mux_output, s_alu_src_a_mux_output,s_alu_src_b_mux_output,s_r_rd_mux_b_output,s_pc_src_mux_output : std_logic_vector(s_data_width - 1 downto 0) := (others => '0');
-signal s_r_rd_mux_a_output : std_logic_vector(3 downto 0) := (others => '0');
-signal s_pc_wr_en, s_z_out : std_logic := '0';
+signal s_r_rd_mux_a_output, s_ir_upper1,s_ir_upper2 : std_logic_vector(3 downto 0) := (others => '0');
+signal s_ir_upper0 : std_logic_vector(7 downto 0) := (others => '0');
+signal s_pc_wr_1en, s_z_out, s_alu_zero, s_alu_overflow, s_pc_wr_en : std_logic := '0';
 
 
-signal s_m_addr_mux_inputs : mux_16_bit(3 downto 0) := (0 => s_pc_output, 
+signal s_m_addr_mux_inputs : mux_16_bit_arr(3 downto 0) := (0 => s_pc_output, 
 																		  1 => s_ir_lower_0, 
 																		  2 => s_regfile_out_a, 
 																		  3 => s_regfile_out_b);
 
-signal s_m_data_mux_inputs : mux_16_bit(3 downto 0) := (0 => s_pc_output, 
+signal s_m_data_mux_inputs : mux_16_bit_arr(3 downto 0) := (0 => s_pc_output, 
 																		  1 => s_ir_lower_0, 
 																		  2 => s_regfile_out_a, 
 																		  3 => x"0000");
 
-signal s_r_rd_mux_a_inputs : mux_4_bit(1 downto 0) :=  (0 => x"7", 
+signal s_r_rd_mux_a_inputs : mux_4_bit_arr(1 downto 0) :=  (0 => x"7", 
 																		  1 => s_ir_upper1); 
-signal s_r_rd_mux_b_inputs : mux_16_bit(1 downto 0):=  (0 => s_regfile_out_a, 
+signal s_r_rd_mux_b_inputs : mux_16_bit_arr(1 downto 0):=  (0 => s_regfile_out_a, 
 																		  1 => s_ir_lower_0); 
 
-signal s_pc_src_mux_inputs : mux_4_bit(3 downto 0) :=  (0 => s_alu_out, 
-																		  1 => s_ir_lower_0
-																		  2 => s_regfile_out_b
+signal s_pc_src_mux_inputs : mux_16_bit_arr(3 downto 0) :=  (0 => s_alu_out, 
+																		  1 => s_ir_lower_0,
+																		  2 => s_regfile_out_b,
 																		  3 => x"0000"); 
 
-signal s_r_wr_mux_inputs   : mux_16_bit(3 downto 0) 	 := (0 => s_alu_out, 
+signal s_r_wr_mux_inputs   : mux_16_bit_arr(3 downto 0) 	 := (0 => s_alu_out, 
 																		     1 => s_mem_data_out, 
 																		     2 => "000000000000000" & resetER_in, 
 																		     3 => s_SIP_out);
 
-signal s_alu_src_a_mux_inputs : mux_16_bit(3 downto 0) := (0 => s_pc_output, 
+signal s_alu_src_a_mux_inputs : mux_16_bit_arr(3 downto 0) := (0 => s_pc_output, 
 																		  	  1 => s_ir_lower_0, 
 																		     2 => s_regfile_out_a, 
 																		     3 => s_regfile_out_b);
 
-signal s_alu_src_b_mux_inputs : mux_16_bit(3 downto 0) := (0 => s_regfile_out_b, 
+signal s_alu_src_b_mux_inputs : mux_16_bit_arr(3 downto 0) := (0 => s_regfile_out_b, 
 																		  	  1 => x"0001", 
 																		     2 => x"0000", 
 																		     3 => s_ir_lower_0);
@@ -243,7 +242,7 @@ memory : data_mem
 		ram_addr_width => s_ram_addr_width,
 		ram_data_width => s_data_width
 	)
-	port (
+	port map(
 		wr_en 	=> m_wr,
 		addr		=>	s_m_addr_mux_output,
 		data_in 	=> s_m_data_mux_output,
@@ -276,7 +275,7 @@ regfile : reg_file
 		clk 			=> clk,
 		reset 		=> '0',
 		wr_en 		=> r_wr,
-		rd_reg1 		=> s_r_rd_mux_a_output
+		rd_reg1 		=> s_r_rd_mux_a_output,
 		rd_reg2 		=> s_ir_upper2,
 		wr_reg 		=> s_ir_upper1,
 		wr_data 		=> s_r_wr_mux_output,
@@ -285,7 +284,7 @@ regfile : reg_file
 		data_out_b 	=> s_regfile_out_b
 	);
 
-alu : alu
+alu_component : alu
 	port map(
 		data_A	=>	s_alu_src_a_mux_output,
 		data_B	=>	s_alu_src_b_mux_output,
@@ -393,7 +392,7 @@ r_rd_mux_a : mux_4_bit
 	)
 	port map(
 		inputs	=>	s_r_rd_mux_a_inputs,
-		sel		=>	r_rd_sel,
+		sel(0)		=>	r_rd_sel,
 
 		output	=> s_r_rd_mux_a_output
 
@@ -405,7 +404,7 @@ r_rd_mux_b : mux_16_bit
 	)
 	port map(
 		inputs	=>	s_r_rd_mux_b_inputs,
-		sel		=>	r_rd_sel,
+		sel(0)		=>	r_rd_sel,
 
 		output	=> s_r_rd_mux_b_output
 	);
@@ -427,7 +426,7 @@ alu_src_a_mux : mux_16_bit
 	)
 
 	port map(
-		inputs	=>	s_alu_src_a_mux_inputs
+		inputs	=>	s_alu_src_a_mux_inputs,
 		sel		=> alu_src_A,
 
 		output	=>	s_alu_src_a_mux_output
@@ -440,7 +439,7 @@ alu_src_b_mux : mux_16_bit
 	)
 
 	port map(
-		inputs	=>	s_alu_src_b_mux_inputs
+		inputs	=>	s_alu_src_b_mux_inputs,
 		sel		=> alu_src_B,
 
 		output	=>	s_alu_src_b_mux_output
@@ -452,11 +451,11 @@ pc_src_mux	:	mux_16_bit
 	)
 	port map(
 		inputs 	=> s_pc_src_mux_inputs,
-		sel		=>	pc_src,
+		sel(0)	=>	pc_src,
 
 		output	=> s_pc_src_mux_output
 
-	)
+	);
 
 s_DPCR_in <= s_regfile_out_b & s_r_rd_mux_b_output;
 
