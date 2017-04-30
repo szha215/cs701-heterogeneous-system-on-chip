@@ -16,15 +16,13 @@ generic(
 port(	clk			: 	in std_logic;
 		reset			: 	in std_logic;
 		wr_en			:	in std_logic; 
-		rd_reg1		:	in std_logic_vector(integer(ceil(log2(real(reg_width)))) - 1 downto 0);
-		rd_reg2		:	in std_logic_vector(integer(ceil(log2(real(reg_width)))) - 1 downto 0);
-		wr_reg		:	in std_logic_vector(integer(ceil(log2(real(reg_width)))) - 1 downto 0);
+		rd_reg1		:	in std_logic_vector(integer(ceil(log2(real(reg_num)))) - 1 downto 0);
+		rd_reg2		:	in std_logic_vector(integer(ceil(log2(real(reg_num)))) - 1 downto 0);
+		wr_reg		:	in std_logic_vector(integer(ceil(log2(real(reg_num)))) - 1 downto 0);
 		wr_data		: 	in std_logic_vector(reg_width - 1 downto 0);
 
 		data_out_a	:	out std_logic_vector(reg_width - 1 downto 0);
 		data_out_b	:	out std_logic_vector(reg_width - 1 downto 0)
-		
-		
 		);
 end entity reg_file;
 
@@ -44,25 +42,25 @@ begin
 	if(reset = '1') then
 		--clean all the registers
 		clean_registers : for i in 0 to reg_num - 1 loop
-			registers(i) <= "0000000000000000";
+			registers(i) <= (others => '0');
 		end loop ; -- clean_registers
 	elsif (rising_edge(clk)) then
 		if(wr_en = '1') then
 			--write 
 			registers(to_integer(unsigned(wr_reg))) <= wr_data;
 			--output addr when write 
-			s_data_out_a <= "000000000000" & rd_reg1;
-			s_data_out_b <= "000000000000" & rd_reg2;
+			s_data_out_a <= (reg_width - 1 downto rd_reg1'length => '0') & rd_reg1;
+			s_data_out_b <= (reg_width - 1 downto rd_reg2'length => '0') & rd_reg2;
 		else
 			--read
-			s_data_out_a <= registers(to_integer(unsigned(rd_reg1)));
+			--s_data_out_a <= 
 			s_data_out_b <= registers(to_integer(unsigned(rd_reg2)));
 		end if;
 
 	end if;
 end process ; -- reg_file_proc
 
-data_out_a <= s_data_out_a;
+data_out_a <= registers(to_integer(unsigned(rd_reg1)));
 data_out_b <= s_data_out_b;
 
 ---------------------------------------------------------------------------------------------------
