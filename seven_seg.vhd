@@ -8,6 +8,7 @@ entity seven_seg is
 	port(	clk		: in std_logic;
 			reset		: in std_logic;
 			d_in		: in std_logic_vector(31 downto 0);  -- [31..16]
+			ena		: in std_logic;
 
 			hex0		: out std_logic_vector(6 downto 0);
 			hex1		: out std_logic_vector(6 downto 0);
@@ -37,7 +38,7 @@ begin
 			hex6 <= (others => '0');
 			hex7 <= (others => '1');
 	elsif (rising_edge(clk)) then
-		if (d_in(31) = '1') then
+		if (ena = '1') then
 			case (d_in(3 downto 0)) is
 				when "0000"=> hex0 <="1000000";  -- '0'
 				when "0001"=> hex0 <="1111001";  -- '1'

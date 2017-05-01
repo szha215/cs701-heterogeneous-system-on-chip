@@ -45,7 +45,7 @@ signal s_A, s_B : data_vector := (others => (others =>'0'));
 -- Control signals
 signal words_stored_inc_en, packet_id_inc_en	: std_logic := '0';
 signal op_ld, start_addr_ld, end_addr_ld, mem_sel_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld	: std_logic := '0';
-signal words_stored_reset, vectors_reset, packet_id_reset	: std_logic := '0';
+signal words_stored_reset, vectors_reset, packet_id_reset, ave_filter_reset	: std_logic := '0';
 signal d_packet_sel, calc_res_sel 	: std_logic_vector(1 downto 0) := (others => '0');
 signal d_out_sel, vector_addr_sel, vector_d_sel	: std_logic := '0';
 
@@ -443,6 +443,8 @@ begin
 	packet_id_inc_en <= '0';
 	d_out_sel <= '1';
 
+	ave_filter_reset <= '0';
+
 	case CS is
 		when IDLE =>
 			s_invoke_en <= '0';
@@ -450,6 +452,8 @@ begin
 
 			words_stored_reset <= '1';
 			packet_id_reset <= '1';
+
+			ave_filter_reset <= '1';
 			s_words_sent <= (others => '0');
 
 		when STORE_RESET =>
@@ -460,7 +464,7 @@ begin
 			mem_sel_ld <= '1';
 
 		when STORE_INIT =>
-			s_invoke_init <= '1';
+			s_invoke_init <= '0';
 			
 			--report "STORE INIT: words to store = " & integer'image(to_integer(unsigned(d_in_copy(integer(ceil(log2(real(N))))) - 1  downto 0)));
 			start_addr_ld <= '1';
@@ -469,13 +473,13 @@ begin
 
 		when STORE_WAIT =>
 			s_invoke_en <= '0';
-			s_invoke_init <= '1';
+			s_invoke_init <= '0';
 
 			s_words_sent <= (others => '0');
 
 		when STORE_DATA =>
-			s_invoke_en <= '0';
-			s_invoke_init <= '1';
+			s_invoke_en <= '1';
+			s_invoke_init <= '0';
 
 			words_stored_inc_en <= '1';
 			vector_ld <= '1';
@@ -772,11 +776,13 @@ begin
 end process ; -- packet_id_process
 
 ---------------------------------------------------------------------------------------------------
-pointer_process : process(clk, s_invoke_init, d_in_copy)
+pointer_process : process(clk, s_invoke_init, words_stored_inc_en, d_in_copy)
 begin
 	if (rising_edge(clk)) then
 		if (s_invoke_init = '1') then
 			s_pointer <= d_in_copy(8 downto 0);
+		elsif (words_stored_inc_en = '1') then
+			s_pointer <= d_in_copy(24 downto 16);
 		else
 			s_pointer <= s_pointer + '1';
 		end if;
@@ -865,7 +871,7 @@ with s_packet_id select s_packet <=
 
 with d_out_sel select s_data <=
 	s_packet when '1',  -- data[ID]
-	x"0001" when others;  -- access granted
+	s_reg_b_out when others;  -- access granted
 
 reg_a_ld <= '1' when vector_ld = '1' and s_mem_sel = '0' else
 				'0';
