@@ -162,6 +162,7 @@ def compile_and_link():
     compile_list.append('./test_data_mem.vhd')
     compile_list.append('./ins_reg.vhd')
     compile_list.append('./test_ins_reg.vhd')
+    compile_list.append('./recop_control.vhd')
     compile_str = ' '.join(compile_list)
 
     try:
