@@ -84,6 +84,20 @@ signal s_pointer, s_pointer_2 : std_logic_vector(8 downto 0) := (others => '0');
 
 ---------------------------------------------------------------------------------------------------
 -- component declaration here
+
+component multiplier is
+	generic( 
+	in_width	: positive;
+	res_witdh	: positive;
+	result_lowbit	: natural
+	);
+	port(
+	a		: in std_logic_vector(in_width-1 downto 0);
+	b		: in std_logic_vector(in_width-1 downto 0);
+	res	: out std_logic_vector(res_witdh-1 downto 0)
+	);
+end component;
+
 component reg_file is
 -- generic and port declration here
 generic(
@@ -270,7 +284,7 @@ ram_a : altsyncram
 		outdata_aclr_b => "CLEAR0",
 		outdata_reg_b => "UNREGISTERED",
 		power_up_uninitialized => "FALSE",
-		read_during_write_mode_mixed_ports => "DONT_CARE",
+		read_during_write_mode_mixed_ports => "OLD_DATA",
 		widthad_a => integer(ceil(log2(real(N)))),
 		widthad_b => integer(ceil(log2(real(N)))),
 		width_a => 16,
@@ -302,7 +316,7 @@ ram_b : altsyncram
 		outdata_aclr_b => "CLEAR0",
 		outdata_reg_b => "UNREGISTERED",
 		power_up_uninitialized => "FALSE",
-		read_during_write_mode_mixed_ports => "DONT_CARE",
+		read_during_write_mode_mixed_ports => "OLD_DATA",
 		widthad_a => integer(ceil(log2(real(N)))),
 		widthad_b => integer(ceil(log2(real(N)))),
 		width_a => 16,

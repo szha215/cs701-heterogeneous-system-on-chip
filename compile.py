@@ -54,7 +54,8 @@ def ani():
     args.append('sim:/test_ani/t_d_to_asp')
     args.append('sim:/test_ani/t_asp_valid')
     args.append('sim:/test_ani/t_asp_busy')
-    args.append('sim:/test_ani/t_asp/s_A')
+    # args.append('sim:/test_ani/t_asp/reg_a/registers')
+    # args.append('sim:/test_ani/t_asp/reg_b/registers')
     args.append('sim:/test_ani/t_asp/s_B')
     args.append('sim:/test_ani/t_asp/s_op_code')
     args.append('sim:/test_ani/t_asp/s_invoke_en')
@@ -67,12 +68,15 @@ def ani():
     args.append('sim:/test_ani/t_ani/s_out_full')
     args.append('sim:/test_ani/t_ani/s_out_rd_en')
     args.append('sim:/test_ani/t_d_to_noc')
-    args.append('sim:/test_ani/t_asp/s_words_stored')
-    args.append('sim:/test_ani/t_asp/s_words_to_store')
-    args.append('sim:/test_ani/t_asp/words_stored_inc_en')
-    args.append('sim:/test_ani/t_asp/words_stored_reset')
+    args.append('sim:/test_ani/t_asp/reg_a_ld')
+    args.append('sim:/test_ani/t_asp/s_start_addr')
+    args.append('sim:/test_ani/t_asp/s_end_addr')
+    args.append('sim:/test_ani/t_asp/s_pointer')
+    args.append('sim:/test_ani/t_asp/s_calc_res')
+    # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
+    args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out')
 
-    args.append('; run 1.5 us')
+    args.append('; run 2 us')
 
     txt = ' '.join(args)
 
@@ -98,6 +102,43 @@ def alu():
 
     return txt
 
+def mult():
+    args = []
+
+    args.append('vsim -novopt work.test_multiplier;')
+    args.append('add wave -position insertpoint -radix unsigned')
+
+    args.append('sim:/test_multiplier/t_clk')
+    args.append('sim:/test_multiplier/t_a')
+    args.append('sim:/test_multiplier/t_b')
+    args.append('sim:/test_multiplier/t_res')
+
+    args.append('; run 200 ns')
+
+    txt = ' '.join(args)
+
+    return txt
+
+def avg():
+    args = []
+
+    args.append('vsim -novopt work.test_average_filter;')
+    args.append('add wave -position insertpoint -radix unsigned')
+
+    args.append('sim:/test_average_filter/t_clk')
+    args.append('sim:/test_average_filter/t_reset')
+    args.append('sim:/test_average_filter/filter/s_count')
+    args.append('sim:/test_average_filter/t_data')
+    args.append('sim:/test_average_filter/filter/s_values')
+    args.append('sim:/test_average_filter/filter/s_sum')
+    args.append('sim:/test_average_filter/t_avg')
+
+    args.append('; run 600 ns')
+
+    txt = ' '.join(args)
+
+    return txt
+
 def copy_to_clipboard(arg):
 
     if (arg.lower() == "asp"):
@@ -106,6 +147,10 @@ def copy_to_clipboard(arg):
         txt = ani()  # ANI and ASP
     elif (arg.lower() == "alu"):
         txt = alu()
+    elif (arg.lower() == "mult"):
+        txt = mult()
+    elif (arg.lower() == "avg"):
+        txt = avg()
     else:
         print '\n***BAD ARGUMENT: "asp", "ani" or "alu" only'
         exit()
@@ -120,8 +165,7 @@ def compile_and_link():
 
     # compile_list.append('./altera_mf/altera_mf_components.vhd')
     # compile_list.append('./altera_mf/altera_mf.vhd')
-    compile_list.append('./fifo.vhd')
-    # compile_list.append('./mega_fifo.vhd')
+    compile_list.append('./reg_file.vhd')
     compile_list.append('./work/HMPSoC_config.vhd')
     compile_list.append('./work/min_ports_pkg.vhd')
 
@@ -135,6 +179,11 @@ def compile_and_link():
     compile_list.append('./alu.vhd')
     compile_list.append('./test_alu.vhd')
 
+    compile_list.append('./multiplier.vhd')
+    compile_list.append('./test_multiplier.vhd')
+
+    compile_list.append('./average_filter.vhd')
+    compile_list.append('./test_average_filter.vhd')
 
     compile_str = ' '.join(compile_list)
 
