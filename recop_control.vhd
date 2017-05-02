@@ -15,7 +15,7 @@ port(	clk				: in std_logic;
 		opcode			: in std_logic_vector(5 downto 0);
 		irq_flag		: in std_logic;
 			
-		m_addr_sel 		: out std_logic_vector(1 downto 0);
+		m_addr_sel 		: out std_logic_vector(2 downto 0);
 		m_data_sel		: out std_logic_vector(1 downto 0);
 		m_wr			: out std_logic;
 		ir_wr			: out std_logic_vector(1 downto 0);
@@ -31,6 +31,7 @@ port(	clk				: in std_logic;
 		set_EOT			: out std_logic;
 		reset_DPRR		: out std_logic;
 		reset_DPCR		: out std_logic;
+		reset_DPC 		: out std_logic;
 		reset_EOT		: out std_logic;
 		reset_ER		: out std_logic;
 		reset_Z			: out std_logic;
@@ -40,7 +41,7 @@ port(	clk				: in std_logic;
 		wr_DPCR			: out std_logic;
 		wr_SVOP			: out std_logic;
 		wr_SOP 			: out std_logic;
-		wr_Z
+		wr_Z 			: out std_logic
 	);
 
 
@@ -50,7 +51,7 @@ end entity recop_control;
 architecture behaviour of recop_control is
 -- type, signal, constant declarations here
 
-type states is (IF1, ID1, IF2, ID2, EX, CM, DC); -- states -- Instruction Fetch 1 & 2, Instruction Decode 1 & 2, Execute, Complete/Mem Acc
+type states is (IF1, ID1, IF2, ID2, EX, DM, DR); -- states
 signal CS, NS : states := IF1;
 
 
@@ -72,7 +73,7 @@ begin
 end process state_updater;
 
 ---------------------------------------------------------------------------------------------------
-state_transition_logic : process(CS)
+state_transition_logic : process(clk)
 begin
 	case CS is	-- must cover all states
 		when IF1 => -- Instruction Fetch
@@ -89,8 +90,8 @@ begin
 		 	end if;
 
 		when ID2 => -- Decode Operand
-		 	if (opcode == noop_op) then
-		 		
+		 	if (opcode = noop_op) then
+		 		NS <= IF1;
 		 	else
 		 		NS <= EX;
 		 	end if;
@@ -100,25 +101,20 @@ begin
 				NS <= EX;
 			elsif (irq_flag = '1' or
 				(opcode = ldr_op and (am = register_am or am = direct_am))) then
-				NS <= CM;
+				NS <= DM;
 			else
 				NS <= IF1;
 			end if;
 
-		when CM => -- Complete/Memory Access
+		when DM => -- Data Call Store/Memory Access
 			if (irq_flag = '1') then
-				NS <= DC;
+				NS <= DR;
 			else
 				NS <= IF1;
 			end if;
 			
-		when DC => -- Data Call reset
-			if (irq_flag = '1') then
-				NS <= DC;
-			else
-				NS <= IF1;	
-			end if;
-			
+		when DR => -- Data Call Reset
+			NS <= IF1;	
 
 		when others =>
 			report "STATE TRANSITION: BAD STATE";
@@ -130,19 +126,22 @@ end process state_transition_logic;
 ---------------------------------------------------------------------------------------------------
 output_logic : process(CS)
 begin
+	
+	m_addr_sel 		<= "000";	m_data_sel 		<= "00";	
+	m_wr 			<= '0';		ir_wr 			<= "00";
+	r_wr_d_sel 		<= "000";	r_wr_r_sel 		<= '0';
+	r_wr 			<= '0';		alu_src_A 		<= "00";
+	alu_src_B 		<= "00";	wr_Z 			<= '0';
+	alu_op 			<= "000";	pc_src 			<= "00";
+	set_DPC 		<= '0';		set_EOT 		<= '0';
+	reset_DPRR 		<= '0';		reset_DPCR 		<= '0';
+	reset_DPC 		<= '0';		reset_EOT 		<= '0';
+	reset_ER 		<= '0';		reset_Z 		<= '0';
+	pc_wr 			<= '0';		pc_wr_cond_z 	<= '0';
+	pc_wr_cond_p 	<= '0';		wr_DPCR 		<= '0';
+	wr_SVOP 		<= '0';		wr_SOP 			<= '0';
+	
 
-	m_addr_sel 		<= "00"; 	m_data_sel		<= "00";
-	m_wr			<= '0';		ir_wr			<= "00";
-	r_wr_d_sel		<= "000";	r_wr 			<= '0';
-	alu_src_A		<= "00";	alu_src_B		<= "00"; 	
-	alu_op			<= "000";	set_EOT			<= '0';
-	reset_EOT		<= '0';		reset_Z			<= '0';
-	reset_DPRR		<= '0';		reset_DPCR		<= '0';
-	pc_wr			<= '0';		pc_wr_cond_z	<= '0';
-	r_wr_r_sel		<= '0';		pc_wr_cond_p	<= '0';
-	wr_SVOP			<= '0';		wr_SOP 			<= '0';
-	pc_src			<= "00";	set_DPC			<= '0';
-	wr_Z 			<= '0';
 
 	case CS is	-- must cover all states
 		when IF1 =>
@@ -175,7 +174,8 @@ begin
 					end if;
 					alu_src_B <= "00";
 					alu_op <= "010";
-
+					r_wr <= '1';
+					wr_Z <= '1';
 
 				when or_op =>
 					if (am = immediate_am) then
@@ -185,6 +185,8 @@ begin
 					end if;
 					alu_src_B <= "00";
 					alu_op <= "011";
+					r_wr <= '1';
+					wr_Z <= '1';
 
 				when add_op =>
 					if (am = immediate_am) then
@@ -194,44 +196,45 @@ begin
 					end if;
 					alu_src_B <= "00";
 					alu_op <= "000";
+					r_wr <= '1';
+					wr_Z <= '1';
 
 				when subv_op =>
 					alu_src_A <= "11";
 					alu_src_B <= "11";
 					alu_op <= "001";
+					r_wr <= '1';
+					wr_Z <= '1';
 
 				when sub_op =>
 					alu_src_A <= "10";
 					alu_src_B <= "11";
 					alu_op <= "001";
+					wr_Z <= '1';
 
 				when ldr_op =>
 					if (am = immediate_am) then
 						r_wr_d_sel <= "100";
 						r_wr <= '1';
-
 					elsif (am = register_am) then
-						m_addr_sel <= "11";
+						m_addr_sel <= "011";
 						r_wr_d_sel <= "001";
-						r_wr <= '1';
-
 					elsif (am = direct_am) then
-						m_addr_sel <= "01";
+						m_addr_sel <= "001";
 						r_wr_d_sel <= "001";
-						r_wr <= '1';
 					end if;	
 
 				when str_op =>
 					if (am = immediate_am) then
-						m_addr_sel <= "10";
+						m_addr_sel <= "010";
 						m_data_sel <= "00";
 						m_wr <= '1';
 					elsif (am = register_am) then
-						m_addr_sel <= "01";
+						m_addr_sel <= "001";
 						m_data_sel <= "10";
 						m_wr <= '1';
 					elsif (am = direct_am) then
-						m_addr_sel <= "10";
+						m_addr_sel <= "010";
 						m_data_sel <= "10";
 						m_wr <= '1';
 					end if;
@@ -251,6 +254,7 @@ begin
 					alu_op <= "011";
 					pc_wr_cond_p <= '1';
 					pc_src <= "01";
+					wr_Z <= '1';
 
 				when dcallbl_op =>
 					wr_DPCR <= '1';
@@ -271,11 +275,9 @@ begin
 
 				when ceot_op =>
 					reset_EOT <= '1';
-					set_EOT <= '0';
 
 				when seot_op =>
 					set_EOT <= '1';
-					reset_EOT <= '0';
 
 				when ler_op =>
 					r_wr_d_sel <= "010";
@@ -295,9 +297,10 @@ begin
 					alu_src_A <= "10";
 					alu_src_B <= "11";
 					alu_op <= "100";
+					r_wr <= '1';
 
 				when strpc_op =>
-					m_addr_sel <= "01";
+					m_addr_sel <= "001";
 					m_data_sel <= "01";
 					m_wr <= '1';
 
@@ -306,22 +309,22 @@ begin
 
 			end case;
 
-		when CM =>
-			if (irq_flag = '1') then
+		when DM =>
+			if (irq_flag = '1') then -- dcall routine
 				r_wr_r_sel <= '1';
-				r_wr_d_sel <= "100";
+				r_wr_d_sel <= "101";
 				r_wr <= '1';
-			else if () then
-			-- C-Type
-			-- LDR memory access
-			else
-				
+				m_addr_sel <= "100";
+				m_data_sel <= "11";
+				m_wr <= '1';
+			else -- ldr
+				r_wr <= '1';
 			end if;
 			
-		when DC =>
+		when DR =>
 			reset_DPRR <= '1';
 			reset_DPCR <= '1';
-			
+			reset_DPC <= '1';
 
 		when others =>
 			report "STATE OUTPUT: BAD STATE";
