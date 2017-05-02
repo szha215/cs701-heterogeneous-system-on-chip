@@ -76,7 +76,9 @@ def ani():
     args.append('sim:/test_ani/t_asp/s_pointer')
     args.append('sim:/test_ani/t_asp/s_calc_res')
     # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
-    args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out')
+    args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out sim:/test_ani/t_asp/s_reg_out')
+    args.append('sim:/test_ani/t_asp/aveage_block/s_values')
+    args.append('sim:/test_ani/t_asp/aveage_block/s_avg')
 
     args.append('; run 2 us')
 
@@ -125,13 +127,16 @@ def avg():
     args = []
 
     args.append('vsim -novopt work.test_average_filter;')
-    args.append('add wave -position insertpoint -radix unsigned')
+    args.append('add wave -position insertpoint -radix hexadecimal')
 
     args.append('sim:/test_average_filter/t_clk')
     args.append('sim:/test_average_filter/t_reset')
     args.append('sim:/test_average_filter/filter/s_count')
+    args.append('sim:/test_average_filter/t_pointer')
     args.append('sim:/test_average_filter/t_data')
     args.append('sim:/test_average_filter/filter/s_values')
+    args.append('sim:/test_average_filter/t_wr_pointer')
+    args.append('sim:/test_average_filter/reg_a_ld')
     args.append('sim:/test_average_filter/filter/s_sum')
     args.append('sim:/test_average_filter/t_avg')
 

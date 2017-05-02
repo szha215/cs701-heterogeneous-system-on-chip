@@ -61,10 +61,11 @@ begin
 		s_count <= (others => '0');
 
 	elsif (rising_edge(clk)) then
-
 		s_values(to_integer(unsigned(s_count))) <= data;
 		s_count <= s_count + '1';
 
+	--elsif (falling_edge(clk)) then
+	--	s_values(to_integer(unsigned(s_count))) <= data;
 	end if;
 end process; -- filter_process
 

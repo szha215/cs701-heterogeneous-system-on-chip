@@ -232,11 +232,18 @@ begin
 	t_key <= "0000";
 	wait for t_clk_period * 30;
 
-	t_sw <= x"0000";  -- STORE RESET
+	t_sw <= x"0005";  -- AVE A
 	t_key <= "1000";
 	wait for t_clk_period * 10;
 	t_key <= "0000";
-	wait for t_clk_period * 2;
+	wait for t_clk_period * 30;
+
+
+	--t_sw <= x"0000";  -- STORE RESET
+	--t_key <= "1000";
+	--wait for t_clk_period * 10;
+	--t_key <= "0000";
+	--wait for t_clk_period * 2;
 
 	wait;
 
