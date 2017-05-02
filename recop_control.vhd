@@ -40,7 +40,7 @@ port(	clk				: in std_logic;
 		wr_DPCR			: out std_logic;
 		wr_SVOP			: out std_logic;
 		wr_SOP 			: out std_logic;
-		wr_Z
+		wr_Z				: out std_logic
 	);
 
 
@@ -89,7 +89,7 @@ begin
 		 	end if;
 
 		when ID2 => -- Decode Operand
-		 	if (opcode == noop_op) then
+		 	if (opcode = noop_op) then
 		 		
 		 	else
 		 		NS <= EX;
@@ -311,7 +311,7 @@ begin
 				r_wr_r_sel <= '1';
 				r_wr_d_sel <= "100";
 				r_wr <= '1';
-			else if () then
+			--else if () then
 			-- C-Type
 			-- LDR memory access
 			else

@@ -120,6 +120,56 @@ def ins_reg():
     args.append('; run 1000 ns')
     return ' '.join(args)
 
+def datapath():
+    args = []
+    args.append('vsim -novopt work.test_recop_datapath;')
+    args.append('add wave -position insertpoint')
+
+    args.append('sim:/test_recop_datapath/t_clk')
+    args.append('sim:/test_recop_datapath/t_reset_z')
+    args.append('sim:/test_recop_datapath/t_pc_wr_cond_z')
+    args.append('sim:/test_recop_datapath/t_pc_wr_cond_p')
+    args.append('sim:/test_recop_datapath/t_pc_wr')
+    args.append('sim:/test_recop_datapath/t_set_EOT')
+    args.append('sim:/test_recop_datapath/t_reset_EOT')
+    args.append('sim:/test_recop_datapath/t_m_wr')
+    args.append('sim:/test_recop_datapath/t_r_wr')
+    args.append('sim:/test_recop_datapath/t_ir_wr')
+    args.append('sim:/test_recop_datapath/t_reset_ER')
+    args.append('sim:/test_recop_datapath/t_reset_DPRR')
+    args.append('sim:/test_recop_datapath/t_wr_SVOP')
+    args.append('sim:/test_recop_datapath/t_wr_SOP')
+    args.append('sim:/test_recop_datapath/t_wr_DPCR')
+    args.append('sim:/test_recop_datapath/t_resetER_in')
+    args.append('sim:/test_recop_datapath/t_DPRR_in')
+    args.append('sim:/test_recop_datapath/t_SIP_in')
+    args.append('sim:/test_recop_datapath/t_m_addr_sel')
+    args.append('sim:/test_recop_datapath/t_m_data_sel')
+    args.append('sim:/test_recop_datapath/t_r_rd_sel')
+    args.append('sim:/test_recop_datapath/t_r_wr_sel')
+    args.append('sim:/test_recop_datapath/t_alu_src_A')
+    args.append('sim:/test_recop_datapath/t_alu_src_B')
+    args.append('sim:/test_recop_datapath/t_pc_src')
+    args.append('sim:/test_recop_datapath/t_alu_op')
+    args.append('sim:/test_recop_datapath/t_DPRR_out')
+    args.append('sim:/test_recop_datapath/t_SVOP_out')
+    args.append('sim:/test_recop_datapath/t_SOP_out')
+    args.append('sim:/test_recop_datapath/t_EOT_out')
+    args.append('sim:/test_recop_datapath/t_DPCR_out')
+    args.append('sim:/test_recop_datapath/t_am')
+    args.append('sim:/test_recop_datapath/t_opcode')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_ir_lower_0')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_ir_upper0')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_ir_upper1')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_ir_upper2')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_mem_data_out')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_regfile_out_a')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_regfile_out_b')
+    args.append('; run 2000 ns')
+    return ' '.join(args)
+
+
+
 def copy_to_clipboard(arg):
 
     if (arg.lower() == "alu"):
@@ -138,6 +188,8 @@ def copy_to_clipboard(arg):
 
     elif(arg.lower() == "ins_reg"):
         txt = ins_reg()
+    elif(arg.lower() == "datapath"):
+        txt = datapath()
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -163,6 +215,8 @@ def compile_and_link():
     compile_list.append('./ins_reg.vhd')
     compile_list.append('./test_ins_reg.vhd')
     compile_list.append('./recop_control.vhd')
+    compile_list.append('./recop_datapath.vhd')
+    compile_list.append('./test_recop_datapath.vhd')
     compile_str = ' '.join(compile_list)
 
     try:
