@@ -111,7 +111,7 @@ signal s_r_rd_mux_b_inputs : mux_16_bit_arr(1 downto 0) :=  (0 => s_regfile_out_
 signal s_pc_src_mux_inputs : mux_16_bit_arr(3 downto 0) :=  (0 => s_alu_out, 
 																		  1 => s_ir_lower_0,
 																		  2 => s_regfile_out_b,
-																		  others => x"0000"); 
+																		  3 => x"0000"); 
 
 signal s_r_wr_mux_inputs   : mux_16_bit_arr(2 ** r_wr_mux_sel_num - 1 downto 0) := 
 																			 (0 => s_alu_out, 

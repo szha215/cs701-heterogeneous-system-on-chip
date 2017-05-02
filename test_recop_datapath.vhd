@@ -194,30 +194,34 @@ end process;
 t_datapath_proc : process
 begin
 	wait for t_clk_period * 2;
-	--
+	-- IF1
 	t_alu_src_A <= "00";
 	t_alu_src_B <= "01";
 	t_ir_wr		<= "01";
 	t_pc_wr		<= '1';
 	t_alu_op		<= "000";
-	wait for t_clk_period * 2;
+	wait for t_clk_period;
+	--ID1
 	t_alu_src_A <= "00";
 	t_alu_src_B <= "00";
 	t_ir_wr <= "00";
 	t_pc_wr <= '0';
 	t_alu_op <= "000";
-	wait for t_clk_period * 2;
+	wait for t_clk_period;
+	-- EX
 	t_alu_src_A <= "00";
 	t_alu_src_B <= "01";
-	t_ir_wr <= "10";
-	t_pc_wr <= '1';
-	t_alu_op <= "000";
-	wait for t_clk_period * 2;
-	t_alu_src_A <= "00";
-	t_alu_src_B <= "00";
-	t_ir_wr <= "00";
-	t_pc_wr <= '0';
-	t_alu_op <= "000";
+	t_ir_wr		<= "10";
+	t_pc_wr		<= '1';
+	t_alu_op	<= "000";
+	-- ID2
+	--wait for t_clk_period;
+	--t_alu_src_A <= "00";
+	--t_alu_src_B <= "01";
+	--t_ir_wr		<= "01";
+	--t_pc_wr		<= '1';
+	--t_alu_op	<= "000";
+
 
 	wait;
 
