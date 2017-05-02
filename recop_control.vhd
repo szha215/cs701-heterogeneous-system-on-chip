@@ -42,6 +42,7 @@ port(	clk				: in std_logic;
 		wr_SVOP			: out std_logic;
 		wr_SOP 			: out std_logic;
 		wr_Z 			: out std_logic
+
 	);
 
 
