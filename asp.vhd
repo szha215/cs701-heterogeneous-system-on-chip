@@ -39,7 +39,7 @@ type states is (IDLE,
 					INVOKE, INVOKE_BUSY,
 					XOR_0_A, XOR_0_B, XOR_1, XOR_2, XOR_3,
 					AVE_0_A, AVE_0_B, AVE_1, AVE_2, AVE_3,
-					MAC_1, MAC_2,
+					MAC_0, MAC_1, MAC_2, MAC_3,
 					SEND_ACC, SEND_DATA, SEND_PAUSE);
 
 signal CS, NS	: states := IDLE;
@@ -49,13 +49,13 @@ signal d_in_copy	: std_logic_vector(31 downto 0) := (others => '0');
 type data_vector is array (0 to N - 1) of std_logic_vector(15 downto 0);
 signal s_A, s_B : data_vector := (others => (others =>'0'));
 
--- Control signals
-signal packet_id_inc_en, rd_pointer_inc_en, wr_pointer_inc_en	: std_logic := '0';
-signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld	: std_logic := '0';
+-- Control signals 
+signal rd_pointer_inc_en, wr_pointer_inc_en, packet_sent_inc_en	: std_logic := '0';
+signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld, words_to_send_ld	: std_logic := '0';
 signal mem_sel_ld, mem_sel_ld_1, mem_sel_ld_0	: std_logic := '0';
-signal words_stored_reset, vectors_reset, packet_id_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
+signal words_stored_reset, vectors_reset, packet_sent_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
 signal d_packet_sel, calc_res_sel 	: std_logic_vector(1 downto 0) := (others => '0');
-signal d_out_sel, vector_addr_sel, vector_d_sel	: std_logic := '0';
+signal d_out_sel, vector_addr_sel, vector_d_sel, words_to_send_sel	: std_logic := '0';
 
 signal cmp_store, cmp_sent, cmp_pointer_L, cmp_pointer_1, cmp_rd_pointer_end : std_logic := '0';
 
@@ -69,6 +69,8 @@ signal s_mem_sel		: std_logic := '0';
 signal s_packet_id		: std_logic_vector(1 downto 0) := (others => '0');
 signal s_packet, s_data	: std_logic_vector(15 downto 0) := (others => '0');
 signal s_d_out				: std_logic_vector(31 downto 0) := (others => '0');
+
+signal s_pointer, s_wr_pointer : std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
 
 signal s_addr_to_store	: std_logic_vector(8 downto 0) := (others => '0');
 signal s_d_to_store	:std_logic_vector(15 downto 0) := (others => '0');
@@ -85,10 +87,9 @@ signal s_words_stored, s_words_to_store	: std_logic_vector(8 downto 0) := (other
 
 signal s_store_addr	: std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
 
-signal s_invoke_en, s_invoke_init	: std_logic := '0';
+signal s_invoke_init	: std_logic := '0';
 signal s_src_port, s_dest_port	: std_logic_vector(3 downto 0) := (others => '0');
 
-signal s_pointer, s_wr_pointer : std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
 
 ---------------------------------------------------------------------------------------------------
 -- component declaration here
@@ -413,7 +414,7 @@ begin
 						NS <= XOR_0_B;
 
 					when "0100" =>
-						NS <= MAC_1;
+						NS <= MAC_0;
 
 					when "0101" =>
 						NS <= AVE_0_A;
@@ -478,15 +479,21 @@ begin
 		when XOR_3 =>
 			NS <= SEND_DATA;
 
+		when MAC_0 =>
+			NS <= MAC_1;
+
 		when MAC_1 =>
-			if (cmp_rd_pointer_end = '1') then
-				NS <= MAC_2;
-			else
-				NS <= MAC_1;
-			end if;
+			NS <= MAC_2;
 
 		when MAC_2 =>
-			NS <= SEND_PAUSE;
+			if (cmp_rd_pointer_end = '1') then
+				NS <= MAC_3;
+			else
+				NS <= MAC_2;
+			end if;
+
+		when MAC_3 =>
+			NS <= SEND_DATA;
 
 		when AVE_0_A =>
 			NS <= AVE_1;
@@ -560,24 +567,27 @@ begin
 	calc_result_reset <= '0';
 	calc_res_sel <= "00";
 
-	packet_id_reset <= '0';
-	packet_id_inc_en <= '0';
+	words_to_send_ld <= '0';
+	words_to_send_sel <= '0';
+	packet_sent_reset <= '0';
+	packet_sent_inc_en <= '0';
 	d_out_sel <= '1';
 
 	ave_filter_reset <= '0';
 
 	case CS is
 		when IDLE =>
-			s_invoke_en <= '0';
 			--s_invoke_init <= '1';
 
 			words_stored_reset <= '1';
-			packet_id_reset <= '1';
+			packet_sent_reset <= '1';
 
 			ave_filter_reset <= '1';
-			s_words_sent <= (others => '0');
 
 			calc_result_reset <= '1';
+
+			words_to_send_sel <= '0';
+			words_to_send_ld <= '1';
 
 		when STORE_RESET =>
 			vectors_reset <= '1';
@@ -590,7 +600,6 @@ begin
 			s_invoke_init <= '0';
 			op_ld <= '1';
 			
-			--report "STORE INIT: words to store = " & integer'image(to_integer(unsigned(d_in_copy(integer(ceil(log2(real(N))))) - 1  downto 0)));
 			start_addr_ld <= '1';
 			src_port_ld <= '1';
 			mem_sel_ld <= '1';
@@ -598,25 +607,17 @@ begin
 			vector_addr_sel <= '0';
 
 		when STORE_WAIT =>
-			s_invoke_en <= '0';
 			s_invoke_init <= '0';
-
-			s_words_sent <= (others => '0');
 
 			vector_addr_sel <= '0';
 
 		when STORE_DATA =>
-			s_invoke_en <= '1';
 			s_invoke_init <= '0';
 
-			--rd_pointer_inc_en <= '1';
 			pointer_start_addr_ld <= '1';
 			vector_ld <= '1';
 
 			vector_addr_sel <= '0';
-
-			-- s_words_stored <= (others => '0');
-			s_words_sent <= (others => '0');
 
 			busy <= '1';
 			
@@ -629,7 +630,6 @@ begin
 			--end if;
 
 		when INVOKE =>
-			s_invoke_en <= '1';
 			s_invoke_init <= '1';
 			ave_filter_reset <= '1';
 
@@ -644,8 +644,6 @@ begin
 
 		when INVOKE_BUSY =>
 			report "OP CODE = " & integer'image(to_integer(unsigned(s_op_code)));
-
-			s_invoke_en <= '1';
 
 			vector_addr_sel <= '1';
 
@@ -692,29 +690,56 @@ begin
 			busy <= '1';
 
 		when XOR_2 =>
-
 			rd_pointer_inc_en <= '1';
+
+			calc_result_reset <= '0';
 			calc_res_sel <= "01";
 
 			busy <= '1';
 
 		when XOR_3 =>
-
 			rd_pointer_inc_en <= '0';
 			calc_res_sel <= "01";
 
 			busy <= '1';
 
-		when MAC_1 =>
+		when MAC_0 =>
+			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
+			src_port_ld <= '1';
 
+			s_invoke_init <= '1';
+
+			rd_pointer_inc_en <= '0';
+
+			calc_result_reset <= '1';
+			calc_res_sel <= "10";
+
+			busy <= '1';
+
+		when MAC_1 =>
+			rd_pointer_inc_en <= '1';
+
+			calc_result_reset <= '1';
 			calc_res_sel <= "10";
 
 			busy <= '1';
 			
 		when MAC_2 =>
+			rd_pointer_inc_en <= '1';
 
+			calc_result_reset <= '0';
 			calc_res_sel <= "10";
 
+			busy <= '1';
+
+		when MAC_3 =>
+			rd_pointer_inc_en <= '0';
+			calc_res_sel <= "10";
+
+			words_to_send_ld <= '1';
+			words_to_send_sel <= '1';
 			busy <= '1';
 
 		when AVE_0_A =>
@@ -783,17 +808,12 @@ begin
 			busy <= '1';
 			
 		when SEND_ACC =>
-			s_invoke_en <= '0';
-
 			d_out_sel <= '0';
 
 			busy <= '1';
 			res_ready <= '1';
 
 		when SEND_DATA =>
-
-			s_invoke_en <= '0';
-
 			d_out_sel <= '1';
 
 			busy <= '1';
@@ -805,17 +825,11 @@ begin
 			--end if;
 
 		when SEND_PAUSE =>
-
-			s_invoke_en <= '0';
-
 			busy <= '1';
-			packet_id_inc_en <= '1';
+			packet_sent_inc_en <= '1';
 
 		when others =>
-			s_invoke_en <= '0';
 			s_invoke_init <= '1';
-
-			s_words_sent <= (others => '0');
 			
 			report "STATE OUTPUT: BAD STATE" severity error;
 			
@@ -832,48 +846,6 @@ begin
 		end if;
 	end if;
 end process;
-
----------------------------------------------------------------------------------------------------
---invoke_process : process(clk, s_invoke_en)
---begin
---	if (rising_edge(clk)) then
-
---		--if (s_invoke_init = '1') then
---		--	s_pointer <= d_in_copy(8 downto 0);
---		--elsif (cmp_rd_pointer_end = '0') then
---		--	s_pointer <= s_pointer + '1';
---		--end if;	
---		if (s_invoke_en = '1') then
---			case(s_op_code) is
-			
---				when "0010" =>	-- XOR A
---					--s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_a_out;
---					calc_res_sel <= "01";
-
---				when "0011" => -- XOR B
---					--s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_b_out;
---					calc_res_sel <= "01";
-
---				when "0100" => -- MAC
-
-
---				when "0101" => -- AVE A
-
-
---				when "0110" => -- AVE B
-					
-			
---				when others =>
---					report "INVOKE: bad OP" severity error;
-			
---			end case;
-
---		else
---			calc_res_sel <= "01";
---		end if;
---	end if;
-
---end process;
 
 ---------------------------------------------------------------------------------------------------
 op_code_process : process (clk, op_ld, d_in_copy)
@@ -978,18 +950,50 @@ begin
 	end if;
 end process ; -- store_complete
 
------------------------------------------------------------------------------------------------------
---vector_store : process(clk, vector_ld, vectors_reset, s_mem_sel, d_in_copy)
---begin
---	if (rising_edge(clk)) then
---		if (vectors_reset = '1') then
---			s_A <= (others => (others => '0'));
---			s_B <= (others => (others => '0'));
---		elsif (vector_ld = '1') then
---			null;
---		end if;
---	end if;
---end process ; -- vector_b_store
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+to_send_process : process(words_to_send_ld, words_to_send_sel)
+begin
+	if (words_to_send_ld = '1') then
+		case(words_to_send_sel) is
+			when '1' =>
+				s_words_to_send <= "11";
+
+			when others =>
+				s_words_to_send <= "00";
+		end case ;
+	else
+		s_words_to_send <= s_words_to_send;
+	end if;
+end process ; -- to_send_process
+
+---------------------------------------------------------------------------------------------------
+sent_counter_process : process(clk, packet_sent_reset, packet_sent_inc_en)
+begin
+	if (rising_edge(clk)) then
+		if (packet_sent_reset = '1') then
+			s_words_sent <= (others => '0');
+		elsif (packet_sent_inc_en = '1') then
+			s_words_sent <= s_words_sent + '1';
+		end if;
+	end if ;
+end process ; -- sent_counter_process
+
+---------------------------------------------------------------------------------------------------
+packet_id_process : process(clk, packet_sent_reset, packet_sent_inc_en)
+begin
+	if (rising_edge(clk)) then
+		if (packet_sent_reset = '1') then
+			s_packet_id <= (others => '0');
+		elsif (packet_sent_inc_en = '1') then
+			s_packet_id <= s_packet_id + '1';
+		else 
+			s_packet_id <= s_packet_id;
+		end if;
+	end if;
+end process ; -- packet_id_process
 
 ---------------------------------------------------------------------------------------------------
 sent_complete : process(s_words_to_send, s_words_sent)
@@ -1012,20 +1016,6 @@ begin
 end process ; -- compare_rd_pointer_end_addr
 
 ---------------------------------------------------------------------------------------------------
-packet_id_process : process(clk, packet_id_reset, packet_id_inc_en)
-begin
-	if (rising_edge(clk)) then
-		if (packet_id_reset = '1') then
-			s_packet_id <= (others => '0');
-		elsif (packet_id_inc_en = '1') then
-			s_packet_id <= s_packet_id + '1';
-		else 
-			s_packet_id <= s_packet_id;
-		end if;
-	end if;
-end process ; -- packet_id_process
-
----------------------------------------------------------------------------------------------------
 rd_pointer_process : process(clk, s_invoke_init, pointer_start_addr_ld, rd_pointer_inc_en, d_in_copy)
 begin
 	if (rising_edge(clk)) then
@@ -1039,7 +1029,7 @@ begin
 			s_pointer <= s_pointer;
 		end if;
 	end if;
-end process ; -- pointer_process
+end process ; -- rd_pointer_process
 
 ---------------------------------------------------------------------------------------------------
 wr_pointer_process : process(clk, s_invoke_init, wr_pointer_inc_en, d_in_copy)
@@ -1055,8 +1045,7 @@ begin
 			s_wr_pointer <= s_wr_pointer;
 		end if;
 	end if;
-end process ; -- pointer_process
-
+end process ; -- wr_pointer_process
 
 ---------------------------------------------------------------------------------------------------
 compare_pointer_L : process(s_pointer)
@@ -1077,30 +1066,6 @@ begin
 		cmp_pointer_1 <= '0';
 	end if ;
 end process ; -- compare_pointer_1
-
----------------------------------------------------------------------------------------------------
---xor_a_process : process(clk, s_invoke_en, s_reg_a_out)
---begin
---	if (rising_edge(clk)) then
---		if (s_invoke_en = '1') then
---			--s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_a_out;
---			--if (and s_mem_sel = '1') then
---			calc_res_sel <= "01";
---		else
---			calc_res_sel <= "00";
---		end if;
---	end if;
---end process ; -- xor_a_process
-
----------------------------------------------------------------------------------------------------
---xor_b_process : process(clk, s_invoke_en, s_reg_b_out)
---begin
---	if (rising_edge(clk)) then
---		if (s_invoke_en = '1' and s_mem_sel = '1') then
---			s_calc_res(15 downto 0) <= s_calc_res(15 downto 0) xor s_reg_b_out;
---		end if;
---	end if;
---end process ; -- xor_b_process
 
 ---------------------------------------------------------------------------------------------------
 result_store_low_15 : process(clk, calc_res_sel, calc_result_reset)
@@ -1127,7 +1092,7 @@ begin
 end process ; -- result_store_low_15
 
 ---------------------------------------------------------------------------------------------------
-result_store_hgih_48 : process(clk, calc_res_sel, calc_result_reset)
+result_store_high_48 : process(clk, calc_res_sel, calc_result_reset)
 begin
 	if (calc_result_reset = '1') then
 		s_calc_res(63 downto 16) <= (others => '0');
@@ -1145,7 +1110,7 @@ begin
 
 		end case;
 	end if;
-end process ; -- result_store_hgih_48
+end process ; -- result_store_high_48
 
 ---------------------------------------------------------------------------------------------------
 -- concurrent signal assignments here
@@ -1165,11 +1130,16 @@ with s_mem_sel select s_reg_out <=
 
 s_xor_res <= s_reg_out xor s_calc_res(15 downto 0);
 
+s_mac_res <= s_mult_res + s_calc_res;
+
 --with calc_res_sel select s_calc_res(15 downto 0) <=
 --	x"0000" when "00",
 --	s_xor_res when "01",
 --	x"1111" when others;
 
+--with words_to_send_sel select s_words_to_send <=
+--	"11" when '1',
+--	"00" when others;
 
 with s_packet_id select s_packet <=
 	s_calc_res(15 downto 0) when "00",

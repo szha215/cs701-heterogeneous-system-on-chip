@@ -232,6 +232,12 @@ begin
 	t_key <= "0000";
 	wait for t_clk_period * 10;
 
+	t_sw <= x"0004";  -- MAC [2] to [7]
+	t_key <= "1000";
+	wait for t_clk_period * 10;
+	t_key <= "0000";
+	wait for t_clk_period * 10;
+
 	t_sw <= x"0003";  -- XOR A[0] to A[5]
 	t_key <= "1000";
 	wait for t_clk_period * 10;

@@ -86,11 +86,12 @@ def ani():
     args.append('sim:/test_ani/t_asp/rd_pointer_inc_en')
     args.append('sim:/test_ani/t_asp/s_pointer')
     # args.append('sim:/test_ani/t_asp/aveage_block/s_values')
-    args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out sim:/test_ani/t_asp/s_reg_out')
+    args.append('sim:/test_ani/t_asp/s_reg_out sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out')
 
     args.append('; add wave -position insertpoint -color cadetblue')  # ASP datapath2
     args.append('-radix hexadecimal sim:/test_ani/t_asp/aveage_block/s_avg')
     args.append('sim:/test_ani/t_asp/s_calc_res')
+    args.append('sim:/test_ani/t_asp/s_mac_res')
 
     args.append('; add wave -position insertpoint -color coral')  # ASP control
     args.append('sim:/test_ani/t_asp/reg_a_ld')
@@ -99,6 +100,10 @@ def ani():
     args.append('; add wave -position insertpoint -color brown')  # ASP datapath
     args.append('-radix hexadecimal sim:/test_ani/t_asp/s_addr_to_store')
     args.append('sim:/test_ani/t_asp/s_d_to_store')
+    args.append('sim:/test_ani/t_asp/s_words_to_send')
+    args.append('sim:/test_ani/t_asp/s_packet_id')
+    args.append('sim:/test_ani/t_asp/s_words_sent')
+    args.append('sim:/test_ani/t_asp/s_d_out')
     # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
 
     args.append('; run 2 us')
