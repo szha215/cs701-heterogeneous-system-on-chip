@@ -326,14 +326,91 @@ begin
 	
 	wait for clk_period * 20;
 	irq_flag <= '0';
-	--INSTRUCTION <= _t;
-	--ADDRESS_MODE <= _t;
-	--opcode <= _op;
-	--am <= _am;
-	--irq_flag <= '';
-	--wait for clk_period * 2 * ;
+	wait for clk_period * 2 * 7;
 
+	INSTRUCTION <= CLFZ_t;
+	ADDRESS_MODE <= INHERENT_t;
+	opcode <= clfz_op;
+	am <= inherent_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
 
+	INSTRUCTION <= CER_t;
+	ADDRESS_MODE <= INHERENT_t;
+	opcode <= cer_op;
+	am <= inherent_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= CEOT_t;
+	ADDRESS_MODE <= INHERENT_t;
+	opcode <= ceot_op;
+	am <= inherent_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= SEOT_t;
+	ADDRESS_MODE <= INHERENT_t;
+	opcode <= seot_op;
+	am <= inherent_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= LER_t;
+	ADDRESS_MODE <= REGISTER_t;
+	opcode <= ler_op;
+	am <= register_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= SSVOP_t;
+	ADDRESS_MODE <= REGISTER_t;
+	opcode <= ssvop_op;
+	am <= register_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= LSIP_t;
+	ADDRESS_MODE <= REGISTER_t;
+	opcode <= lsip_op;
+	am <= register_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= SSOP_t;
+	ADDRESS_MODE <= REGISTER_t;
+	opcode <= ssop_op;
+	am <= register_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= NOOP_t;
+	ADDRESS_MODE <= INHERENT_t;
+	opcode <= noop_op;
+	am <= inherent_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 3;
+
+	INSTRUCTION <= MAX_t;
+	ADDRESS_MODE <= IMMEDIATE_t;
+	opcode <= max_op;
+	am <= immediate_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 5;
+
+	INSTRUCTION <= STRPC_t;
+	ADDRESS_MODE <= DIRECT_t;
+	opcode <= strpc_op;
+	am <= direct_am;
+	irq_flag <= '0';
+	wait for clk_period * 2 * 5;
+
+	INSTRUCTION <= NOOP_t;
+	ADDRESS_MODE <= INHERENT_t;
+	opcode <= noop_op;
+	am <= inherent_am;
+	irq_flag <= '0';
+	
 	wait;
 
 end process test_signal;
