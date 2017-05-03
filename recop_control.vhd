@@ -74,7 +74,7 @@ begin
 end process state_updater;
 
 ---------------------------------------------------------------------------------------------------
-state_transition_logic : process(clk)
+state_transition_logic : process(clk, irq_flag)
 begin
 	case CS is	-- must cover all states
 		when IF1 => -- Instruction Fetch
@@ -125,7 +125,7 @@ begin
 end process state_transition_logic;
 
 ---------------------------------------------------------------------------------------------------
-output_logic : process(CS)
+output_logic : process(CS, irq_flag)
 begin
 	
 	m_addr_sel 		<= "000";	m_data_sel 		<= "00";	
