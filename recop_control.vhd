@@ -318,9 +318,15 @@ begin
 				m_addr_sel <= "100";
 				m_data_sel <= "11";
 				m_wr <= '1';
-			else -- ldr
+			elsif (am = register_am) then -- ldr
 				r_wr <= '1';
-			end if;
+				m_addr_sel <= "011";
+				r_wr_d_sel <= "001";
+			elsif (am = direct_am) then
+				r_wr <= '1';
+				m_addr_sel <= "001";
+				r_wr_d_sel <= "001";
+			end if;	
 			
 		when DR =>
 			reset_DPRR <= '1';

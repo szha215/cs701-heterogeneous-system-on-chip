@@ -161,6 +161,7 @@ def recop_control():
     args.append('sim:/test_recop_control/wr_sop')
     args.append('sim:/test_recop_control/wr_svop')
     args.append('sim:/test_recop_control/wr_z')
+    args.append('; run 1800 ns')
 
     return ' '.join(args)
 	
