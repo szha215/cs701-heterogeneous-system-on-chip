@@ -1,0 +1,7 @@
+start NOOP
+  LDR R1 #123
+  AND R2 R1 #111
+  LDR R3 R2
+  LDR R4 $2
+ENDPROG 
+
