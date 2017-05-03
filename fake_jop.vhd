@@ -19,6 +19,7 @@ architecture behaviour of fake_jop is
 
 
 type states is (IDLE,
+					S_R,
 					S1_0, S1_1, S1_2, S1_3, S1_4, S1_5, S1_6,
 					S2_0, S2_1, S2_2, S2_3, S2_4, S2_5, S2_6, S2_7, S2_8,
 					X1, X2, 
@@ -49,7 +50,9 @@ state_transition_logic : process(CS, NS, s_en_0, s_en_1, s_en_2, s_en_3, sw)
 begin
 	case CS is	-- must cover all states
 		when IDLE =>
-			if (s_en_3 = '1' and sw = x"0001") then
+			if (s_en_3 = '1' and sw = x"0000") then
+				NS <= S_R;
+			elsif (s_en_3 = '1' and sw = x"0001") then
 				NS <= S1_0;
 			elsif (s_en_3 = '1' and sw = x"0002") then
 				NS <= S2_0;
@@ -61,9 +64,14 @@ begin
 				NS <= A1;
 			elsif (s_en_3 = '1' and sw = x"0006") then
 				NS <= X2;
+			elsif (s_en_3 = '1' and sw = x"0007") then
+				NS <= A2;
 			else
 				NS <= IDLE;
 			end if;
+
+		when S_R =>
+			NS <= IDLE;
 
 		when S1_0 =>
 			NS <= S1_1;
@@ -141,6 +149,9 @@ begin
 		when IDLE =>
 			s_data <= (others => '0');
 
+		when S_R =>
+			s_data <= x"C8000000";  -- STORE CLEAR ALL
+
 		when S1_0 =>
 			s_data <= x"C8460006";  -- STORE, to 2, from 1, 6 words
 
@@ -193,7 +204,7 @@ begin
 			s_data <= x"C8800A00";  -- XOR A[0] to A[5], to 2, from 0
 
 		when X2 =>
-			s_data <= x"C8840800";  -- XOR A[0] to A[4], to 2, from 1
+			s_data <= x"C8C40C02";  -- XOR B[2] to B[6], to 2, from 1
 
 		when M1 =>
 			s_data <= x"C9080E02";  -- MAC [2] to [7], to 2, from 2 -
@@ -202,7 +213,7 @@ begin
 			s_data <= x"C9440000";  -- AVE A, to 2, from 1
 
 		when A2 =>
-			s_data <= x"00000000";  -- AVE B, ??
+			s_data <= x"C9800000";  -- AVE B, to 2, from 0
 
 		when others =>
 			report "Output: BAD STATE";

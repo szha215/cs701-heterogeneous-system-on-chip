@@ -220,7 +220,19 @@ begin
 	t_key <= "0000";
 	wait for t_clk_period * 4;
 
+	t_sw <= x"0006";  -- XOR B[2] to B[6]
+	t_key <= "1000";
+	wait for t_clk_period * 10;
+	t_key <= "0000";
+	wait for t_clk_period * 20;
+
 	t_sw <= x"0002";  -- STORE A[0] to A[7]
+	t_key <= "1000";
+	wait for t_clk_period * 10;
+	t_key <= "0000";
+	wait for t_clk_period * 10;
+
+	t_sw <= x"0003";  -- XOR A[0] to A[5]
 	t_key <= "1000";
 	wait for t_clk_period * 10;
 	t_key <= "0000";
@@ -230,14 +242,13 @@ begin
 	t_key <= "1000";
 	wait for t_clk_period * 10;
 	t_key <= "0000";
-	wait for t_clk_period * 30;
+	wait for t_clk_period * 10;
 
-	t_sw <= x"0003";  -- XOR A[0] to A[5]
+	t_sw <= x"0007";  -- AVE B
 	t_key <= "1000";
 	wait for t_clk_period * 10;
 	t_key <= "0000";
-	wait for t_clk_period * 30;
-
+	wait for t_clk_period * 10;
 
 	--t_sw <= x"0000";  -- STORE RESET
 	--t_key <= "1000";

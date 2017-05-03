@@ -74,7 +74,7 @@ begin
 end process state_updater;
 
 ---------------------------------------------------------------------------------------------------
-state_transition_logic : process(clk)
+state_transition_logic : process(clk, irq_flag)
 begin
 	case CS is	-- must cover all states
 		when IF1 => -- Instruction Fetch
@@ -125,7 +125,7 @@ begin
 end process state_transition_logic;
 
 ---------------------------------------------------------------------------------------------------
-output_logic : process(CS)
+output_logic : process(CS, irq_flag)
 begin
 	
 	m_addr_sel 		<= "000";	m_data_sel 		<= "00";	
@@ -318,9 +318,15 @@ begin
 				m_addr_sel <= "100";
 				m_data_sel <= "11";
 				m_wr <= '1';
-			else -- ldr
+			elsif (am = register_am) then -- ldr
 				r_wr <= '1';
-			end if;
+				m_addr_sel <= "011";
+				r_wr_d_sel <= "001";
+			elsif (am = direct_am) then
+				r_wr <= '1';
+				m_addr_sel <= "001";
+				r_wr_d_sel <= "001";
+			end if;	
 			
 		when DR =>
 			reset_DPRR <= '1';

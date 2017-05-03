@@ -119,6 +119,52 @@ def ins_reg():
     args.append('sim:/test_ins_reg/t_upper2')
     args.append('; run 1000 ns')
     return ' '.join(args)
+	
+	
+def recop_control():
+    args = []
+    args.append('vsim -novopt work.test_recop_control;')
+
+    args.append('add wave -radix unsigned -position insertpoint -color red')
+    args.append('sim:/test_recop_control/clk')
+    args.append('sim:/test_recop_control/opcode')
+    args.append('sim:/test_recop_control/am')
+    args.append('sim:/test_recop_control/irq_flag')
+
+    args.append('; add wave -radix unsigned -position insertpoint -color green')
+    args.append('sim:/test_recop_control/INSTRUCTION')
+    args.append('sim:/test_recop_control/ADDRESS_MODE')
+    args.append('sim:/test_recop_control/i1/CS')
+    args.append('sim:/test_recop_control/i1/NS')
+    
+    args.append('; add wave -radix unsigned -position insertpoint -color lightblue')
+    args.append('sim:/test_recop_control/m_addr_sel')
+    args.append('sim:/test_recop_control/m_data_sel')
+    args.append('sim:/test_recop_control/m_wr')
+    args.append('sim:/test_recop_control/pc_src')
+    args.append('sim:/test_recop_control/pc_wr')
+    args.append('sim:/test_recop_control/pc_wr_cond_p')
+    args.append('sim:/test_recop_control/pc_wr_cond_z')
+    args.append('sim:/test_recop_control/r_rd_sel')
+    args.append('sim:/test_recop_control/r_wr')
+    args.append('sim:/test_recop_control/r_wr_d_sel')
+    args.append('sim:/test_recop_control/r_wr_r_sel')
+    args.append('sim:/test_recop_control/reset_dpc')
+    args.append('sim:/test_recop_control/reset_dpcr')
+    args.append('sim:/test_recop_control/reset_dprr')
+    args.append('sim:/test_recop_control/reset_eot')
+    args.append('sim:/test_recop_control/reset_er')
+    args.append('sim:/test_recop_control/reset_z')
+    args.append('sim:/test_recop_control/set_dpc')
+    args.append('sim:/test_recop_control/set_eot')
+    args.append('sim:/test_recop_control/wr_dpcr')
+    args.append('sim:/test_recop_control/wr_sop')
+    args.append('sim:/test_recop_control/wr_svop')
+    args.append('sim:/test_recop_control/wr_z')
+    args.append('; run 1800 ns')
+
+    return ' '.join(args)
+	
 
 def datapath():
     args = []
@@ -203,6 +249,10 @@ def copy_to_clipboard(arg):
         txt = ins_reg()
     elif(arg.lower() == "datapath"):
         txt = datapath()
+
+    elif(arg.lower() == "recop_control"):
+        txt = recop_control()
+
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -228,8 +278,9 @@ def compile_and_link():
     compile_list.append('./ins_reg.vhd')
     compile_list.append('./test_ins_reg.vhd')
     compile_list.append('./recop_control.vhd')
-    compile_list.append('./recop_datapath.vhd')
-    compile_list.append('./test_recop_datapath.vhd')
+    compile_list.append('./test_recop_control.vhd')
+    # compile_list.append('./recop_datapath.vhd')
+    # compile_list.append('./test_recop_datapath.vhd')
     compile_str = ' '.join(compile_list)
 
     try:
