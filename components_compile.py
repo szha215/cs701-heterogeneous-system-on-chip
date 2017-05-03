@@ -140,7 +140,7 @@ def datapath():
     args.append('sim:/test_recop_datapath/t_wr_SVOP')
     args.append('sim:/test_recop_datapath/t_wr_SOP')
     args.append('sim:/test_recop_datapath/t_wr_DPCR')
-    args.append('sim:/test_recop_datapath/t_resetER_in')
+    args.append('sim:/test_recop_datapath/t_ER_in')
     args.append('sim:/test_recop_datapath/t_DPRR_in')
     args.append('sim:/test_recop_datapath/t_SIP_in')
     args.append('sim:/test_recop_datapath/t_m_addr_sel')
@@ -158,6 +158,7 @@ def datapath():
     args.append('sim:/test_recop_datapath/t_DPCR_out')
     args.append('sim:/test_recop_datapath/t_am')
     args.append('sim:/test_recop_datapath/t_opcode')
+    args.append('sim:/test_recop_datapath/CS')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_ir_lower_0')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_ir_upper0')
@@ -175,8 +176,9 @@ def datapath():
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_alu_src_b_mux_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_src_mux_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_wr_en')
-    args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_src_mux_inputs')
-    args.append('; run 2000 ns')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/regfile/registers')
+    # args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_src_mux_inputs')
+    args.append('; run 800 ns')
     return ' '.join(args)
 
 
