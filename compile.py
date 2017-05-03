@@ -65,7 +65,6 @@ def ani():
     args.append('sim:/test_ani/t_d_from_asp')
     args.append('sim:/test_ani/t_ani/s_out_wr_en')
     args.append('sim:/test_ani/t_ani/s_out_empty')
-    args.append('sim:/test_ani/t_ani/s_out_full')
     args.append('sim:/test_ani/t_ani/s_out_rd_en')
     args.append('sim:/test_ani/t_d_to_noc')
     args.append('sim:/test_ani/t_asp/s_start_addr')
@@ -74,11 +73,16 @@ def ani():
     args.append('sim:/test_ani/t_asp/reg_b_ld')
     args.append('sim:/test_ani/t_asp/s_d_to_store')
     args.append('sim:/test_ani/t_asp/s_pointer')
+    args.append('sim:/test_ani/t_asp/s_addr_to_store')
+    args.append('sim:/test_ani/t_asp/s_d_to_store')
     args.append('sim:/test_ani/t_asp/s_calc_res')
     # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
     args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out sim:/test_ani/t_asp/s_reg_out')
     args.append('sim:/test_ani/t_asp/aveage_block/s_values')
     args.append('sim:/test_ani/t_asp/aveage_block/s_avg')
+    args.append('sim:/test_ani/t_asp/rd_pointer_inc_en')
+    args.append('sim:/test_ani/t_asp/pointer_start_addr_ld')
+    args.append('sim:/test_ani/t_asp/s_invoke_init')
 
     args.append('; run 2 us')
 

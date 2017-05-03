@@ -34,7 +34,14 @@ end entity asp;
 architecture behaviour of asp is
 -- type, signal, constant declarations here
 
-type states is (IDLE, STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA, INVOKE_INIT, INVOKE, INVOKE_BUSY, XOR_1, AVE_1, AVE_2, MAC_1, MAC_2, SEND_ACC, SEND_DATA, SEND_PAUSE);	-- states
+type states is (IDLE, 
+					STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA,
+					INVOKE, INVOKE_BUSY,
+					XOR_1,
+					AVE_0, AVE_1, AVE_2, AVE_3,
+					MAC_1, MAC_2,
+					SEND_ACC, SEND_DATA, SEND_PAUSE);
+
 signal CS, NS	: states := IDLE;
 
 signal d_in_copy	: std_logic_vector(31 downto 0) := (others => '0');
@@ -43,13 +50,13 @@ type data_vector is array (0 to N - 1) of std_logic_vector(15 downto 0);
 signal s_A, s_B : data_vector := (others => (others =>'0'));
 
 -- Control signals
-signal words_stored_inc_en, packet_id_inc_en, wr_pointer_inc_en	: std_logic := '0';
-signal op_ld, start_addr_ld, end_addr_ld, mem_sel_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld	: std_logic := '0';
+signal packet_id_inc_en, rd_pointer_inc_en, wr_pointer_inc_en	: std_logic := '0';
+signal op_ld, start_addr_ld, end_addr_ld, mem_sel_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld	: std_logic := '0';
 signal words_stored_reset, vectors_reset, packet_id_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
 signal d_packet_sel, calc_res_sel 	: std_logic_vector(1 downto 0) := (others => '0');
 signal d_out_sel, vector_addr_sel, vector_d_sel	: std_logic := '0';
 
-signal cmp_store, cmp_sent, cmp_pointer_l, cmp_pointer_1 : std_logic := '0';
+signal cmp_store, cmp_sent, cmp_pointer_L, cmp_pointer_1, cmp_rd_pointer_end : std_logic := '0';
 
 
 -- Datapath
@@ -77,10 +84,10 @@ signal s_words_stored, s_words_to_store	: std_logic_vector(8 downto 0) := (other
 
 signal s_store_addr	: std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
 
-signal s_invoke_en, s_invoke_init, s_invoke_done	: std_logic := '0';
+signal s_invoke_en, s_invoke_init	: std_logic := '0';
 signal s_src_port, s_dest_port	: std_logic_vector(3 downto 0) := (others => '0');
 
-signal s_pointer, s_wr_pointer : std_logic_vector(8 downto 0) := (others => '0');
+signal s_pointer, s_wr_pointer : std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
 
 ---------------------------------------------------------------------------------------------------
 -- component declaration here
@@ -137,7 +144,7 @@ component altsyncram
 		clock_enable_input_a		: string;
 		clock_enable_input_b		: string;
 		clock_enable_output_b		: string;
-		init_file	: string;
+		--init_file	: string;
 		intended_device_family		: string;
 		lpm_type		: string;
 		numwords_a		: natural;
@@ -316,7 +323,7 @@ ram_a : altsyncram
 		clock_enable_input_a => "BYPASS",
 		clock_enable_input_b => "BYPASS",
 		clock_enable_output_b => "BYPASS",
-		init_file => "ram_a.mif",
+		--init_file => "ram_a.mif",
 		intended_device_family => "Cyclone IV E",
 		lpm_type => "altsyncram",
 		numwords_a => N,
@@ -349,7 +356,7 @@ ram_b : altsyncram
 		clock_enable_input_a => "BYPASS",
 		clock_enable_input_b => "BYPASS",
 		clock_enable_output_b => "BYPASS",
-		init_file => "ram_b.mif",
+		--init_file => "ram_b.mif",
 		intended_device_family => "Cyclone IV E",
 		lpm_type => "altsyncram",
 		numwords_a => N,
@@ -398,11 +405,23 @@ begin
 					when "0001" =>
 						NS <= STORE_INIT;
 
-					--when "0010" =>
-					--	NS <= INVOKE;
+					when "0010" =>
+						NS <= XOR_1;
+
+					when "0011" =>
+						NS <= XOR_1;
+
+					when "0100" =>
+						NS <= MAC_1;
+
+					when "0101" =>
+						NS <= AVE_0;
+
+					when "0110" =>
+						NS <= AVE_0;
 
 					when others =>
-						NS <= INVOKE_INIT;
+						NS <= IDLE;
 				end case;
 
 			else
@@ -429,32 +448,11 @@ begin
 				NS <= STORE_WAIT;
 			end if;
 
-		when INVOKE_INIT =>
-			case (d_in_copy(25 downto 22)) is
-				when "0010" =>
-					NS <= XOR_1;
-
-				when "0011" =>
-					NS <= XOR_1;
-
-				when "0100" =>
-					NS <= MAC_1;
-
-				when "0101" =>
-					NS <= AVE_1;
-
-				when "0110" =>
-					NS <= AVE_1;
-
-				when others =>
-					NS <= IDLE;
-			end case;
-
 		when INVOKE =>
 			NS <= INVOKE_BUSY;
 
 		when INVOKE_BUSY =>
-			if (s_invoke_done = '1') then
+			if (cmp_rd_pointer_end = '1') then
 				NS <= SEND_DATA;
 			else
 				NS <= INVOKE_BUSY;
@@ -463,7 +461,7 @@ begin
 		when XOR_1 =>
 
 		when MAC_1 =>
-			if (s_invoke_done = '1') then
+			if (cmp_rd_pointer_end = '1') then
 				NS <= MAC_2;
 			else
 				NS <= MAC_1;
@@ -472,18 +470,24 @@ begin
 		when MAC_2 =>
 			NS <= SEND_PAUSE;
 
+		when AVE_0 =>
+			NS <= AVE_1;
+
 		when AVE_1 =>
-			if (cmp_pointer_l = '1') then
-				NS <= AVE_2;
-			else
-				NS <= AVE_1;
-			end if;
+			NS <= AVE_2;
 
 		when AVE_2 =>
+			if (cmp_pointer_L = '1') then
+				NS <= AVE_3;
+			else
+				NS <= AVE_2;
+			end if;
+
+		when AVE_3 =>
 			if (cmp_pointer_1 = '1') then
 				NS <= SEND_ACC;
 			else
-				NS <= AVE_2;
+				NS <= AVE_3;
 			end if;
 
 		when SEND_ACC =>
@@ -520,14 +524,16 @@ begin
 	vector_d_sel <= '0';
 	vectors_reset <= '0';
 	words_stored_reset <= '0';
-	words_stored_inc_en <= '0';
+	pointer_start_addr_ld <= '0';
 
+	--rd_pointer_inc_en <= '0';
 	wr_pointer_inc_en <= '0';
 	vector_addr_sel <= '1';
 
 	busy <= '0';
 	res_ready <= '0';
 
+	s_invoke_init <= '0';
 	calc_result_reset <= '0';
 	calc_res_sel <= "00";
 
@@ -540,7 +546,7 @@ begin
 	case CS is
 		when IDLE =>
 			s_invoke_en <= '0';
-			s_invoke_init <= '1';
+			--s_invoke_init <= '1';
 
 			words_stored_reset <= '1';
 			packet_id_reset <= '1';
@@ -580,7 +586,8 @@ begin
 			s_invoke_en <= '1';
 			s_invoke_init <= '0';
 
-			words_stored_inc_en <= '1';
+			--rd_pointer_inc_en <= '1';
+			pointer_start_addr_ld <= '1';
 			vector_ld <= '1';
 
 			vector_addr_sel <= '0';
@@ -598,20 +605,6 @@ begin
 			--	s_A(conv_integer(unsigned(d_in_copy(24 downto 16)))) <= (d_in_copy(15 downto 0));
 			--end if;
 
-		when INVOKE_INIT =>
-			s_invoke_init <= '1';
-			ave_filter_reset <= '1';
-
-			op_ld <= '1';
-			start_addr_ld <= '1';
-			end_addr_ld <= '1';
-			src_port_ld <= '1';
-
-			vector_addr_sel <= '1';
-
-			calc_result_reset <= '1';
-
-			busy <= '1';
 
 		when INVOKE =>
 			s_invoke_en <= '1';
@@ -631,7 +624,6 @@ begin
 			report "OP CODE = " & integer'image(to_integer(unsigned(s_op_code)));
 
 			s_invoke_en <= '1';
-			s_invoke_init <= '0';
 
 			vector_addr_sel <= '1';
 
@@ -654,16 +646,48 @@ begin
 			calc_res_sel <= "10";
 
 			busy <= '1';
-			
-		when AVE_1 =>
 
-			calc_res_sel <= "00";
+		when AVE_0 =>
+			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
+			src_port_ld <= '1';
+
+			s_invoke_init <= '1';
+
+			rd_pointer_inc_en <= '0';
+			wr_pointer_inc_en <= '0';
+
+			ave_filter_reset <= '1';
+			pointer_start_addr_ld <= '1';
+
+			vector_addr_sel <= '1';
 
 			busy <= '1';
 			
-		when AVE_2 =>
+		when AVE_1 =>
+			ave_filter_reset <= '1';
 
+			rd_pointer_inc_en <= '1';
+			wr_pointer_inc_en <= '0';
+
+			vector_addr_sel <= '1';
+			busy <= '1';
+
+		when AVE_2 =>
+			rd_pointer_inc_en <= '1';
+			wr_pointer_inc_en <= '0';
+
+			calc_res_sel <= "00";
+			busy <= '1';
+			
+		when AVE_3 =>
+			rd_pointer_inc_en <= '1';
 			wr_pointer_inc_en <= '1';
+
+			vector_d_sel <= '1';
+			vector_ld <= '1';
+
 			calc_res_sel <= "00";
 
 			busy <= '1';
@@ -679,7 +703,6 @@ begin
 		when SEND_DATA =>
 
 			s_invoke_en <= '0';
-			s_invoke_init <= '0';
 
 			d_out_sel <= '1';
 
@@ -694,7 +717,6 @@ begin
 		when SEND_PAUSE =>
 
 			s_invoke_en <= '0';
-			s_invoke_init <= '0';
 
 			busy <= '1';
 			packet_id_inc_en <= '1';
@@ -728,7 +750,7 @@ end process;
 
 --		--if (s_invoke_init = '1') then
 --		--	s_pointer <= d_in_copy(8 downto 0);
---		--elsif (s_invoke_done = '0') then
+--		--elsif (cmp_rd_pointer_end = '0') then
 --		--	s_pointer <= s_pointer + '1';
 --		--end if;	
 --		if (s_invoke_en = '1') then
@@ -815,12 +837,12 @@ begin
 end process ; -- mem_sel_process
 
 ---------------------------------------------------------------------------------------------------
-words_stored_process : process(clk, words_stored_inc_en, words_stored_reset)
+words_stored_process : process(clk, pointer_start_addr_ld, words_stored_reset)
 begin
 	if (rising_edge(clk)) then
 		if (words_stored_reset = '1') then
 			s_words_stored <= (others => '0');
-		elsif (words_stored_inc_en = '1') then
+		elsif (pointer_start_addr_ld = '1') then
 			s_words_stored <= s_words_stored + '1';
 		else
 			s_words_stored <= s_words_stored;
@@ -886,16 +908,14 @@ begin
 end process ; -- sent_complete
 
 ---------------------------------------------------------------------------------------------------
-invoke_complete : process(clk, s_pointer, s_end_addr)
+compare_rd_pointer_end_addr : process(s_pointer, s_end_addr)
 begin
-	if (rising_edge(clk)) then
-		if (s_pointer = s_end_addr) then
-			s_invoke_done <= '1';
-		else
-			s_invoke_done <= '0';
-		end if;
+	if (s_pointer = s_end_addr) then
+		--cmp_rd_pointer_end <= '1';
+	else
+		cmp_rd_pointer_end <= '0';
 	end if;
-end process ; -- invoke_complete
+end process ; -- compare_rd_pointer_end_addr
 
 ---------------------------------------------------------------------------------------------------
 packet_id_process : process(clk, packet_id_reset, packet_id_inc_en)
@@ -912,27 +932,31 @@ begin
 end process ; -- packet_id_process
 
 ---------------------------------------------------------------------------------------------------
-rd_pointer_process : process(clk, s_invoke_init, words_stored_inc_en, d_in_copy)
+rd_pointer_process : process(clk, s_invoke_init, pointer_start_addr_ld, rd_pointer_inc_en, d_in_copy)
 begin
 	if (rising_edge(clk)) then
 		if (s_invoke_init = '1') then
-			s_pointer <= d_in_copy(8 downto 0);
-		elsif (words_stored_inc_en = '1') then
-			s_pointer <= d_in_copy(24 downto 16);
-		else
+			s_pointer <= d_in_copy(integer(ceil(log2(real(N)))) - 1 downto 0);
+		elsif (pointer_start_addr_ld = '1') then
+			s_pointer <= d_in_copy(integer(ceil(log2(real(N)))) + 15 downto 16);
+		elsif (rd_pointer_inc_en = '1') then
 			s_pointer <= s_pointer + '1';
+		else
+			s_pointer <= s_pointer;
 		end if;
 	end if;
 end process ; -- pointer_process
 
 ---------------------------------------------------------------------------------------------------
-wr_pointer_process : process(clk, s_invoke_init, words_stored_inc_en, d_in_copy)
+wr_pointer_process : process(clk, s_invoke_init, wr_pointer_inc_en, d_in_copy)
 begin
 	if (rising_edge(clk)) then
 		if (s_invoke_init = '1') then
-			s_wr_pointer <= d_in_copy(8 downto 0);
-		elsif (words_stored_inc_en = '1') then
-			s_wr_pointer <= d_in_copy(24 downto 16);
+			s_wr_pointer <= d_in_copy(integer(ceil(log2(real(N)))) - 1 downto 0);
+		elsif (pointer_start_addr_ld = '1') then
+			s_wr_pointer <= d_in_copy(integer(ceil(log2(real(N)))) + 15 downto 16);
+		elsif (wr_pointer_inc_en = '1') then
+			s_wr_pointer <= s_wr_pointer + '1';
 		else
 			s_wr_pointer <= s_wr_pointer;
 		end if;
@@ -943,17 +967,17 @@ end process ; -- pointer_process
 ---------------------------------------------------------------------------------------------------
 compare_pointer_L : process(s_pointer)
 begin
-	if (s_pointer = std_logic_vector(to_unsigned(L, 9))) then
-		cmp_pointer_l <= '1';
+	if (s_pointer = std_logic_vector(to_unsigned(L, integer(ceil(log2(real(N))))))) then
+		cmp_pointer_L <= '1';
 	else
-		cmp_pointer_l <= '0';
+		cmp_pointer_L <= '0';
 	end if;
 end process ; -- compare_pointer_L
 
 ---------------------------------------------------------------------------------------------------
 compare_pointer_1 : process(s_pointer)
 begin
-	if (s_pointer = "000000001") then
+	if (s_pointer = ((integer(ceil(log2(real(N)))) - 1 downto 1 => '0') & '1')) then
 		cmp_pointer_1 <= '1';
 	else
 		cmp_pointer_1 <= '0';
@@ -1036,7 +1060,7 @@ with vector_d_sel select s_d_to_store <=
 	d_in_copy(15 downto 0) when others;
 
 with vector_addr_sel select s_addr_to_store <=
-	s_wr_pointer when '1',
+	((8 downto s_wr_pointer'length => '0') & s_wr_pointer) when '1',
 	d_in_copy(24 downto 16) when others;
 
 with s_mem_sel select s_reg_out <=
@@ -1060,7 +1084,7 @@ with s_packet_id select s_packet <=
 
 with d_out_sel select s_data <=
 	s_packet when '1',  -- data[ID]
-	s_reg_b_out when others;  -- access granted
+	x"0001" when others;  -- access granted
 
 reg_a_ld <= '1' when vector_ld = '1' and s_mem_sel = '0' else
 				'0';
