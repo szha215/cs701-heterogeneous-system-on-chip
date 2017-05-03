@@ -9,7 +9,6 @@ use work.recop_opcodes.all;
 
 ---------------------------------------------------------------------------------------------------
 entity recop_control is
-
 port(	clk				: in std_logic;
 		am				: in std_logic_vector(1 downto 0);
 		opcode			: in std_logic_vector(5 downto 0);
@@ -44,8 +43,6 @@ port(	clk				: in std_logic;
 		wr_Z 			: out std_logic
 
 	);
-
-
 end entity recop_control;
 
 ---------------------------------------------------------------------------------------------------
@@ -145,27 +142,38 @@ begin
 
 
 	case CS is	-- must cover all states
-		when IF1 =>
+		when IF1 => -- Instruction Fetch
+			-- IR[31..16] = M[PC]
+			-- PC = PC + 1
 			alu_src_A <= "00";
 			alu_src_B <= "01";
 			ir_wr <= "01";
 			pc_wr <= '1';
 			alu_op <= "000";
 
-		when IF2 =>
+		when IF2 => -- Operand Fetch
+			-- IR[15..0] = M[PC]
+			-- PC = PC + 1
 			alu_src_A <= "00";
 			alu_src_B <= "01";
 			ir_wr <= "10";
 			pc_wr <= '1';
 			alu_op <= "000";
 
-		when ID1 =>
+		when ID1 => -- Instruction Decode
+			-- Stall for register and instruction register fetch/decode
 			null;
 
-		when ID2 =>
+		when ID2 => -- Operand Decode
+			-- Stall for register and instruction register fetch/decode
 			null;
 
-		when EX =>
+		when EX => -- Execute
+			-- C-Type: Reg[WR] = A op B
+			-- SL-Type: Destination = Source or Memory Access
+			-- Jump: PC = Register or Operand
+			-- F-Type: Set or Reset Flag
+			-- D-Type: DPCR = Rx & (Operand or R7)
 			case opcode is
 				when and_op =>
 					if (am = immediate_am) then
@@ -217,7 +225,7 @@ begin
 					if (am = immediate_am) then
 						r_wr_d_sel <= "100";
 						r_wr <= '1';
-					elsif (am = register_am) then
+					elsif (am = register_am) then -- memory access
 						m_addr_sel <= "011";
 						r_wr_d_sel <= "001";
 					elsif (am = direct_am) then
@@ -311,6 +319,8 @@ begin
 			end case;
 
 		when DM =>
+			-- SL-Type = Destination = Source
+			-- D-Type: R0 = DPRR; M[WB] = DPRR
 			if (irq_flag = '1') then -- dcall routine
 				r_wr_r_sel <= '1';
 				r_wr_d_sel <= "101";
@@ -329,6 +339,7 @@ begin
 			end if;	
 			
 		when DR =>
+			-- D-Type: Reset DPRR, DPCR and DPC
 			reset_DPRR <= '1';
 			reset_DPCR <= '1';
 			reset_DPC <= '1';
