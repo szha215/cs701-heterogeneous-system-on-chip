@@ -40,49 +40,66 @@ def ani():
     args = []
 
     args.append('vsim -novopt work.test_ani;')
-    args.append('add wave -position insertpoint')
 
+    args.append('add wave -position insertpoint')  # GLOBAL
     args.append('sim:/test_ani/t_clk')
     args.append('sim:/test_ani/t_reset')
     args.append('-radix binary sim:/test_ani/t_tdm_slot')
+
+    args.append('; add wave -position insertpoint -color mediumslateblue')  # NoC incoming
     args.append('-radix hexadecimal sim:/test_ani/t_d_from_noc')
-    args.append('sim:/test_ani/t_ani/s_inc_wr_en')
+
+    args.append('; add wave -position insertpoint -color darkorchid')  # ANI
+    # args.append('sim:/test_ani/t_ani/s_inc_wr_en')  # push to incoming queue
     # args.append('sim:/test_ani/t_ani/incoming_fifo/queue')
-    args.append('sim:/test_ani/t_ani/s_inc_empty')
-    args.append('sim:/test_ani/t_ani/s_inc_full')
-    args.append('sim:/test_ani/t_ani/s_inc_rd_en')
-    args.append('sim:/test_ani/t_d_to_asp')
+    # args.append('sim:/test_ani/t_ani/s_inc_empty')
+    # args.append('sim:/test_ani/t_ani/s_inc_full')
+    # args.append('sim:/test_ani/t_ani/s_inc_rd_en')  # pop to ASP
+    args.append('-radix hexadecimal sim:/test_ani/t_d_to_asp')
     args.append('sim:/test_ani/t_asp_valid')
+    # args.append('sim:/test_ani/t_ani/s_out_wr_en')
+    # args.append('sim:/test_ani/t_ani/s_out_empty')
+    args.append('sim:/test_ani/t_ani/s_out_rd_en')
+
+    args.append('; add wave -position insertpoint -color mediumslateblue')  # NoC outgoing
+    args.append('-radix hexadecimal sim:/test_ani/t_d_to_noc')
+
+    args.append('; add wave -position insertpoint -color gold')  # ASP ports
     args.append('sim:/test_ani/t_asp_busy')
+    args.append('sim:/test_ani/t_asp_res_ready')
+    args.append('-radix hexadecimal sim:/test_ani/t_d_from_asp')
+
+    args.append('; add wave -position insertpoint -color coral')  # ASP control
     # args.append('sim:/test_ani/t_asp/reg_a/registers')
     # args.append('sim:/test_ani/t_asp/reg_b/registers')
-    args.append('sim:/test_ani/t_asp/s_B')
-    args.append('sim:/test_ani/t_asp/s_op_code')
-    args.append('sim:/test_ani/t_asp/s_invoke_en')
+    # args.append('sim:/test_ani/t_asp/s_B')
+    args.append('-radix hexadecimal sim:/test_ani/t_asp/s_op_code')
+    # args.append('sim:/test_ani/t_asp/s_invoke_en')
     args.append('sim:/test_ani/t_asp/CS')
     # args.append('sim:/test_ani/t_asp/NS')
-    args.append('sim:/test_ani/t_asp_res_ready')
-    args.append('sim:/test_ani/t_d_from_asp')
-    args.append('sim:/test_ani/t_ani/s_out_wr_en')
-    args.append('sim:/test_ani/t_ani/s_out_empty')
-    args.append('sim:/test_ani/t_ani/s_out_rd_en')
-    args.append('sim:/test_ani/t_d_to_noc')
-    args.append('sim:/test_ani/t_asp/s_start_addr')
-    args.append('sim:/test_ani/t_asp/s_end_addr')
-    args.append('sim:/test_ani/t_asp/reg_a_ld')
-    args.append('sim:/test_ani/t_asp/reg_b_ld')
-    args.append('sim:/test_ani/t_asp/s_d_to_store')
-    args.append('sim:/test_ani/t_asp/s_pointer')
-    args.append('sim:/test_ani/t_asp/s_addr_to_store')
-    args.append('sim:/test_ani/t_asp/s_d_to_store')
-    args.append('sim:/test_ani/t_asp/s_calc_res')
-    # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
-    args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out sim:/test_ani/t_asp/s_reg_out')
-    args.append('sim:/test_ani/t_asp/aveage_block/s_values')
-    args.append('sim:/test_ani/t_asp/aveage_block/s_avg')
-    args.append('sim:/test_ani/t_asp/rd_pointer_inc_en')
     args.append('sim:/test_ani/t_asp/pointer_start_addr_ld')
     args.append('sim:/test_ani/t_asp/s_invoke_init')
+
+    args.append('; add wave -position insertpoint -color brown')  # ASP datapath
+    args.append('-radix hexadecimal sim:/test_ani/t_asp/s_start_addr')
+    args.append('sim:/test_ani/t_asp/s_end_addr')
+    args.append('sim:/test_ani/t_asp/rd_pointer_inc_en')
+    args.append('sim:/test_ani/t_asp/s_pointer')
+    # args.append('sim:/test_ani/t_asp/aveage_block/s_values')
+    args.append('sim:/test_ani/t_asp/s_reg_a_out sim:/test_ani/t_asp/s_reg_b_out sim:/test_ani/t_asp/s_reg_out')
+
+    args.append('; add wave -position insertpoint -color cadetblue')  # ASP datapath2
+    args.append('-radix hexadecimal sim:/test_ani/t_asp/aveage_block/s_avg')
+    args.append('sim:/test_ani/t_asp/s_calc_res')
+
+    args.append('; add wave -position insertpoint -color coral')  # ASP control
+    args.append('sim:/test_ani/t_asp/reg_a_ld')
+    args.append('sim:/test_ani/t_asp/reg_b_ld')
+
+    args.append('; add wave -position insertpoint -color brown')  # ASP datapath
+    args.append('-radix hexadecimal sim:/test_ani/t_asp/s_addr_to_store')
+    args.append('sim:/test_ani/t_asp/s_d_to_store')
+    # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
 
     args.append('; run 2 us')
 
