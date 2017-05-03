@@ -44,7 +44,7 @@ begin
 		clean_registers : for i in 0 to reg_num - 1 loop
 			registers(i) <= (others => '0');
 		end loop ; -- clean_registers
-	elsif (rising_edge(clk)) then
+	elsif (falling_edge(clk)) then
 		if(wr_en = '1') then
 			--write 
 			registers(to_integer(unsigned(wr_reg))) <= wr_data;
@@ -60,6 +60,7 @@ begin
 	end if;
 end process ; -- reg_file_proc
 
+--registers(to_integer(unsigned(wr_reg))) <= wr_data when wr_en = '1';
 data_out_a <= registers(to_integer(unsigned(rd_reg1)));  -- asynchronous read
 data_out_b <= registers(to_integer(unsigned(rd_reg2)));
 
