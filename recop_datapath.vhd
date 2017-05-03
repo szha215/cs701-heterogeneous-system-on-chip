@@ -65,7 +65,6 @@ port (
 
 
 	--register outputs
-	DPRR_out			:	out std_logic_vector(15 downto 0);
 	EOT_out			:	out std_logic;
 	DPCR_out			:	out std_logic_vector(31 downto 0);
 	SVOP_out			:	out std_logic_vector(15 downto 0);
@@ -73,6 +72,7 @@ port (
 	DPC_out 			:	out std_logic;
 
 	--feedback to control
+	irq_out			:	out std_logic;
 	am					:	out std_logic_vector(1 downto 0);
 	opcode			:	out std_logic_vector(5 downto 0)
 ) ;
@@ -516,6 +516,7 @@ s_regfile_out_b 						 	when m_addr_sel = "011" else
 (x"0" & s_DPRR_OUT(23 downto 12)) 	when m_addr_sel = "100" else
 x"0000";
 
+irq_out <= s_DPRR_OUT(1);
 
 s_m_data_mux_output <=
 s_pc_output									when m_data_sel = "00" else

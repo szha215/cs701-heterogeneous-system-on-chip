@@ -216,6 +216,7 @@ def datapath():
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_alu_out')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_m_addr_mux_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_m_data_mux_output')
+    args.append('sim:/test_recop_datapath/t_recop_datapath/s_r_wr_r_mux_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_r_wr_mux_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_r_rd_mux_a_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_alu_src_a_mux_output')
@@ -223,7 +224,6 @@ def datapath():
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_src_mux_output')
     args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_wr_en')
     args.append('sim:/test_recop_datapath/t_recop_datapath/regfile/registers')
-    # args.append('sim:/test_recop_datapath/t_recop_datapath/s_pc_src_mux_inputs')
     args.append('; run 800 ns')
     return ' '.join(args)
 
@@ -279,8 +279,8 @@ def compile_and_link():
     compile_list.append('./test_ins_reg.vhd')
     compile_list.append('./recop_control.vhd')
     compile_list.append('./test_recop_control.vhd')
-    # compile_list.append('./recop_datapath.vhd')
-    # compile_list.append('./test_recop_datapath.vhd')
+    compile_list.append('./recop_datapath.vhd')
+    compile_list.append('./test_recop_datapath.vhd')
     compile_str = ' '.join(compile_list)
 
     try:

@@ -36,13 +36,13 @@ signal t_pc_src : std_logic_vector(1 downto 0) := (others => '0');
 
 signal t_alu_op : std_logic_vector(2 downto 0) := (others => '0');
 
-signal t_DPRR_out, t_SVOP_out, t_SOP_out : std_logic_vector(15 downto 0) := (others => '0');
+signal t_SVOP_out, t_SOP_out : std_logic_vector(15 downto 0) := (others => '0');
 signal t_EOT_out : std_logic := '0';
 signal t_DPCR_out : std_logic_vector(31 downto 0) := (others => '0');
 
 signal t_am : std_logic_vector(1 downto 0) := (others => '0');
 signal t_opcode : std_logic_vector(5 downto 0) := (others => '0');
-
+signal t_irq_out : std_logic := '0';
 
 
 ---------------------------------------------------------------------------------------------------
@@ -104,12 +104,12 @@ port (
 
 
 	--register outputs
-	DPRR_out			:	out std_logic_vector(15 downto 0);
 	EOT_out			:	out std_logic;
 	DPCR_out			:	out std_logic_vector(31 downto 0);
 	SVOP_out			:	out std_logic_vector(15 downto 0);
 	SOP_out			:	out std_logic_vector(15 downto 0);
 	--feedback to control
+	irq_out			:	out std_logic;
 	am					:	out std_logic_vector(1 downto 0);
 	opcode			:	out std_logic_vector(5 downto 0)
 ) ;
@@ -175,14 +175,14 @@ t_recop_datapath : recop_datapath
 		alu_op			=> t_alu_op, 
 
 
-		--register outputs
-		DPRR_out			=> t_DPRR_out, 
+		--register outputs 
 		EOT_out			=> t_EOT_out, 
 		DPCR_out			=> t_DPCR_out, 
 		SVOP_out			=> t_SVOP_out, 
 		SOP_out			=> t_SOP_out,  
 
 		--feedback to control
+		irq_out			=>	t_irq_out,
 		am					=> t_am, 
 		opcode			=> t_opcode 
 
@@ -414,11 +414,12 @@ begin
 	
 	--EX 
 	t_r_wr_sel <= "001";
-	t_m_addr_sel <= "011";
-
+	t_m_addr_sel <= "001";
+	CS <= EX;
+	wait for t_clk_period;
 	--DM
 	t_r_wr_sel <= "001";
-	t_m_addr_sel <= "011";
+	t_m_addr_sel <= "001";
 	t_r_wr <= '1';
 	CS <= DM;
 	wait for t_clk_period;
