@@ -519,9 +519,9 @@ x"0000";
 irq_flag <= s_DPRR_OUT(1);
 
 s_m_data_mux_output <=
-s_pc_output									when m_data_sel = "00" else
-s_ir_lower_0								when m_data_sel = "01" else
-s_regfile_out_a							when m_data_sel = "10" else
+s_ir_lower_0								when m_data_sel = "00" else
+s_pc_output									when m_data_sel = "01" else
+s_regfile_out_b							when m_data_sel = "10" else
 ("00000000000000" & s_DPRR_OUT(1 downto 0)) when m_data_sel = "11" else
 x"0000";
 

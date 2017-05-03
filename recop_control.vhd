@@ -97,9 +97,10 @@ begin
 		when EX => -- Execute
 			if (opcode = dcallbl_op and irq_flag = '0') then
 				NS <= EX;
-			elsif (irq_flag = '1' or
-				(opcode = ldr_op and (am = register_am or am = direct_am))) then
+			elsif (irq_flag = '1') then
 				NS <= DM;
+			elsif (opcode = ldr_op and (am = register_am or am = direct_am)) then
+				NS <= DM; 
 			else
 				NS <= IF1;
 			end if;
@@ -239,11 +240,11 @@ begin
 						m_data_sel <= "00";
 						m_wr <= '1';
 					elsif (am = register_am) then
-						m_addr_sel <= "001";
+						m_addr_sel <= "010";
 						m_data_sel <= "10";
 						m_wr <= '1';
 					elsif (am = direct_am) then
-						m_addr_sel <= "010";
+						m_addr_sel <= "001";
 						m_data_sel <= "10";
 						m_wr <= '1';
 					end if;
