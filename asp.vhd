@@ -37,8 +37,8 @@ architecture behaviour of asp is
 type states is (IDLE, 
 					STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA,
 					INVOKE, INVOKE_BUSY,
-					XOR_1,
-					AVE_0, AVE_1, AVE_2, AVE_3,
+					XOR_0_A, XOR_0_B, XOR_1, XOR_2, XOR_3,
+					AVE_0_A, AVE_0_B, AVE_1, AVE_2, AVE_3,
 					MAC_1, MAC_2,
 					SEND_ACC, SEND_DATA, SEND_PAUSE);
 
@@ -51,7 +51,8 @@ signal s_A, s_B : data_vector := (others => (others =>'0'));
 
 -- Control signals
 signal packet_id_inc_en, rd_pointer_inc_en, wr_pointer_inc_en	: std_logic := '0';
-signal op_ld, start_addr_ld, end_addr_ld, mem_sel_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld	: std_logic := '0';
+signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld	: std_logic := '0';
+signal mem_sel_ld, mem_sel_ld_1, mem_sel_ld_0	: std_logic := '0';
 signal words_stored_reset, vectors_reset, packet_id_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
 signal d_packet_sel, calc_res_sel 	: std_logic_vector(1 downto 0) := (others => '0');
 signal d_out_sel, vector_addr_sel, vector_d_sel	: std_logic := '0';
@@ -406,19 +407,19 @@ begin
 						NS <= STORE_INIT;
 
 					when "0010" =>
-						NS <= XOR_1;
+						NS <= XOR_0_A;
 
 					when "0011" =>
-						NS <= XOR_1;
+						NS <= XOR_0_B;
 
 					when "0100" =>
 						NS <= MAC_1;
 
 					when "0101" =>
-						NS <= AVE_0;
+						NS <= AVE_0_A;
 
 					when "0110" =>
-						NS <= AVE_0;
+						NS <= AVE_0_B;
 
 					when others =>
 						NS <= IDLE;
@@ -458,7 +459,24 @@ begin
 				NS <= INVOKE_BUSY;
 			end if;
 
+		when XOR_0_A =>
+			NS <= XOR_1;
+
+		when XOR_0_B =>
+			NS <= XOR_1;
+
 		when XOR_1 =>
+			NS <= XOR_2;
+
+		when XOR_2 =>
+			if (cmp_rd_pointer_end = '1') then
+				NS <= XOR_3;
+			else
+				NS <= XOR_2;
+			end if;
+
+		when XOR_3 =>
+			NS <= SEND_DATA;
 
 		when MAC_1 =>
 			if (cmp_rd_pointer_end = '1') then
@@ -470,7 +488,10 @@ begin
 		when MAC_2 =>
 			NS <= SEND_PAUSE;
 
-		when AVE_0 =>
+		when AVE_0_A =>
+			NS <= AVE_1;
+
+		when AVE_0_B =>
 			NS <= AVE_1;
 
 		when AVE_1 =>
@@ -518,6 +539,8 @@ begin
 	end_addr_ld <= '0';
 	start_addr_ld <= '0';
 	mem_sel_ld <= '0';
+	mem_sel_ld_1 <= '0';
+	mem_sel_ld_0 <= '0';
 	src_port_ld <= '0';
 
 	vector_ld <= '0';
@@ -526,7 +549,7 @@ begin
 	words_stored_reset <= '0';
 	pointer_start_addr_ld <= '0';
 
-	--rd_pointer_inc_en <= '0';
+	rd_pointer_inc_en <= '0';
 	wr_pointer_inc_en <= '0';
 	vector_addr_sel <= '1';
 
@@ -605,7 +628,6 @@ begin
 			--	s_A(conv_integer(unsigned(d_in_copy(24 downto 16)))) <= (d_in_copy(15 downto 0));
 			--end if;
 
-
 		when INVOKE =>
 			s_invoke_en <= '1';
 			s_invoke_init <= '1';
@@ -629,8 +651,56 @@ begin
 
 			busy <= '1';
 
-		when XOR_1 =>
+		when XOR_0_A =>
+			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
+			src_port_ld <= '1';
+			mem_sel_ld_0 <= '1';
 
+			s_invoke_init <= '1';
+
+			rd_pointer_inc_en <= '0';
+
+			calc_result_reset <= '1';
+			calc_res_sel <= "00";
+
+			busy <= '1';
+
+		when XOR_0_B =>
+			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
+			src_port_ld <= '1';
+			mem_sel_ld_1 <= '1';
+
+			s_invoke_init <= '1';
+
+			rd_pointer_inc_en <= '0';
+
+			calc_result_reset <= '1';
+			calc_res_sel <= "00";
+
+			busy <= '1';
+
+		when XOR_1 =>
+			rd_pointer_inc_en <= '1';
+
+			calc_result_reset <= '1';
+			calc_res_sel <= "00";
+
+			busy <= '1';
+
+		when XOR_2 =>
+
+			rd_pointer_inc_en <= '1';
+			calc_res_sel <= "01";
+
+			busy <= '1';
+
+		when XOR_3 =>
+
+			rd_pointer_inc_en <= '0';
 			calc_res_sel <= "01";
 
 			busy <= '1';
@@ -647,11 +717,31 @@ begin
 
 			busy <= '1';
 
-		when AVE_0 =>
+		when AVE_0_A =>
 			op_ld <= '1';
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
 			src_port_ld <= '1';
+			mem_sel_ld_0 <= '1';
+
+			s_invoke_init <= '1';
+
+			rd_pointer_inc_en <= '0';
+			wr_pointer_inc_en <= '0';
+
+			ave_filter_reset <= '1';
+			pointer_start_addr_ld <= '1';
+
+			vector_addr_sel <= '1';
+
+			busy <= '1';
+			
+		when AVE_0_B =>
+			op_ld <= '1';
+			start_addr_ld <= '1';
+			end_addr_ld <= '1';
+			src_port_ld <= '1';
+			mem_sel_ld_1 <= '1';
 
 			s_invoke_init <= '1';
 
@@ -825,10 +915,14 @@ begin
 end process ; -- end_addr_process
 
 ---------------------------------------------------------------------------------------------------
-mem_sel_process : process(clk, mem_sel_ld, d_in_copy)
+mem_sel_process : process(clk, mem_sel_ld, mem_sel_ld_1, mem_sel_ld_0, d_in_copy)
 begin
 	if (rising_edge(clk)) then
-		if (mem_sel_ld = '1') then
+		if (mem_sel_ld_1 = '1') then
+			s_mem_sel <= '1';
+		elsif (mem_sel_ld_0 = '1') then
+			s_mem_sel <= '0';
+		elsif (mem_sel_ld = '1') then
 			s_mem_sel <= d_in_copy(17);
 		else
 			s_mem_sel <= s_mem_sel;
@@ -911,7 +1005,7 @@ end process ; -- sent_complete
 compare_rd_pointer_end_addr : process(s_pointer, s_end_addr)
 begin
 	if (s_pointer = s_end_addr) then
-		--cmp_rd_pointer_end <= '1';
+		cmp_rd_pointer_end <= '1';
 	else
 		cmp_rd_pointer_end <= '0';
 	end if;
@@ -1009,9 +1103,11 @@ end process ; -- compare_pointer_1
 --end process ; -- xor_b_process
 
 ---------------------------------------------------------------------------------------------------
-result_store_low_15 : process(clk, calc_res_sel)
+result_store_low_15 : process(clk, calc_res_sel, calc_result_reset)
 begin
-	if (rising_edge(clk)) then
+	if (calc_result_reset = '1') then
+		s_calc_res(15 downto 0) <= (others => '0');
+	elsif (rising_edge(clk)) then
 		case(calc_res_sel) is
 		
 			when "00" =>
@@ -1031,7 +1127,7 @@ begin
 end process ; -- result_store_low_15
 
 ---------------------------------------------------------------------------------------------------
-result_store_hgih_48 : process(clk, calc_res_sel)
+result_store_hgih_48 : process(clk, calc_res_sel, calc_result_reset)
 begin
 	if (calc_result_reset = '1') then
 		s_calc_res(63 downto 16) <= (others => '0');
