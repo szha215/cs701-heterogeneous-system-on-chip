@@ -16,7 +16,6 @@ port(	clk				: in std_logic;
 		DPRR_in			: in std_logic_vector(31 downto 0);
 		SIP_in			: in std_logic_vector(reg_width - 1 downto 0);
 
-		DPRR_out		: out std_logic_vector(15 downto 0);
 		EOT_out			: out std_logic;
 		DPCR_out		: out std_logic_vector(31 downto 0);
 		SVOP_out		: out std_logic_vector(15 downto 0);
@@ -62,7 +61,7 @@ architecture behaviour of recop is
 
 ---------------------------------------------------------------------------------------------------
 -- component declaration here
-component datapath
+component recop_datapath
 	generic(
 		constant m_mux_sel_num : positive := 3;
 		constant r_wr_mux_sel_num : positive := 3;
@@ -74,6 +73,7 @@ component datapath
 
 		--control signal for EOT, PC and Z registers
 		reset_z			:	in std_logic;
+		wr_z			:	in std_logic;
 		pc_wr_cond_z	:	in std_logic;
 		pc_wr_cond_p	:	in std_logic;
 		pc_wr			:	in std_logic;
@@ -88,6 +88,8 @@ component datapath
 		--registers control signals
 		reset_ER		:	in std_logic;
 		reset_DPRR		:	in std_logic;
+		reset_DPC		:	in std_logic;
+		set_DPC			:	in std_logic;
 		wr_SVOP			:	in std_logic;
 		wr_SOP			:	in std_logic;
 		wr_DPCR			:	in std_logic;
@@ -102,6 +104,7 @@ component datapath
 		m_data_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
 		r_rd_sel		:	in std_logic;
 		r_wr_sel		:	in std_logic_vector(2 downto 0);
+		r_wr_r_sel 		:	in std_logic;
 		alu_src_A		:	in std_logic_vector(1 downto 0);
 		alu_src_B		:	in std_logic_vector(1 downto 0);
 		pc_src 			:	in std_logic_vector(1 downto 0);
@@ -110,19 +113,19 @@ component datapath
 		alu_op			:	in std_logic_vector(2 downto 0);
 
 		--register outputs
-		irq_flag		:	out std_logic;
 		EOT_out			:	out std_logic;
 		DPCR_out		:	out std_logic_vector(31 downto 0);
 		SVOP_out		:	out std_logic_vector(15 downto 0);
 		SOP_out			:	out std_logic_vector(15 downto 0);
 
 		--feedback to control
+		irq_flag		:	out std_logic;
 		am				:	out std_logic_vector(1 downto 0);
 		opcode			:	out std_logic_vector(5 downto 0)
 	);
 end component;
 
-component control
+component recop_control
 	port (	
 		
 		clk				: in std_logic;
@@ -165,94 +168,98 @@ end component;
 begin
 -- component wiring here
 
-datapath_unit : datapath
+datapath_unit : recop_datapath
 	generic map (
 		m_mux_sel_num => 3,
 		r_wr_mux_sel_num => 3,
-		reg_width	=>	16
+		reg_width	=>	161
 	)
 	port map (
-		clk => clk;
-		ER_in => ER_in;
-		DPRR_in => DPRR_in;
-		SIP_in => SIP_in;
+		clk => clk,
+		ER_in => ER_in,
+		DPRR_in => DPRR_in,
+		SIP_in => SIP_in,
 
-		EOT_out => EOT_out;
-		DPCR_out => DPCR_out;
-		SVOP_out => SVOP_out;
-		SOP_out => SOP_out;
+		EOT_out => EOT_out,
+		DPCR_out => DPCR_out,
+		SVOP_out => SVOP_out,
+		SOP_out => SOP_out,
 
 		--control signal for EOT, PC and Z registers
-		reset_z => s_reset_Z;
-		pc_wr_cond_z => s_pc_wr_cond_z;
-		pc_wr_cond_p => s_pc_wr_cond_p;
-		pc_wr => s_pc_wr;
-		set_EOT => s_set_EOT;
-		reset_EOT => s_reset_Z;
+		reset_z => s_reset_Z,
+		wr_z    => s_wr_Z,
+		pc_wr_cond_z => s_pc_wr_cond_z,
+		pc_wr_cond_p => s_pc_wr_cond_p,
+		pc_wr => s_pc_wr,
+		set_EOT => s_set_EOT,
+		reset_EOT => s_reset_Z,
 
 		--control signals for Memory, IR and RegFile
-		ir_wr => s_ir_wr;
-		m_wr => s_m_wr;
-		r_wr => s_r_wr;
+		ir_wr => s_ir_wr,
+		m_wr => s_m_wr,
+		r_wr => s_r_wr,
 
 		--registers control signals
-		reset_ER => s_reset_ER;
-		reset_DPRR => s_reset_DPRR;
-		wr_SVOP => s_wr_SVOP;
-		wr_SOP => s_wr_SOP;
-		wr_DPCR => s_wr_DPCR;
+		reset_ER => s_reset_ER,
+		reset_DPRR => s_reset_DPRR,
+		reset_DPC	=> s_reset_DPC,
+		set_DPC => s_set_DPC,
+		wr_SVOP => s_wr_SVOP,
+		wr_SOP => s_wr_SOP,
+		wr_DPCR => s_wr_DPCR,
 
 		--mux control signals
-		m_addr_sel => s_m_addr_sel;
-		m_data_sel => s_m_data_sel;
-		r_rd_sel => s_r_rd_sel;
-		r_wr_sel => s_r_wr_r_sel;
-		alu_src_A => s_alu_src_A;
-		alu_src_B => s_alu_src_B;
-		pc_src => s_pc_src;
+		m_addr_sel => s_m_addr_sel,
+		m_data_sel => s_m_data_sel,
+		r_rd_sel => s_r_rd_sel,
+		r_wr_sel => s_r_wr_d_sel,
+		r_wr_r_sel => s_r_wr_r_sel,
+		alu_src_A => s_alu_src_A,
+		alu_src_B => s_alu_src_B,
+		pc_src => s_pc_src,
 
 		--ALU control signal
-		alu_op => s_alu_op;
+		alu_op => s_alu_op,
 
 		--feedback to control
-		am => s_am;
-		opcode => s_opcode;
+		am => s_am,
+		opcode => s_opcode,
 		irq_flag => s_irq_flag
 	);
 
-control_unit : control
+control_unit : recop_control
 	port map (
-		clk => clk;
-		am => s_am;
-		opcode => s_opcode;
-		irq_flag => s_irq_flag;
+		clk => clk,
+		am => s_am,
+		opcode => s_opcode,
+		irq_flag => s_irq_flag,
 
-		m_addr_sel => s_m_addr_sel;
-		m_data_sel => s_m_data_sel;
-		m_wr => s_m_wr;
-		ir_wr => s_ir_wr;
-		r_wr_d_sel => s_r_wr_d_sel;
-		r_wr_r_sel => s_r_wr_r_sel;
-		r_rd_sel => s_r_rd_sel;
-		r_wr => s_r_wr;
-		alu_src_A => s_alu_src_A;
-		alu_src_B => s_alu_src_B;
-		alu_op => s_alu_op;
-		pc_src => s_pc_src;
-		set_DPC => s_set_DPC;
-		set_EOT => s_set_EOT;
-		reset_DPRR => s_reset_DPRR;
-		reset_DPCR => s_reset_DPCR;
-		reset_DPC => s_reset_DPC;
-		reset_EOT => s_reset_EOT;
-		reset_ER => s_reset_ER;
-		reset_Z => s_reset_Z;
-		pc_wr => s_pc_wr;
-		pc_wr_cond_z => s_pc_wr_cond_z;
-		pc_wr_cond_p => s_pc_wr_cond_p;
-		wr_DPCR => s_wr_DPCR;
-		wr_SVOP => s_wr_SVOP;
-		wr_SOP => s_wr_SOP;
+		m_addr_sel => s_m_addr_sel,
+		m_data_sel => s_m_data_sel,
+		m_wr => s_m_wr,
+		ir_wr => s_ir_wr,
+		r_wr_d_sel => s_r_wr_d_sel,
+		r_wr_r_sel => s_r_wr_r_sel,
+		r_rd_sel => s_r_rd_sel,
+		r_wr => s_r_wr,
+		alu_src_A => s_alu_src_A,
+		alu_src_B => s_alu_src_B,
+		alu_op => s_alu_op,
+		pc_src => s_pc_src,
+		set_DPC => s_set_DPC,
+		set_EOT => s_set_EOT,
+		reset_DPRR => s_reset_DPRR,
+		reset_DPCR => s_reset_DPCR,
+		reset_DPC => s_reset_DPC,
+		reset_EOT => s_reset_EOT,
+		reset_ER => s_reset_ER,
+		reset_Z => s_reset_Z,
+		pc_wr => s_pc_wr,
+		pc_wr_cond_z => s_pc_wr_cond_z,
+		pc_wr_cond_p => s_pc_wr_cond_p,
+		wr_DPCR => s_wr_DPCR,
+		wr_SVOP => s_wr_SVOP,
+		wr_SOP => s_wr_SOP,
 		wr_Z => s_wr_Z
 	);
 	

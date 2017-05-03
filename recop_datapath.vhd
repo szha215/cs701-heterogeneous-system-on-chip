@@ -48,11 +48,11 @@ port (
 	--register inputs for ER and SIP
 	ER_in		:	in std_logic;
 	DPRR_in			:	in std_logic_vector(31 downto 0);
-	SIP_in			:	in	std_logic_vector(reg_width - 1 downto 0);
+	SIP_in			:	in	std_logic_vector(15 downto 0);
 
 	--mux control signals
 	m_addr_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
-	m_data_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
+	m_data_sel		:	in std_logic_vector(1 downto 0);
 	r_rd_sel			:	in std_logic;
 	r_wr_sel			:	in std_logic_vector(2 downto 0);
 	r_wr_r_sel		:	in std_logic;
@@ -72,7 +72,7 @@ port (
 	DPC_out 			:	out std_logic;
 
 	--feedback to control
-	irq_out			:	out std_logic;
+	irq_flag			:	out std_logic;
 	am					:	out std_logic_vector(1 downto 0);
 	opcode			:	out std_logic_vector(5 downto 0)
 ) ;
@@ -516,7 +516,7 @@ s_regfile_out_b 						 	when m_addr_sel = "011" else
 (x"0" & s_DPRR_OUT(23 downto 12)) 	when m_addr_sel = "100" else
 x"0000";
 
-irq_out <= s_DPRR_OUT(1);
+irq_flag <= s_DPRR_OUT(1);
 
 s_m_data_mux_output <=
 s_pc_output									when m_data_sel = "00" else

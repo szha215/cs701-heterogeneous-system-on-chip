@@ -281,6 +281,8 @@ def compile_and_link():
     compile_list.append('./test_recop_control.vhd')
     compile_list.append('./recop_datapath.vhd')
     compile_list.append('./test_recop_datapath.vhd')
+    compile_list.append('./recop.vhd')
+    compile_list.append('./test_recop.vhd')
     compile_str = ' '.join(compile_list)
 
     try:

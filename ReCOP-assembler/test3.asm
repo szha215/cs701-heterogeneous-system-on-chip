@@ -3,5 +3,27 @@ start NOOP
   AND R2 R1 #111
   LDR R3 R2
   LDR R4 $2
+  SUBV R1 #23
+  CLFZ
+  SUB R1 #23
+  STR R2 $6
+  LDR R6 $6
+  ADD R7 R6 R3
+  
+  PRESENT R8 $23
+  NOOP
+  NOOP
+  NOOP
+  NOOP
+  
+  SSOP R10
+  
+  LSIP R11
+  MAX R1 #200
+
+  DCALLBL R2  
+  AND R12 R1 #111
+  
+  
 ENDPROG 
 
