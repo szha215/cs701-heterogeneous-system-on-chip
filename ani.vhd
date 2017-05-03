@@ -48,38 +48,6 @@ architecture behaviour of ani is
 
 ---------------------------------------------------------------------------------------------------
 -- component declarations
-	component fifo is
-		generic (
-			constant data_width : positive := 8;
-			constant fifo_depth : positive := 256
-		);
-		port ( 
-			clk     : in  std_logic;
-			reset   : in  std_logic;
-			wr_en   : in  std_logic;
-			d_in    : in  std_logic_vector (data_width - 1 downto 0);
-			rd_en   : in  std_logic;
-
-			d_out   : out std_logic_vector (data_width - 1 downto 0);
-			empty   : out std_logic;
-			full    : out std_logic
-		);
-	end component;
-
-	component mega_fifo is
-		port
-		(
-			aclr		: in std_logic ;
-			clock		: in std_logic ;
-			data		: in std_logic_vector (31 downto 0);
-			rdreq		: in std_logic ;
-			wrreq		: in std_logic ;
-			empty		: out std_logic ;
-			full		: out std_logic ;
-			q			: out std_logic_vector (31 downto 0)
-		);
-	end component;
-
 	component scfifo
 	generic (
 		add_ram_output_register		: string;
@@ -107,37 +75,10 @@ architecture behaviour of ani is
 			q		: out std_logic_vector (31 downto 0)
 	);
 	end component;
+
 ---------------------------------------------------------------------------------------------------
 begin
 -- component wiring
-
-	--incoming_fifo : fifo
-	--	generic map(
-	--		data_width	=> data_width,
-	--		fifo_depth	=> in_depth
-	--	)
-	--	port map(
-	--		clk 	=> clk,
-	--		reset => reset,
-	--		wr_en	=> s_inc_wr_en,
-	--		d_in	=> d_from_noc,
-	--		rd_en => s_inc_rd_en,
-	--		d_out => d_to_asp,
-	--		empty => s_inc_empty,
-	--		full  => s_inc_full
-	--	);
-
-	--incoming_fifo : mega_fifo
-	--	port map(
-	--		clock	=> clk,
-	--		aclr	=> reset,
-	--		data	=> s_inc_q_buf,
-	--		rdreq	=> s_inc_rd_en,
-	--		wrreq	=> s_inc_wr_en,
-	--		empty	=> s_inc_empty,
-	--		full	=> s_inc_full,
-	--		q		=> d_to_asp
-	--	);
 
 	incoming_fifo : scfifo
 	generic map (
@@ -164,13 +105,11 @@ begin
 		q => s_to_asp
 	);
 
-
-
 	outgoing_fifo : scfifo
 	generic map (
 		add_ram_output_register => "ON",
 		intended_device_family => "Cyclone IV E",
-		lpm_numwords => in_depth,
+		lpm_numwords => out_depth,
 		lpm_showahead => "ON",
 		lpm_type => "scfifo",
 		lpm_width => data_width,
@@ -190,20 +129,6 @@ begin
 		full => s_out_full,
 		q => s_out_q_buf
 	);
-
----------------------------------------------------------------------------------------------------
---from_noc : process(clk, d_from_noc)
---variable v_inc_wr_en : boolean := false;
---begin
---	if (rising_edge(clk)) then
---		if (v_inc_wr_en = '1') then
---			s_inc_wr_en <= '0';
---		elsif (d_from_noc(31) = '1') then  -- valid bit
---			report "wirte enable";
---			s_inc_wr_en <= '1';
---		end if;
---	end if;
---end process;
 
 ---------------------------------------------------------------------------------------------------
 update_inc_q_buf : process (d_from_noc)
@@ -240,15 +165,6 @@ end process;
 ---------------------------------------------------------------------------------------------------
 -- combinational logic
 
---s_inc_wr_en <= '1' when d_from_noc(31) = '1' else
---					'0';
-
---s_inc_rd_en <= '1' when asp_busy = '0' and s_inc_empty = '0' else
---					'0';
-
---asp_valid	<= '1' when asp_busy = '0' and s_inc_empty = '0' else
---					'0';
-
 s_inc_q_buf <= d_from_noc;
 
 s_d_to_noc_sel <= '1' when ((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0' else
@@ -260,8 +176,6 @@ s_out_wr_en <= asp_res_ready;
 
 d_to_asp <= s_to_asp;
 
---d_to_noc <=	s_out_q_buf	when s_d_to_noc_sel = '1' else
---				x"00000000";
 
 with s_d_to_noc_sel select d_to_noc <=
 	s_out_q_buf	when '1',

@@ -136,8 +136,8 @@ t_ani : ani
 
 t_asp : asp
 	generic map(
-		N => 512,
-		L => 8
+		N => 64,
+		L => 4
 	)
 	port map(
 		clk	=> t_clk,
@@ -170,45 +170,6 @@ begin
 	wait;
 end process;
 
----------------------------------------------------------------------------------------------------
---t_tdm_slot_process : process
---begin
---	wait for t_clk_period;
---	t_tdm_slot <= t_tdm_slot + '1';
---end process;
-
----------------------------------------------------------------------------------------------------
---t_d_from_noc_process : process
---begin
---	wait for t_clk_period * 6;
-
---	t_d_from_noc <= x"C8460006";  -- STORE
---	wait for t_clk_period;
---	t_d_from_noc <= (others => '0');
---	wait for t_clk_period * 4;
-
---	t_d_from_noc <= x"C8010099";
---	wait for t_clk_period;
---	t_d_from_noc <= (others => '0');
---	wait for t_clk_period * 4;
-
---	t_d_from_noc <= x"C8020101";
---	wait for t_clk_period;
---	t_d_from_noc <= x"C8030103";
---	wait for t_clk_period;
---	t_d_from_noc <= x"C8040105";
---	wait for t_clk_period;
---	t_d_from_noc <= x"C8050107";
---	wait for t_clk_period;
---	t_d_from_noc <= x"C8060109";
---	wait for t_clk_period;
---	--t_d_from_noc <= x"C8070112";
---	--wait for t_clk_period;
-
---	t_d_from_noc <= (others => '0');
---	wait;
-
---end process;
 ---------------------------------------------------------------------------------------------------
 t_b_gen : process
 begin
