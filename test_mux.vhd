@@ -19,7 +19,8 @@ constant t_clk_period : time := 20 ns;
 constant t_sel_num : positive := 2;
 
 signal t_clk : std_logic := '0';
-signal t_inputs_4_bit : mux_4_bit_arr(2 ** t_sel_num - 1 downto 0) := (0 => "0000", 1 => "0001", 2 => "0010", 3=> "0011");
+signal t1 : std_logic_vector(3 downto 0) := "0100";
+signal t_inputs_4_bit : mux_4_bit_arr(2 ** t_sel_num - 1 downto 0) := (0 => t1, 1 => "0001", 2 => "0010", 3=> "0011");
 signal t_inputs_16_bit : mux_16_bit_arr(2 ** t_sel_num - 1 downto 0) := (0 => x"0001", 1=> x"0011", 2=> x"0021", 3=> x"0031");
 signal t_sel_4_bit,t_sel_16_bit : std_logic_vector(t_sel_num - 1 downto 0) := (others => '0');
 signal t_output_4_bit : std_logic_vector(3 downto 0) := (others => '0');
@@ -95,11 +96,13 @@ t_mux_proc_4_bit : process
 begin
 	wait for t_clk_period * 6;
 
+	t1 <= "1000";
+
 	sel_loop : for i in 0 to 2 ** t_sel_num -1 loop
 		t_sel_4_bit <= std_logic_vector(to_unsigned(i,t_sel_4_bit'length));
 		wait for t_clk_period * 2;
 	end loop ; -- sel_loop
-
+	t_sel_4_bit <= "00";
 	wait;
 
 end process;
@@ -112,6 +115,8 @@ begin
 		t_sel_16_bit <= std_logic_vector(to_unsigned(i,t_sel_16_bit'length));
 		wait for t_clk_period * 2;
 	end loop ; -- sel_loop
+
+
 
 	wait;
 
