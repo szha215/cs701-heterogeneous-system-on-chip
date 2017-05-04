@@ -1,29 +1,17 @@
-# README #
+# COMPSYS701 Group 8 Phase 1
 
-This README would normally document whatever steps are necessary to get your application up and running.
+## ASP & ANI
 
-### What is this repository for? ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
-### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
 
-### Contribution guidelines ###
+## ReCOP
 
-* Writing tests
-* Code review
-* Other guidelines
+### How to simulate:
 
-### Who do I talk to? ###
+1. Change into the directory. 
+2. Run the batch file `recop_compile.bat ARG` in command line console. The supported list of `ARG` is : `alu`, `reg_file`, `mux`, `gen_reg`, `data_mem`, `ins_reg`, `recop_datapath`, `recop_control`, `recop`. Argument indicates the part of ReCOP(or the ReCOP itself) that you want to test. (This step assumes that the desktop already has python installed)
+3. After compilation, paste the commands into the Modelsim console and enter. 
+4. If you encounter `failed to load altera_mf library` error. Execute the `load_lib.do` file by `do load_lib.do`.  
 
-* Repo owner or admin
-* Other community or team contact
