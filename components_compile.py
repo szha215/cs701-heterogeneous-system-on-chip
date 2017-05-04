@@ -165,6 +165,30 @@ def recop_control():
 
     return ' '.join(args)
 	
+def recop():
+    args = []
+    args.append('vsim -novopt work.test_recop;')
+
+    args.append('add wave -position insertpoint -color green')
+    args.append('sim:/test_recop/t_clk')
+
+    args.append('; add wave -position insertpoint -color pink')
+    args.append('sim:/test_recop/t_recop/control_unit/am')
+    args.append('sim:/test_recop/t_recop/control_unit/opcode')
+    args.append('sim:/test_recop/t_recop/control_unit/CS')
+    
+    args.append('; add wave -position insertpoint -color lightblue')
+    args.append('sim:/test_recop/t_recop/datapath_unit/memory/addr')
+    args.append('sim:/test_recop/t_recop/datapath_unit/memory/data_in')
+    args.append('sim:/test_recop/t_recop/datapath_unit/memory/data_out')
+
+    args.append('; add wave -position insertpoint -color gold')
+    args.append('sim:/test_recop/t_recop/datapath_unit/regfile/registers')
+
+    args.append('; run 3 us')
+    return ' '.join(args)
+
+
 
 def datapath():
     args = []
@@ -253,6 +277,9 @@ def copy_to_clipboard(arg):
     elif(arg.lower() == "recop_control"):
         txt = recop_control()
 
+    elif(arg.lower() == "recop"):
+        txt = recop()
+
     else:
         print '\n***BAD ARGUMENT: "asp" or "ani" only'
         exit()
@@ -261,9 +288,13 @@ def copy_to_clipboard(arg):
     cmd = 'echo ' + txt.strip() + '|clip'
     return check_call(cmd, shell=True)
 
+
+
 def compile_and_link():
 
     compile_list = []
+    # compile_list.append('./altera_mf/altera_mf_components.vhd')
+    # compile_list.append('./altera_mf/altera_mf.vhd')
     compile_list.append('./ajs_pkgs.vhd')
     compile_list.append('./alu.vhd')
     compile_list.append('./test_alu.vhd')

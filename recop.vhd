@@ -101,7 +101,7 @@ component recop_datapath
 
 		--mux control signals
 		m_addr_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
-		m_data_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
+		m_data_sel		:	in std_logic_vector(1 downto 0);
 		r_rd_sel		:	in std_logic;
 		r_wr_sel		:	in std_logic_vector(2 downto 0);
 		r_wr_r_sel 		:	in std_logic;
@@ -172,7 +172,7 @@ datapath_unit : recop_datapath
 	generic map (
 		m_mux_sel_num => 3,
 		r_wr_mux_sel_num => 3,
-		reg_width	=>	161
+		reg_width	=>	16
 	)
 	port map (
 		clk => clk,
@@ -192,7 +192,7 @@ datapath_unit : recop_datapath
 		pc_wr_cond_p => s_pc_wr_cond_p,
 		pc_wr => s_pc_wr,
 		set_EOT => s_set_EOT,
-		reset_EOT => s_reset_Z,
+		reset_EOT => s_reset_EOT,
 
 		--control signals for Memory, IR and RegFile
 		ir_wr => s_ir_wr,

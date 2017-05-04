@@ -49,7 +49,8 @@ end entity recop_control;
 architecture behaviour of recop_control is
 -- type, signal, constant declarations here
 
-type states is (IF1, ID1, IF2, ID2, EX, DM, DR); -- states
+type states is (IF1, IF1S, ID1, IF2, IF2S, ID2, EX, LR, MA, SM, JP, DS, DR, NOOP); -- states
+-- 
 signal CS, NS : states := IF1;
 
 
@@ -75,49 +76,72 @@ state_transition_logic : process(clk, irq_flag)
 begin
 	case CS is	-- must cover all states
 		when IF1 => -- Instruction Fetch
-			NS <= ID1;
+			NS <= IF1S;
 
 		when IF2 => -- Operand Fetch
+			NS <= IF2S;
+
+		when IF1S =>
+			NS <= ID1;
+
+		when IF2S =>
 			NS <= ID2;
 
 		when ID1 => -- Decode Instruction
 			if (am = immediate_am or am = direct_am) then
 				NS <= IF2;
-		 	else
+		 	elsif (opcode = and_op or opcode = or_op or opcode = add_op) then
 		 		NS <= EX;
+		 	elsif (opcode = ldr_op) then
+		 		NS <= MA;
+		 	elsif (opcode = str_op) then
+		 		NS <= SM;
+		 	elsif (opcode = jmp_op) then
+		 		NS <= JP;
+		 	elsif (opcode = noop_op) then
+		 		NS <= NOOP;
+		 	else
+		 		NS <= LR;
 		 	end if;
 
 		when ID2 => -- Decode Operand
-		 	if (opcode = noop_op) then
-		 		NS <= IF1;
+		 	if ((opcode = ldr_op and am = immediate_am) or
+		 		opcode = dcallbl_op or opcode = dcallnb_op) then
+		 		NS <= LR;
+		 	elsif (opcode = ldr_op and am = direct_am) then
+		 		NS <= MA;
+		 	elsif (opcode = str_op or opcode = strpc_op) then
+		 		NS <= SM;
+		 	elsif (opcode = jmp_op or opcode = present_op or opcode = sz_op) then
+		 		NS <= JP;
 		 	else
 		 		NS <= EX;
 		 	end if;
 
-		when EX => -- Execute
+		when MA =>
+			NS <= LR;
+
+		when LR =>
 			if (opcode = dcallbl_op and irq_flag = '0') then
-				NS <= EX;
+				NS <= LR;
 			elsif (irq_flag = '1') then
-				NS <= DM;
-			elsif (opcode = ldr_op and (am = register_am or am = direct_am)) then
-				NS <= DM; 
+				NS <= DS;
 			else
 				NS <= IF1;
 			end if;
-
-		when DM => -- Data Call Store/Memory Access
-			if (irq_flag = '1') then
-				NS <= DR;
-			else
-				NS <= IF1;
-			end if;
-			
-		when DR => -- Data Call Reset
-			NS <= IF1;	
-
-		when others =>
-			report "STATE TRANSITION: BAD STATE";
+		
+		when DS =>
+			NS <= DR;				
+		
+		when DR =>
 			NS <= IF1;
+		
+		when others =>
+			if (irq_flag = '1')then
+				NS <= DS;
+			else
+				NS <= IF1;
+			end if;
 
 	end case;
 end process state_transition_logic;
@@ -148,7 +172,6 @@ begin
 			-- PC = PC + 1
 			alu_src_A <= "00";
 			alu_src_B <= "01";
-			ir_wr <= "01";
 			pc_wr <= '1';
 			alu_op <= "000";
 
@@ -157,9 +180,14 @@ begin
 			-- PC = PC + 1
 			alu_src_A <= "00";
 			alu_src_B <= "01";
-			ir_wr <= "10";
 			pc_wr <= '1';
 			alu_op <= "000";
+
+		when IF1S =>
+			ir_wr <= "01";
+
+		when IF2S =>
+			ir_wr <= "10";
 
 		when ID1 => -- Instruction Decode
 			-- Stall for register and instruction register fetch/decode
@@ -170,11 +198,6 @@ begin
 			null;
 
 		when EX => -- Execute
-			-- C-Type: Reg[WR] = A op B
-			-- SL-Type: Destination = Source or Memory Access
-			-- Jump: PC = Register or Operand
-			-- F-Type: Set or Reset Flag
-			-- D-Type: DPCR = Rx & (Operand or R7)
 			case opcode is
 				when and_op =>
 					if (am = immediate_am) then
@@ -220,8 +243,21 @@ begin
 					alu_src_A <= "10";
 					alu_src_B <= "11";
 					alu_op <= "001";
-					wr_Z <= '1';
+					wr_Z <= '1';	
 
+				when max_op =>
+					alu_src_A <= "10";
+					alu_src_B <= "11";
+					alu_op <= "100";
+					r_wr <= '1';
+
+				when others =>
+					null;
+
+			end case;
+
+		when LR =>
+			case opcode is
 				when ldr_op =>
 					if (am = immediate_am) then
 						r_wr_d_sel <= "100";
@@ -229,42 +265,12 @@ begin
 					elsif (am = register_am) then -- memory access
 						m_addr_sel <= "011";
 						r_wr_d_sel <= "001";
+						r_wr <= '1';
 					elsif (am = direct_am) then
 						m_addr_sel <= "001";
 						r_wr_d_sel <= "001";
+						r_wr <= '1';
 					end if;	
-
-				when str_op =>
-					if (am = immediate_am) then
-						m_addr_sel <= "010";
-						m_data_sel <= "00";
-						m_wr <= '1';
-					elsif (am = register_am) then
-						m_addr_sel <= "010";
-						m_data_sel <= "10";
-						m_wr <= '1';
-					elsif (am = direct_am) then
-						m_addr_sel <= "001";
-						m_data_sel <= "10";
-						m_wr <= '1';
-					end if;
-
-				when jmp_op =>
-					pc_wr <= '1';
-					if (am = immediate_am) then
-						pc_src <= "01";
-					else
-						pc_src <= "10";
-					end if;
-
-				when present_op =>
-					-- Rx | 0
-					alu_src_A <= "10";
-					alu_src_B <= "10";
-					alu_op <= "011";
-					pc_wr_cond_p <= '1';
-					pc_src <= "01";
-					wr_Z <= '1';
 
 				when dcallbl_op =>
 					wr_DPCR <= '1';
@@ -272,11 +278,6 @@ begin
 					
 				when dcallnb_op =>
 					wr_DPCR <= '1';
-
-				when sz_op =>
-					pc_wr_cond_z <= '1';
-					pc_src <= "01";
-	
 				when clfz_op =>
 					reset_Z <= '1';
 
@@ -303,40 +304,77 @@ begin
 				when ssop_op =>
 					wr_SOP <= '1';
 
-				when max_op =>
-					alu_src_A <= "10";
-					alu_src_B <= "11";
-					alu_op <= "100";
-					r_wr <= '1';
+				when others =>
+					null;
 
-				when strpc_op =>
-					m_addr_sel <= "001";
-					m_data_sel <= "01";
-					m_wr <= '1';
+			end case;		
+
+		when MA =>
+			if (am = register_am) then
+				m_addr_sel <= "011";
+				r_wr_d_sel <= "001";
+			elsif (am = direct_am) then
+				m_addr_sel <= "001";
+				r_wr_d_sel <= "001";
+			end if;
+
+		when SM =>
+			if (opcode = strpc_op) then
+				m_addr_sel <= "001";
+				m_data_sel <= "01";
+				m_wr <= '1';
+			elsif (am = immediate_am) then -- str_op
+				m_addr_sel <= "010";
+				m_data_sel <= "00";
+				m_wr <= '1';
+			elsif (am = register_am) then
+				m_addr_sel <= "010";
+				m_data_sel <= "10";
+				m_wr <= '1';
+			elsif (am = direct_am) then
+				m_addr_sel <= "001";
+				m_data_sel <= "10";
+				m_wr <= '1';
+			end if;
+
+		when JP =>
+			case opcode is
+				when jmp_op =>
+					pc_wr <= '1';
+					if (am = immediate_am) then
+						pc_src <= "01";
+					else
+						pc_src <= "10";
+					end if;
+
+				when present_op =>
+					-- Rx | 0
+					alu_src_A <= "10";
+					alu_src_B <= "10";
+					alu_op <= "011";
+					pc_wr_cond_p <= '1';
+					pc_src <= "01";
+					wr_Z <= '1';
+
+				when sz_op =>
+					pc_wr_cond_z <= '1';
+					pc_src <= "01";
 
 				when others =>
 					null;
 
 			end case;
 
-		when DM =>
-			-- SL-Type = Destination = Source
-			-- D-Type: R0 = DPRR; M[WB] = DPRR
-			if (irq_flag = '1') then -- dcall routine
+
+		when DS =>
+			if (opcode = dcallbl_op) then -- blocking
 				r_wr_r_sel <= '1';
 				r_wr_d_sel <= "101";
 				r_wr <= '1';
+			else -- non-block
 				m_addr_sel <= "100";
 				m_data_sel <= "11";
 				m_wr <= '1';
-			elsif (am = register_am) then -- ldr
-				r_wr <= '1';
-				m_addr_sel <= "011";
-				r_wr_d_sel <= "001";
-			elsif (am = direct_am) then
-				r_wr <= '1';
-				m_addr_sel <= "001";
-				r_wr_d_sel <= "001";
 			end if;	
 			
 		when DR =>

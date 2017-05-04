@@ -90,7 +90,7 @@ signal s_m_addr_mux_output, s_m_data_mux_output, s_r_wr_mux_output, s_alu_src_a_
 signal s_r_rd_mux_a_output, s_ir_upper1,s_ir_upper2 : std_logic_vector(3 downto 0) := (others => '0');
 signal s_DPRR_out : std_logic_vector(s_data_width * 2 - 1 downto 0) := (others => '0');
 signal s_ir_upper0 : std_logic_vector(7 downto 0) := (others => '0');
-signal s_z_out, s_alu_zero, s_alu_overflow, s_pc_wr_en : std_logic := '0';
+signal s_z_out, s_alu_zero, s_alu_overflow, s_pc_wr_en, s_z_wr_en, s_ER_out : std_logic := '0';
 signal s_r_wr_r_mux_output : std_logic_vector(3 downto 0) := (others => '0');
 
 --signal s_m_addr_mux_inputs : mux_16_bit_arr(2 ** m_mux_sel_num - 1 downto 0) := 
@@ -174,6 +174,7 @@ component data_mem
 	);
 
 	port (
+		clk			:	in std_logic;
 		wr_en		:	in std_logic;
 		addr		:	in std_logic_vector(ram_addr_width - 1 downto 0);
 		data_in	:	in std_logic_vector(ram_data_width - 1 downto 0);
@@ -263,6 +264,7 @@ memory : data_mem
 		ram_data_width => s_data_width
 	)
 	port map(
+		clk		=> clk,
 		wr_en 	=> m_wr,
 		addr		=>	s_m_addr_mux_output,
 		data_in 	=> s_m_data_mux_output,
@@ -324,7 +326,7 @@ SVOP : gen_reg
 		reset => '0',
 		wr_en => wr_SVOP,
 
-		data_in => s_regfile_out_a,
+		data_in => s_regfile_out_b,
 		data_out => SVOP_out
 
 	);
@@ -338,7 +340,7 @@ SOP : gen_reg
 		reset => '0',
 		wr_en => wr_SOP,
 
-		data_in => s_regfile_out_a,
+		data_in => s_regfile_out_b,
 		data_out => SOP_out
 
 	);
@@ -377,7 +379,7 @@ DPRR : gen_reg
 	port map(
 		clk => clk,
 		reset => reset_DPRR,
-		wr_en => clk,
+		wr_en => DPRR_in(31),
 
 		data_in => DPRR_in,
 		data_out => s_DPRR_out
@@ -394,6 +396,59 @@ PC : gen_reg
 
 		data_in => s_pc_src_mux_output,
 		data_out => s_pc_output
+	);
+
+
+Z : gen_reg
+	generic map(
+		reg_width => 1
+	)
+	port map(
+		clk => clk,
+		reset => reset_z,
+		wr_en => s_z_wr_en,
+
+		data_in(0) => '1',
+		data_out(0) => s_z_out
+	);
+
+ER: gen_reg
+	generic map(
+		reg_width => 1 
+	)
+	port map(
+		clk => clk,
+		reset => reset_ER,
+		wr_en => ER_in,
+
+		data_in(0) => ER_in,
+		data_out(0) => s_ER_out
+	);
+
+EOT: gen_reg
+	generic map(
+		reg_width => 1
+	)
+	port map(
+		clk => clk,
+		reset => reset_EOT,
+		wr_en => set_EOT,
+
+		data_in(0) => '1',
+		data_out(0) => EOT_out
+	);
+
+DPC: gen_reg
+	generic map(
+		reg_width => 1
+	)
+	port map(
+		clk => clk,
+		reset => reset_DPC,
+		wr_en => set_DPC,
+
+		data_in(0) => '1',
+		data_out(0) => DPC_out
 	);
 
 --m_addr_mux : mux_16_bit
@@ -491,19 +546,20 @@ PC : gen_reg
 
 s_DPCR_in <= s_regfile_out_b & s_r_rd_mux_b_output;
 
-s_z_out <= '1' when (s_alu_zero = '1' and wr_z = '1') else 
-			  '0'	when reset_z = '1' else
-			  '0';
+--s_z_out <= '1' when (s_alu_zero = '1' and wr_z = '1') else 
+--			  '0'	when reset_z = '1';
+s_z_wr_en <= '1' when (s_alu_zero = '1' and wr_z = '1') else
+			 '0';
 
 s_pc_wr_en <= (s_alu_zero and pc_wr_cond_p)  or (pc_wr_cond_z and s_z_out) or pc_wr;
 
-EOT_out <= '1' when set_EOT = '1' else
-			  '0' when reset_EOT = '1' else
-			  '0';
+--EOT_out <= '1' when set_EOT = '1' else
+--			  '0' when reset_EOT = '1' else
+--			  '0';
 
-DPC_out	<= '1' when set_DPC = '1' else
-				'0' when reset_DPC = '1' else
-				'0';
+--DPC_out	<= '1' when set_DPC = '1' else
+--				'0' when reset_DPC = '1' else
+--				'0';
 
 am <= s_ir_upper0(7 downto 6);
 opcode <= s_ir_upper0(5 downto 0);
@@ -544,10 +600,10 @@ x"0000";
 s_r_wr_mux_output <=
 s_alu_out									when r_wr_sel = "000" else
 s_mem_data_out								when r_wr_sel = "001" else
-("000000000000000" & ER_in)			when r_wr_sel = "010" else
+("000000000000000" & s_ER_out)			when r_wr_sel = "010" else
 s_SIP_out									when r_wr_sel = "011" else
 s_ir_lower_0								when r_wr_sel = "100" else
-(x"0" & s_DPRR_OUT(23 downto 12))	when r_wr_sel = "101" else
+("00000000000000" & s_DPRR_OUT(1 downto 0))	when r_wr_sel = "101" else
 x"0000";
 
 s_alu_src_a_mux_output	<=

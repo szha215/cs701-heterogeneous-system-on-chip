@@ -29,6 +29,7 @@ component data_mem
 		constant ram_data_width		: positive := 16
 	);
 	port(
+		clk			:	in std_logic;
 		wr_en			:	in std_logic;
 		addr			:	in std_logic_vector(ram_addr_width - 1 downto 0); 
 		data_in		:	in std_logic_vector(ram_data_width - 1 downto 0);
@@ -46,10 +47,11 @@ t_data_mem : data_mem
 		ram_data_width => t_ram_data_width
 	)
 	port map(
-		wr_en		=>	t_wr_en,
-		addr 		=>	t_addr,
-		data_in	=>	t_data_in,
-		data_out	=>	t_data_out
+		clk			=>	t_clk,
+		wr_en			=>	t_wr_en,
+		addr 			=>	t_addr,
+		data_in		=>	t_data_in,
+		data_out		=>	t_data_out
 	);
 
 
@@ -74,7 +76,7 @@ begin
 	wait for t_clk_period;
 	t_wr_en <= '0';
 	wait for t_clk_period * 3;
-	wait for 5 ns;
+	--wait for 5 ns;
 
 	t_wr_en <= '1';
 	t_data_in <= x"F00F";

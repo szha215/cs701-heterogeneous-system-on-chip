@@ -44,7 +44,7 @@ begin
 		clean_registers : for i in 0 to reg_num - 1 loop
 			registers(i) <= (others => '0');
 		end loop ; -- clean_registers
-	elsif (falling_edge(clk)) then
+	elsif (rising_edge(clk)) then
 		if(wr_en = '1') then
 			--write 
 			registers(to_integer(unsigned(wr_reg))) <= wr_data;
@@ -61,8 +61,45 @@ begin
 end process ; -- reg_file_proc
 
 --registers(to_integer(unsigned(wr_reg))) <= wr_data when wr_en = '1';
-data_out_a <= registers(to_integer(unsigned(rd_reg1)));  -- asynchronous read
-data_out_b <= registers(to_integer(unsigned(rd_reg2)));
+data_out_a <= registers(0) when rd_reg1 = x"0" else
+			  registers(1) when rd_reg1 = x"1" else
+			  registers(2) when rd_reg1 = x"2" else
+			  registers(3) when rd_reg1 = x"3" else
+			  registers(4) when rd_reg1 = x"4" else
+			  registers(5) when rd_reg1 = x"5" else
+			  registers(6) when rd_reg1 = x"6" else
+			  registers(7) when rd_reg1 = x"7" else
+			  registers(8) when rd_reg1 = x"8" else
+			  registers(9) when rd_reg1 = x"9" else
+			  registers(10) when rd_reg1 = x"a" else
+			  registers(11) when rd_reg1 = x"b" else
+			  registers(12) when rd_reg1 = x"c" else
+			  registers(13) when rd_reg1 = x"d" else
+			  registers(14) when rd_reg1 = x"e" else
+			  registers(15) when rd_reg1 = x"f" else
+			  (others => '0');
+
+
+
+
+
+data_out_b <= registers(0) when rd_reg2 = x"0" else
+			  registers(1) when rd_reg2 = x"1" else
+			  registers(2) when rd_reg2 = x"2" else
+			  registers(3) when rd_reg2 = x"3" else
+			  registers(4) when rd_reg2 = x"4" else
+			  registers(5) when rd_reg2 = x"5" else
+			  registers(6) when rd_reg2 = x"6" else
+			  registers(7) when rd_reg2 = x"7" else
+			  registers(8) when rd_reg2 = x"8" else
+			  registers(9) when rd_reg2 = x"9" else
+			  registers(10) when rd_reg2 = x"a" else
+			  registers(11) when rd_reg2 = x"b" else
+			  registers(12) when rd_reg2 = x"c" else
+			  registers(13) when rd_reg2 = x"d" else
+			  registers(14) when rd_reg2 = x"e" else
+			  registers(15) when rd_reg2 = x"f" else
+			  (others => '0');
 
 ---------------------------------------------------------------------------------------------------
 

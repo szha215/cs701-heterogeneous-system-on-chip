@@ -65,7 +65,22 @@ begin
 
 end process clk_proc;
 
+t_SIP_in <= x"F00F";
 
+irq_proc : process
+begin
+	wait for 4700 ns;
+	t_DPRR_in <= x"F0000013";
+	t_ER_in <= '1';
+	wait for 40 ns;
+	t_DPRR_in <= x"00000000";
+	t_ER_in <= '0';
+	wait for 1010 ns;
+	t_DPRR_in <= x"F0000013";
+	wait for 40 ns;
+	t_DPRR_in <= x"00000000";
+	wait;
+end process;
 
 end architecture;
 
