@@ -136,7 +136,7 @@ t_ani : ani
 
 t_asp : asp
 	generic map(
-		N => 64,
+		N => 8,
 		L => 4
 	)
 	port map(

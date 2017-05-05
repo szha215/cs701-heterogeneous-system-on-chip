@@ -53,13 +53,12 @@ signal rd_pointer_inc_en, wr_pointer_inc_en, packet_sent_inc_en	: std_logic := '
 
 -- loads
 signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld, words_to_send_ld	: std_logic := '0';
-signal mem_sel_ld, mem_sel_ld_1, mem_sel_ld_0	: std_logic := '0';
 
 -- resets
 signal words_stored_reset, vectors_reset, packet_sent_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
 
 -- select lines
-signal d_packet_sel, calc_res_sel 	: std_logic_vector(1 downto 0) := (others => '0');
+signal d_packet_sel, calc_res_sel, mem_sel_sel 	: std_logic_vector(1 downto 0) := (others => '0');
 signal d_out_sel, vector_addr_sel, vector_d_sel, words_to_send_sel	: std_logic := '0';
 
 -- comparators from datapath
@@ -84,7 +83,8 @@ signal s_addr_to_store	: std_logic_vector(8 downto 0) := (others => '0');
 signal s_d_to_store	:std_logic_vector(15 downto 0) := (others => '0');
 
 signal s_reg_a_out, s_reg_b_out	: std_logic_vector(15 downto 0) := (others => '0');
-signal s_calc_res, s_mult_res, s_mac_res	: std_logic_vector(63 downto 0) := (others => '0');
+--signal s_calc_res, s_mult_res, s_mac_res	: std_logic_vector(63 downto 0) := (others => '0');
+signal s_calc_res, s_mult_res, s_mac_res	: std_logic_vector(47 downto 0) := (others => '0');
 signal s_xor_res, s_reg_out, s_ave_res	: std_logic_vector(15 downto 0) := (others => '0');
 
 signal s_words_sent, s_words_to_send		: std_logic_vector(1 downto 0) := (others => '0');  -- max 4 packets
@@ -111,15 +111,16 @@ end component;
 
 component average_filter is
 	generic(
-		window_size	: positive := 4;
+		--window_size	: positive := 4;
 		data_width	: positive := 16
 	);
 	port (
-		clk	: in std_logic;
-		reset	: in std_logic;
-		data	: in std_logic_vector(data_width - 1 downto 0);
+		clk			: in std_logic;
+		reset			: in std_logic;
+		window_size	: in std_logic_vector(3 downto 0);
+		data			: in std_logic_vector(data_width - 1 downto 0);
 
-		avg	: out std_logic_vector(data_width - 1 downto 0)
+		avg			: out std_logic_vector(data_width - 1 downto 0)
 	);
 end component;
 
@@ -197,7 +198,7 @@ begin
 mult_block : multiplier
 	generic map(
 		in_width			=> 16,
-		res_witdh		=> 64,
+		res_witdh		=> 48,
 		result_lowbit	=> 0
 	)
 	port map(
@@ -208,15 +209,16 @@ mult_block : multiplier
 
 aveage_block : average_filter
 	generic map(
-		window_size	=> L,
+		--window_size	=> L,
 		data_width	=> 16
 	)
 	port map(
-		clk	=> clk,
-		reset	=> ave_filter_reset,
-		data	=> s_reg_out,
-
-		avg	=> s_ave_res
+		clk		=> clk,
+		reset		=> ave_filter_reset,
+		window_size => s_end_addr(3 downto 0),
+		data		=> s_reg_out,
+	
+		avg		=> s_ave_res
 	);
 
 -- ALT RAM
@@ -437,9 +439,7 @@ begin
 	op_ld <= '0';
 	end_addr_ld <= '0';
 	start_addr_ld <= '0';
-	mem_sel_ld <= '0';
-	mem_sel_ld_1 <= '0';
-	mem_sel_ld_0 <= '0';
+	mem_sel_sel <= "00";
 	src_port_ld <= '0';
 
 	vector_ld <= '0';
@@ -484,14 +484,14 @@ begin
 
 			start_addr_ld <= '1';
 			src_port_ld <= '1';
-			mem_sel_ld <= '1';
+			mem_sel_sel <= "11";
 
 		when STORE_INIT =>
 			op_ld <= '1';
 			
 			start_addr_ld <= '1';
 			src_port_ld <= '1';
-			mem_sel_ld <= '1';
+			mem_sel_sel <= "11";
 
 			vector_addr_sel <= '0';
 
@@ -511,7 +511,7 @@ begin
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
 			src_port_ld <= '1';
-			mem_sel_ld_0 <= '1';
+			mem_sel_sel <= "01";
 
 			s_invoke_init <= '1';
 
@@ -527,7 +527,7 @@ begin
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
 			src_port_ld <= '1';
-			mem_sel_ld_1 <= '1';
+			mem_sel_sel <= "10";
 
 			s_invoke_init <= '1';
 
@@ -604,7 +604,7 @@ begin
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
 			src_port_ld <= '1';
-			mem_sel_ld_0 <= '1';
+			mem_sel_sel <= "01";
 
 			s_invoke_init <= '1';
 
@@ -623,7 +623,7 @@ begin
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
 			src_port_ld <= '1';
-			mem_sel_ld_1 <= '1';
+			mem_sel_sel <= "10";
 
 			s_invoke_init <= '1';
 
@@ -737,18 +737,36 @@ begin
 end process ; -- end_addr_process
 
 ---------------------------------------------------------------------------------------------------
-mem_sel_process : process(clk, mem_sel_ld, mem_sel_ld_1, mem_sel_ld_0, d_in_copy)
+mem_sel_process : process(clk, mem_sel_sel)
 begin
 	if (rising_edge(clk)) then
-		if (mem_sel_ld_1 = '1') then
-			s_mem_sel <= '1';
-		elsif (mem_sel_ld_0 = '1') then
-			s_mem_sel <= '0';
-		elsif (mem_sel_ld = '1') then
-			s_mem_sel <= d_in_copy(17);
-		else
-			s_mem_sel <= s_mem_sel;
-		end if;
+		case(mem_sel_sel) is
+		
+			when "00" =>
+				s_mem_sel <= s_mem_sel;
+
+			when "01" =>
+				s_mem_sel <= '0';
+
+			when "10" =>
+				s_mem_sel <= '1';
+
+			when "11" =>
+				s_mem_sel <= d_in_copy(17);
+
+			when others =>
+				s_mem_sel <= '0';
+		end case ;
+
+		--if (mem_sel_ld_1 = '1') then
+		--	s_mem_sel <= '1';
+		--elsif (mem_sel_ld_0 = '1') then
+		--	s_mem_sel <= '0';
+		--elsif (mem_sel_ld = '1') then
+		--	s_mem_sel <= d_in_copy(17);
+		--else
+		--	s_mem_sel <= s_mem_sel;
+		--end if;
 	end if;
 end process ; -- mem_sel_process
 
@@ -807,7 +825,8 @@ begin
 		if (words_to_send_ld = '1') then
 			case(words_to_send_sel) is
 				when '1' =>
-					s_words_to_send <= "11";
+					--s_words_to_send <= "11";
+					s_words_to_send <= "10";
 
 				when others =>
 					s_words_to_send <= "00";
@@ -899,7 +918,7 @@ end process ; -- wr_pointer_process
 ---------------------------------------------------------------------------------------------------
 compare_pointer_L : process(s_pointer)
 begin
-	if (s_pointer = std_logic_vector(to_unsigned(L, integer(ceil(log2(real(N))))))) then
+	if (s_pointer = std_logic_vector(to_unsigned(to_integer(unsigned(s_end_addr)), integer(ceil(log2(real(N))))))) then
 		cmp_pointer_L <= '1';
 	else
 		cmp_pointer_L <= '0';
@@ -944,18 +963,22 @@ end process ; -- result_store_low_15
 result_store_high_48 : process(clk, calc_res_sel, calc_result_reset)
 begin
 	if (calc_result_reset = '1') then
-		s_calc_res(63 downto 16) <= (others => '0');
+		--s_calc_res(63 downto 16) <= (others => '0');
+		s_calc_res(47 downto 16) <= (others => '0');
 
 	elsif (rising_edge(clk)) then
 		case(calc_res_sel(1)) is
 			when '0' =>
-				s_calc_res(63 downto 16) <= s_calc_res(63 downto 16);
+				--s_calc_res(63 downto 16) <= s_calc_res(63 downto 16);
+				s_calc_res(47 downto 16) <= s_calc_res(47 downto 16);
 
 			when '1' =>
-				s_calc_res(63 downto 16) <= s_mac_res(63 downto 16);
+				--s_calc_res(63 downto 16) <= s_mac_res(63 downto 16);
+				s_calc_res(47 downto 16) <= s_mac_res(47 downto 16);
 
 			when others =>
-				s_calc_res(63 downto 16) <= x"011000000110";
+				--s_calc_res(63 downto 16) <= x"011000000110";
+				s_calc_res(47 downto 16) <= x"00000110";
 
 		end case;
 	end if;
@@ -985,7 +1008,7 @@ with s_packet_id select s_packet <=
 	s_calc_res(15 downto 0) when "00",
 	s_calc_res(31 downto 16) when "01",
 	s_calc_res(47 downto 32) when "10",
-	s_calc_res(63 downto 48) when "11",
+	--s_calc_res(63 downto 48) when "11",
 	x"0000" when others;
 
 with d_out_sel select s_data <=

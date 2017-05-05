@@ -80,7 +80,7 @@ def ani():
     args.append('sim:/test_ani/t_asp/pointer_start_addr_ld')
     args.append('sim:/test_ani/t_asp/s_invoke_init')
 
-    args.append('; add wave -position insertpoint -color brown')  # ASP datapath
+    args.append('; add wave -position insertpoint -color mediumseagreen')  # ASP datapath
     args.append('-radix hexadecimal sim:/test_ani/t_asp/s_start_addr')
     args.append('sim:/test_ani/t_asp/s_end_addr')
     args.append('sim:/test_ani/t_asp/rd_pointer_inc_en')
@@ -97,7 +97,7 @@ def ani():
     args.append('sim:/test_ani/t_asp/reg_a_ld')
     args.append('sim:/test_ani/t_asp/reg_b_ld')
 
-    args.append('; add wave -position insertpoint -color brown')  # ASP datapath
+    args.append('; add wave -position insertpoint -color mediumseagreen')  # ASP datapath
     args.append('-radix hexadecimal sim:/test_ani/t_asp/s_addr_to_store')
     args.append('sim:/test_ani/t_asp/s_d_to_store')
     args.append('sim:/test_ani/t_asp/s_words_to_send')
@@ -106,7 +106,7 @@ def ani():
     args.append('sim:/test_ani/t_asp/s_d_out')
     # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
 
-    args.append('; run 2 us')
+    args.append('; run 3 us')
 
     txt = ' '.join(args)
 

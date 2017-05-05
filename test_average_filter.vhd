@@ -13,6 +13,7 @@ architecture behaviour of test_average_filter is
 constant t_clk_period : time := 20 ns;
 
 signal t_clk, t_reset	: std_logic;
+signal t_window_size		: std_logic_vector(3 downto 0) := "1000";
 signal t_data	: std_logic_vector(15 downto 0) := (others => '0');
 signal t_avg	: std_logic_vector(15 downto 0) := (others => '0');
 signal t_pointer, t_wr_pointer	: std_logic_vector(8 downto 0) := (others => '0');
@@ -21,12 +22,13 @@ signal reg_a_ld	: std_logic := '0';
 ---------------------------------------------------------------------------------------------------
 component average_filter is
 	generic(
-		window_size	: positive := 4;
+		--window_size	: positive := 4;
 		data_width	: positive := 16
 	);
 	port (
 		clk	: in std_logic;
 		reset	: in std_logic;
+		window_size	: in std_logic_vector(3 downto 0);
 		data	: in std_logic_vector(data_width - 1 downto 0);
 
 		avg	: out std_logic_vector(data_width - 1 downto 0)
@@ -72,15 +74,16 @@ begin
 
 filter : average_filter
 generic map(
-	window_size	=> 4,
+	--window_size	=> 4,
 	data_width	=> 16
 )
 port map(
-	clk	=> t_clk,
-	reset => t_reset,
-	data	=> t_data,
+	clk			=> t_clk,
+	reset 		=> t_reset,
+	window_size	=> t_window_size,
+	data			=> t_data,
 
-	avg	=> t_avg
+	avg			=> t_avg
 );
 
 ram_a : altsyncram
@@ -115,39 +118,6 @@ ram_a : altsyncram
 		address_b => t_pointer(integer(ceil(log2(real(8)))) - 1 downto 0),
 		q_b => t_data
 	);
-
---ram_b : altsyncram
---	generic map (
---		address_aclr_b => "CLEAR0",
---		address_reg_b => "CLOCK0",
---		clock_enable_input_a => "BYPASS",
---		clock_enable_input_b => "BYPASS",
---		clock_enable_output_b => "BYPASS",
---		init_file => "ram_b.mif",
---		intended_device_family => "Cyclone IV E",
---		lpm_type => "altsyncram",
---		numwords_a => 8,
---		numwords_b => 8,
---		operation_mode => "DUAL_PORT",
---		outdata_aclr_b => "CLEAR0",
---		outdata_reg_b => "UNREGISTERED",
---		power_up_uninitialized => "FALSE",
---		read_during_write_mode_mixed_ports => "OLD_DATA",
---		widthad_a => integer(ceil(log2(real(8)))),
---		widthad_b => integer(ceil(log2(real(8)))),
---		width_a => 16,
---		width_b => 16,
---		width_byteena_a => 1
---	)
---	port map (
---		clock0 => clk,
---		aclr0 => t_reset,
---		address_a => t_wr_pointer(integer(ceil(log2(real(8)))) - 1 downto 0),
---		data_a => t_avg,
---		wren_a => '0',
---		address_b => t_pointer(integer(ceil(log2(real(8)))) - 1 downto 0),
---		q_b => s_reg_b_out
---	);	
 
 ---------------------------------------------------------------------------------------------------
 t_clk_process : process
