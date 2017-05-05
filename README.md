@@ -15,3 +15,10 @@
 3. After compilation, paste the commands into the Modelsim console and enter. 
 4. If you encounter `failed to load altera_mf library` error. Execute the `load_lib.do` file by `do load_lib.do`.  
 
+### Memory Pipeline
+- Tested in Modelsim:
+- Time before pipelined: $12120 ns$
+- Time after pipelined $11520 ns$
+- Time difference : $640 ns$
+- Speed up: $\frac{640}{12120} =  5.28\%$
+- Maximum frequency tested with Quartus is reduced $69MHz$ from $71MHz$. But the number of cycles for each instruction is reduced by one.

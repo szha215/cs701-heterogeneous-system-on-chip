@@ -1,0 +1,1 @@
+C:\Python27\python.exe recop_compile.py %1
