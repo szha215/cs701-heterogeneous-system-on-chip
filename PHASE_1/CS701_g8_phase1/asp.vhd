@@ -49,49 +49,49 @@ type data_vector is array (0 to N - 1) of std_logic_vector(15 downto 0);
 signal s_A, s_B : data_vector := (others => (others =>'0'));
 
 -- Control signals 
-signal rd_pointer_inc_en, wr_pointer_inc_en, packet_sent_inc_en	: std_logic := '0';
+signal packet_sent_inc_en	: std_logic := '0';
 
 -- loads
-signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, pointer_start_addr_ld, words_to_send_ld	: std_logic := '0';
+signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, words_to_send_ld	: std_logic := '0';
 
 -- resets
 signal words_stored_reset, vectors_reset, packet_sent_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
 
 -- select lines
-signal d_packet_sel, calc_res_sel, mem_sel_sel 	: std_logic_vector(1 downto 0) := (others => '0');
+signal d_packet_sel, calc_res_sel, mem_sel_sel, rd_pointer_sel, wr_pointer_sel 	: std_logic_vector(1 downto 0) := (others => '0');
 signal d_out_sel, vector_addr_sel, vector_d_sel, words_to_send_sel	: std_logic := '0';
 
 -- comparators from datapath
 signal cmp_store, cmp_sent, cmp_pointer_L, cmp_pointer_1, cmp_rd_pointer_end : std_logic := '0';
 
-signal s_invoke_init	: std_logic := '0';
-
-
 
 -- Datapath
+-- from d_in
 signal s_op_code	: std_logic_vector(3 downto 0) := (others => '0');
 signal s_start_addr, s_end_addr		: std_logic_vector(8 downto 0) := (others => '0');
 signal s_mem_sel		: std_logic := '0';
 
+-- to d_in
 signal s_packet_id		: std_logic_vector(1 downto 0) := (others => '0');
 signal s_packet, s_data	: std_logic_vector(15 downto 0) := (others => '0');
 signal s_d_out				: std_logic_vector(31 downto 0) := (others => '0');
+signal s_src_port, s_dest_port	: std_logic_vector(3 downto 0) := (others => '0');
 
+-- pointers
 signal s_pointer, s_wr_pointer : std_logic_vector(integer(ceil(log2(real(N)))) - 1 downto 0) := (others => '0');
 
+-- store
 signal s_addr_to_store	: std_logic_vector(8 downto 0) := (others => '0');
 signal s_d_to_store	:std_logic_vector(15 downto 0) := (others => '0');
 
+-- outputs of things
 signal s_reg_a_out, s_reg_b_out	: std_logic_vector(15 downto 0) := (others => '0');
---signal s_calc_res, s_mult_res, s_mac_res	: std_logic_vector(63 downto 0) := (others => '0');
 signal s_calc_res, s_mult_res, s_mac_res	: std_logic_vector(47 downto 0) := (others => '0');
 signal s_xor_res, s_reg_out, s_ave_res	: std_logic_vector(15 downto 0) := (others => '0');
 
+-- counters
 signal s_words_sent, s_words_to_send		: std_logic_vector(1 downto 0) := (others => '0');  -- max 4 packets
 signal s_words_stored, s_words_to_store	: std_logic_vector(8 downto 0) := (others => '0');
-
-signal s_src_port, s_dest_port	: std_logic_vector(3 downto 0) := (others => '0');
-
 
 ---------------------------------------------------------------------------------------------------
 -- component declaration here
@@ -446,16 +446,14 @@ begin
 	vector_d_sel <= '0';
 	vectors_reset <= '0';
 	words_stored_reset <= '0';
-	pointer_start_addr_ld <= '0';
 
-	rd_pointer_inc_en <= '0';
-	wr_pointer_inc_en <= '0';
+	rd_pointer_sel <= "00";
+	wr_pointer_sel <= "00";
 	vector_addr_sel <= '1';
 
 	busy <= '0';
 	res_ready <= '0';
 
-	s_invoke_init <= '0';
 	calc_result_reset <= '0';
 	calc_res_sel <= "00";
 
@@ -499,7 +497,7 @@ begin
 			vector_addr_sel <= '0';
 
 		when STORE_DATA =>
-			pointer_start_addr_ld <= '1';
+			rd_pointer_sel <= "01";
 			vector_ld <= '1';
 
 			vector_addr_sel <= '0';
@@ -513,9 +511,7 @@ begin
 			src_port_ld <= '1';
 			mem_sel_sel <= "01";
 
-			s_invoke_init <= '1';
-
-			rd_pointer_inc_en <= '0';
+			rd_pointer_sel <= "11";
 
 			calc_result_reset <= '1';
 			calc_res_sel <= "00";
@@ -529,9 +525,7 @@ begin
 			src_port_ld <= '1';
 			mem_sel_sel <= "10";
 
-			s_invoke_init <= '1';
-
-			rd_pointer_inc_en <= '0';
+			rd_pointer_sel <= "11";
 
 			calc_result_reset <= '1';
 			calc_res_sel <= "00";
@@ -539,7 +533,7 @@ begin
 			busy <= '1';
 
 		when XOR_1 =>
-			rd_pointer_inc_en <= '1';
+			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '1';
 			calc_res_sel <= "00";
@@ -547,7 +541,7 @@ begin
 			busy <= '1';
 
 		when XOR_2 =>
-			rd_pointer_inc_en <= '1';
+			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '0';
 			calc_res_sel <= "01";
@@ -555,7 +549,7 @@ begin
 			busy <= '1';
 
 		when XOR_3 =>
-			rd_pointer_inc_en <= '0';
+			rd_pointer_sel <= "00";
 			calc_res_sel <= "01";
 
 			busy <= '1';
@@ -566,9 +560,7 @@ begin
 			end_addr_ld <= '1';
 			src_port_ld <= '1';
 
-			s_invoke_init <= '1';
-
-			rd_pointer_inc_en <= '0';
+			rd_pointer_sel <= "11";
 
 			calc_result_reset <= '1';
 			calc_res_sel <= "10";
@@ -576,7 +568,7 @@ begin
 			busy <= '1';
 
 		when MAC_1 =>
-			rd_pointer_inc_en <= '1';
+			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '1';
 			calc_res_sel <= "10";
@@ -584,7 +576,7 @@ begin
 			busy <= '1';
 			
 		when MAC_2 =>
-			rd_pointer_inc_en <= '1';
+			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '0';
 			calc_res_sel <= "10";
@@ -592,7 +584,7 @@ begin
 			busy <= '1';
 
 		when MAC_3 =>
-			rd_pointer_inc_en <= '0';
+			rd_pointer_sel <= "00";
 			calc_res_sel <= "10";
 
 			words_to_send_ld <= '1';
@@ -606,13 +598,11 @@ begin
 			src_port_ld <= '1';
 			mem_sel_sel <= "01";
 
-			s_invoke_init <= '1';
-
-			rd_pointer_inc_en <= '0';
-			wr_pointer_inc_en <= '0';
+			rd_pointer_sel <= "11";
+			wr_pointer_sel <= "00";
 
 			ave_filter_reset <= '1';
-			pointer_start_addr_ld <= '1';
+			rd_pointer_sel <= "10";
 
 			vector_addr_sel <= '1';
 
@@ -625,13 +615,11 @@ begin
 			src_port_ld <= '1';
 			mem_sel_sel <= "10";
 
-			s_invoke_init <= '1';
-
-			rd_pointer_inc_en <= '0';
-			wr_pointer_inc_en <= '0';
+			rd_pointer_sel <= "11";
+			wr_pointer_sel <= "00";
 
 			ave_filter_reset <= '1';
-			pointer_start_addr_ld <= '1';
+			rd_pointer_sel <= "10";
 
 			vector_addr_sel <= '1';
 
@@ -640,22 +628,22 @@ begin
 		when AVE_1 =>
 			ave_filter_reset <= '1';
 
-			rd_pointer_inc_en <= '1';
-			wr_pointer_inc_en <= '0';
+			rd_pointer_sel <= "01";
+			wr_pointer_sel <= "00";
 
 			vector_addr_sel <= '1';
 			busy <= '1';
 
 		when AVE_2 =>
-			rd_pointer_inc_en <= '1';
-			wr_pointer_inc_en <= '0';
+			rd_pointer_sel <= "01";
+			wr_pointer_sel <= "00";
 
 			calc_res_sel <= "00";
 			busy <= '1';
 			
 		when AVE_3 =>
-			rd_pointer_inc_en <= '1';
-			wr_pointer_inc_en <= '1';
+			rd_pointer_sel <= "01";
+			wr_pointer_sel <= "01";
 
 			vector_d_sel <= '1';
 			vector_ld <= '1';
@@ -757,26 +745,16 @@ begin
 			when others =>
 				s_mem_sel <= '0';
 		end case ;
-
-		--if (mem_sel_ld_1 = '1') then
-		--	s_mem_sel <= '1';
-		--elsif (mem_sel_ld_0 = '1') then
-		--	s_mem_sel <= '0';
-		--elsif (mem_sel_ld = '1') then
-		--	s_mem_sel <= d_in_copy(17);
-		--else
-		--	s_mem_sel <= s_mem_sel;
-		--end if;
 	end if;
 end process ; -- mem_sel_process
 
 ---------------------------------------------------------------------------------------------------
-words_stored_process : process(clk, pointer_start_addr_ld, words_stored_reset)
+words_stored_process : process(clk, rd_pointer_sel, words_stored_reset)
 begin
-	if (rising_edge(clk)) then
-		if (words_stored_reset = '1') then
+	if (words_stored_reset = '1') then
 			s_words_stored <= (others => '0');
-		elsif (pointer_start_addr_ld = '1') then
+	elsif (rising_edge(clk)) then
+		if (rd_pointer_sel = "01") then
 			s_words_stored <= s_words_stored + '1';
 		else
 			s_words_stored <= s_words_stored;
@@ -884,34 +862,50 @@ begin
 end process ; -- compare_rd_pointer_end_addr
 
 ---------------------------------------------------------------------------------------------------
-rd_pointer_process : process(clk, s_invoke_init, pointer_start_addr_ld, rd_pointer_inc_en, d_in_copy)
+rd_pointer_process : process(clk, rd_pointer_sel, d_in_copy)
 begin
 	if (rising_edge(clk)) then
-		if (s_invoke_init = '1') then
-			s_pointer <= d_in_copy(integer(ceil(log2(real(N)))) - 1 downto 0);
-		elsif (pointer_start_addr_ld = '1') then
-			s_pointer <= d_in_copy(integer(ceil(log2(real(N)))) + 15 downto 16);
-		elsif (rd_pointer_inc_en = '1') then
-			s_pointer <= s_pointer + '1';
-		else
-			s_pointer <= s_pointer;
-		end if;
+		case(rd_pointer_sel) is
+			when "00" =>
+				s_pointer <= s_pointer;
+
+			when "01" =>
+				s_pointer <= s_pointer + '1';
+
+			when "10" =>
+				s_pointer <= d_in_copy(integer(ceil(log2(real(N)))) + 15 downto 16);
+
+			when "11" =>	
+				s_pointer <= d_in_copy(integer(ceil(log2(real(N)))) - 1 downto 0);
+
+			when others =>
+				s_pointer <= s_pointer;
+
+		end case;
 	end if;
 end process ; -- rd_pointer_process
 
 ---------------------------------------------------------------------------------------------------
-wr_pointer_process : process(clk, s_invoke_init, wr_pointer_inc_en, d_in_copy)
+wr_pointer_process : process(clk, wr_pointer_sel, d_in_copy)
 begin
 	if (rising_edge(clk)) then
-		if (s_invoke_init = '1') then
-			s_wr_pointer <= d_in_copy(integer(ceil(log2(real(N)))) - 1 downto 0);
-		elsif (pointer_start_addr_ld = '1') then
-			s_wr_pointer <= d_in_copy(integer(ceil(log2(real(N)))) + 15 downto 16);
-		elsif (wr_pointer_inc_en = '1') then
-			s_wr_pointer <= s_wr_pointer + '1';
-		else
-			s_wr_pointer <= s_wr_pointer;
-		end if;
+		case(wr_pointer_sel) is
+			when "00" =>
+				s_wr_pointer <= s_wr_pointer;
+
+			when "01" =>
+				s_wr_pointer <= s_wr_pointer + '1';
+
+			when "10" =>
+				s_wr_pointer <= d_in_copy(integer(ceil(log2(real(N)))) + 15 downto 16);
+
+			when "11" =>	
+				s_wr_pointer <= d_in_copy(integer(ceil(log2(real(N)))) - 1 downto 0);
+
+			when others =>
+				s_wr_pointer <= s_wr_pointer;
+
+		end case;
 	end if;
 end process ; -- wr_pointer_process
 
@@ -963,21 +957,17 @@ end process ; -- result_store_low_15
 result_store_high_48 : process(clk, calc_res_sel, calc_result_reset)
 begin
 	if (calc_result_reset = '1') then
-		--s_calc_res(63 downto 16) <= (others => '0');
 		s_calc_res(47 downto 16) <= (others => '0');
 
 	elsif (rising_edge(clk)) then
 		case(calc_res_sel(1)) is
 			when '0' =>
-				--s_calc_res(63 downto 16) <= s_calc_res(63 downto 16);
 				s_calc_res(47 downto 16) <= s_calc_res(47 downto 16);
 
 			when '1' =>
-				--s_calc_res(63 downto 16) <= s_mac_res(63 downto 16);
 				s_calc_res(47 downto 16) <= s_mac_res(47 downto 16);
 
 			when others =>
-				--s_calc_res(63 downto 16) <= x"011000000110";
 				s_calc_res(47 downto 16) <= x"00000110";
 
 		end case;
@@ -986,7 +976,10 @@ end process ; -- result_store_high_48
 
 ---------------------------------------------------------------------------------------------------
 -- concurrent signal assignments here
--- signal <= some_sig;
+
+s_xor_res <= s_reg_out xor s_calc_res(15 downto 0);
+
+s_mac_res <= s_mult_res + s_calc_res;
 
 with vector_d_sel select s_d_to_store <=
 	s_ave_res(15 downto 0) when '1',
@@ -1000,15 +993,10 @@ with s_mem_sel select s_reg_out <=
 	s_reg_b_out when '1',
 	s_reg_a_out when others;
 
-s_xor_res <= s_reg_out xor s_calc_res(15 downto 0);
-
-s_mac_res <= s_mult_res + s_calc_res;
-
 with s_packet_id select s_packet <=
 	s_calc_res(15 downto 0) when "00",
 	s_calc_res(31 downto 16) when "01",
 	s_calc_res(47 downto 32) when "10",
-	--s_calc_res(63 downto 48) when "11",
 	x"0000" when others;
 
 with d_out_sel select s_data <=
@@ -1020,7 +1008,6 @@ reg_a_ld <= '1' when vector_ld = '1' and s_mem_sel = '0' else
 
 reg_b_ld <= '1' when vector_ld = '1' and s_mem_sel = '1' else
 				'0';
-
 
 s_d_out <=
 	"11" & 
