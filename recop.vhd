@@ -1,8 +1,13 @@
+-- UoA - COMPSYS 701 - ADVANCED DIGITAL DESIGN
+-- GROUP 8, TEAM AJS
+-- PHASE ONE: RECOP
+-- REFER TO DATAPATH DIAGRAM AND CONTROL ISA
+
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
---use ieee.numeric_std.all;
+USE ieee.numeric_std.ALL;
+use ieee.math_real.all;
 
 ---------------------------------------------------------------------------------------------------
 entity recop is
@@ -15,6 +20,7 @@ port(	clk				: in std_logic;
 		ER_in			: in std_logic;
 		DPRR_in			: in std_logic_vector(31 downto 0);
 		SIP_in			: in std_logic_vector(reg_width - 1 downto 0);
+		reset 			: in std_logic;
 
 		EOT_out			: out std_logic;
 		DPCR_out		: out std_logic_vector(31 downto 0);
@@ -70,6 +76,7 @@ component recop_datapath
 
 	port (
 		clk				:	in std_logic;
+		reset			:   in std_logic;
 
 		--control signal for EOT, PC and Z registers
 		reset_z			:	in std_logic;
@@ -132,6 +139,7 @@ component recop_control
 		am				: in std_logic_vector(1 downto 0);
 		opcode			: in std_logic_vector(5 downto 0);
 		irq_flag		: in std_logic;
+		reset			: in std_logic;
 			
 		m_addr_sel 		: out std_logic_vector(2 downto 0);
 		m_data_sel		: out std_logic_vector(1 downto 0);
@@ -176,6 +184,7 @@ datapath_unit : recop_datapath
 	)
 	port map (
 		clk => clk,
+		reset => reset,
 		ER_in => ER_in,
 		DPRR_in => DPRR_in,
 		SIP_in => SIP_in,
@@ -230,6 +239,7 @@ datapath_unit : recop_datapath
 control_unit : recop_control
 	port map (
 		clk => clk,
+		reset => reset,
 		am => s_am,
 		opcode => s_opcode,
 		irq_flag => s_irq_flag,

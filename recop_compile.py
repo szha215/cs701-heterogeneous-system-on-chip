@@ -176,9 +176,9 @@ def recop():
     args.append('sim:/test_recop/t_recop/datapath_unit/DPC_out')
     args.append('sim:/test_recop/t_recop/datapath_unit/s_z_out')
     args.append('sim:/test_recop/t_recop/datapath_unit/irq_flag')
+    args.append('sim:/test_recop/t_reset ')
 
-
-    args.append('; run 12.5 us')
+    args.append('; run 13.1 us')
     return ' '.join(args)
 
 

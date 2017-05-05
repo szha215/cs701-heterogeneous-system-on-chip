@@ -1,3 +1,8 @@
+-- UoA - COMPSYS 701 - ADVANCED DIGITAL DESIGN
+-- GROUP 8, TEAM AJS
+-- PHASE ONE: RECOP DATAPATH
+-- REFER TO DATAPATH DIAGRAM AND CONTROL ISA
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -17,7 +22,7 @@ entity recop_datapath is
 
 port (
 	clk				:	in std_logic;
-
+	reset 			:  in std_logic;
 
 	--control signal for EOT, PC and Z registers
 	reset_z			:	in std_logic;
@@ -76,8 +81,7 @@ port (
 	am					:	out std_logic_vector(1 downto 0);
 	opcode			:	out std_logic_vector(5 downto 0)
 ) ;
-end entity ; -- 
-
+end entity ; 
 
 architecture behaviour of recop_datapath is
 
@@ -92,56 +96,6 @@ signal s_DPRR_out : std_logic_vector(s_data_width * 2 - 1 downto 0) := (others =
 signal s_ir_upper0 : std_logic_vector(7 downto 0) := (others => '0');
 signal s_z_out, s_alu_zero, s_alu_overflow, s_pc_wr_en, s_z_wr_en, s_ER_out : std_logic := '0';
 signal s_r_wr_r_mux_output : std_logic_vector(3 downto 0) := (others => '0');
-
---signal s_m_addr_mux_inputs : mux_16_bit_arr(2 ** m_mux_sel_num - 1 downto 0) := 
---																		 (0 => s_pc_output, 
---																		  1 => s_ir_lower_0, 
---																		  2 => s_regfile_out_a, 
---																		  3 => s_regfile_out_b,
---																		  4 => (x"0" & s_DPRR_OUT(23 downto 12)),
---																		  others => x"0000");
-
---signal s_m_data_mux_inputs : mux_16_bit_arr(2 ** m_mux_sel_num -1 downto 0) := 
---																		 (0 => s_pc_output, 
---																		  1 => s_ir_lower_0, 
---																		  2 => s_regfile_out_a, 
---																		  3 => ("00000000000000" & s_DPRR_OUT(1 downto 0)),
---																		  others => x"0000");
-
---signal s_r_rd_mux_a_inputs : mux_4_bit_arr(1 downto 0) :=  (0 => x"7", 
---																		  1 => s_ir_upper1); 
---signal s_r_rd_mux_b_inputs : mux_16_bit_arr(1 downto 0) :=  (0 => s_regfile_out_a, 
---																		  1 => s_ir_lower_0); 
-
---signal s_pc_src_mux_inputs : mux_16_bit_arr(3 downto 0) :=  (0 => s_alu_out, 
---																		  1 => s_ir_lower_0,
---																		  2 => s_regfile_out_b,
---																		  3 => x"0000"); 
-
---signal s_r_wr_mux_inputs   : mux_16_bit_arr(2 ** r_wr_mux_sel_num - 1 downto 0) := 
---																			 (0 => s_alu_out, 
---																		     1 => s_mem_data_out, 
---																		     2 => ("000000000000000" & ER_in), 
---																		     3 => s_SIP_out,
---																		     4 => s_ir_lower_0,
---																		     5 => (x"0" & s_DPRR_out(23 downto 12)),
---																		     others => x"0000");
-
---signal s_alu_src_a_mux_inputs : mux_16_bit_arr(3 downto 0) := (0 => s_pc_output, 
---																		  	  1 => s_ir_lower_0, 
---																		     2 => s_regfile_out_a, 
---																		     3 => s_regfile_out_b);
-
---signal s_alu_src_b_mux_inputs : mux_16_bit_arr(3 downto 0) := (0 => s_regfile_out_b, 
---																		  	  1 => x"0001", 
---																		     2 => x"0000", 
---																		     3 => s_ir_lower_0);
-
-
-																		  
-
-
-
 
 
 --------------------------------------------------------------------------------
@@ -277,7 +231,7 @@ ir : ins_reg
 	)
 	port map(
 		clk		=>	clk,
-		reset 	=> '0',
+		reset 	=> reset,
 		data_in 	=> s_mem_data_out,
 		ir_wr_en => ir_wr,
 
@@ -295,7 +249,7 @@ regfile : reg_file
 	)
 	port map(
 		clk 			=> clk,
-		reset 		=> '0',
+		reset 		=> reset,
 		wr_en 		=> r_wr,
 		rd_reg1 		=> s_r_rd_mux_a_output,
 		rd_reg2 		=> s_ir_upper2,
@@ -323,7 +277,7 @@ SVOP : gen_reg
 	)
 	port map(
 		clk	=> clk,
-		reset => '0',
+		reset => reset,
 		wr_en => wr_SVOP,
 
 		data_in => s_regfile_out_b,
@@ -337,7 +291,7 @@ SOP : gen_reg
 	)
 	port map(
 		clk	=> clk,
-		reset => '0',
+		reset => reset,
 		wr_en => wr_SOP,
 
 		data_in => s_regfile_out_b,
@@ -351,7 +305,7 @@ DPCR : gen_reg
 	)
 	port map(
 		clk	=> clk,
-		reset => '0',
+		reset => reset,
 		wr_en => wr_DPCR,
 
 		data_in => s_DPCR_in,
@@ -365,7 +319,7 @@ SIP : gen_reg
 	)
 	port map(
 		clk	=> clk,
-		reset => '0',
+		reset => reset,
 		wr_en => clk,
 
 		data_in => SIP_in,
@@ -391,7 +345,7 @@ PC : gen_reg
 	)
 	port map(
 		clk	=> clk,
-		reset => '0',
+		reset => reset,
 		wr_en => s_pc_wr_en,
 
 		data_in => s_pc_src_mux_output,
@@ -451,119 +405,22 @@ DPC: gen_reg
 		data_out(0) => DPC_out
 	);
 
---m_addr_mux : mux_16_bit
---	generic map(
---		sel_num => m_mux_sel_num
---	)
---	port map(
---		inputs 	=> s_m_addr_mux_inputs,
---		sel		=>	m_addr_sel,
-
---		output	=> s_m_addr_mux_output
---	);
-
---m_data_mux : mux_16_bit
---	generic map(
---		sel_num => m_mux_sel_num
---	)
---	port map(
---		inputs 	=> s_m_data_mux_inputs,
---		sel		=> m_data_sel,
-
---		output	=>	s_m_data_mux_output
---	);
-
---r_rd_mux_a : mux_4_bit
---	generic map(
---		sel_num => 1
---	)
---	port map(
---		inputs	=>	s_r_rd_mux_a_inputs,
---		sel(0)		=>	r_rd_sel,
-
---		output	=> s_r_rd_mux_a_output
-
---	);
-
---r_rd_mux_b : mux_16_bit
---	generic map(
---		sel_num => 1
---	)
---	port map(
---		inputs	=>	s_r_rd_mux_b_inputs,
---		sel(0)		=>	r_rd_sel,
-
---		output	=> s_r_rd_mux_b_output
---	);
-
---r_wr_mux : mux_16_bit
---	generic map(
---		sel_num => 3
---	)
---	port map(
---		inputs 	=> s_r_wr_mux_inputs,
---		sel		=> r_wr_sel,
-
---		output	=>	s_r_wr_mux_output
---	);
-
---alu_src_a_mux : mux_16_bit
---	generic map(
---		sel_num => 2
---	)
-
---	port map(
---		inputs	=>	s_alu_src_a_mux_inputs,
---		sel		=> alu_src_A,
-
---		output	=>	s_alu_src_a_mux_output
---	);
-
-
---alu_src_b_mux : mux_16_bit
---	generic map(
---		sel_num => 2
---	)
-
---	port map(
---		inputs	=>	s_alu_src_b_mux_inputs,
---		sel		=> alu_src_B,
-
---		output	=>	s_alu_src_b_mux_output
---	);
-
---pc_src_mux	:	mux_16_bit
---	generic map(
---		sel_num => 2
---	)
---	port map(
---		inputs 	=> s_pc_src_mux_inputs,
---		sel	=>	pc_src,
-
---		output	=> s_pc_src_mux_output
-
---	);
-
-s_DPCR_in <= s_regfile_out_b & s_r_rd_mux_b_output;
-
---s_z_out <= '1' when (s_alu_zero = '1' and wr_z = '1') else 
---			  '0'	when reset_z = '1';
-s_z_wr_en <= '1' when (s_alu_zero = '1' and wr_z = '1') else
-			 '0';
-
-s_pc_wr_en <= (s_alu_zero and pc_wr_cond_p)  or (pc_wr_cond_z and s_z_out) or pc_wr;
-
---EOT_out <= '1' when set_EOT = '1' else
---			  '0' when reset_EOT = '1' else
---			  '0';
-
---DPC_out	<= '1' when set_DPC = '1' else
---				'0' when reset_DPC = '1' else
---				'0';
-
+-- signals to control unit
 am <= s_ir_upper0(7 downto 6);
 opcode <= s_ir_upper0(5 downto 0);
+irq_flag <= s_DPRR_OUT(1);
 
+-- DPCR write data
+s_DPCR_in <= s_regfile_out_b & s_r_rd_mux_b_output;
+
+-- Z register write enable
+s_z_wr_en <= '1' when (s_alu_zero = '1' and wr_z = '1') else
+				 '0';
+
+-- PC register write enable
+s_pc_wr_en <= (s_alu_zero and pc_wr_cond_p)  or (pc_wr_cond_z and s_z_out) or pc_wr;
+
+-- memory address mux
 s_m_addr_mux_output <=
 s_pc_output									when m_addr_sel = "000" else
 s_ir_lower_0 								when m_addr_sel = "001" else
@@ -572,8 +429,7 @@ s_regfile_out_b 						 	when m_addr_sel = "011" else
 (x"0" & s_DPRR_OUT(23 downto 12)) 	when m_addr_sel = "100" else
 x"0000";
 
-irq_flag <= s_DPRR_OUT(1);
-
+-- memory data mux
 s_m_data_mux_output <=
 s_ir_lower_0								when m_data_sel = "00" else
 s_pc_output									when m_data_sel = "01" else
@@ -581,22 +437,26 @@ s_regfile_out_b							when m_data_sel = "10" else
 ("00000000000000" & s_DPRR_OUT(1 downto 0)) when m_data_sel = "11" else
 x"0000";
 
+-- register read a mux
 s_r_rd_mux_a_output <=
 x"7"											when r_rd_sel = '0' else
 s_ir_upper1									when r_rd_sel = '1' else
 x"0";
 
+-- register read b mux
 s_r_rd_mux_b_output <= 
 s_regfile_out_a							when r_rd_sel = '0' else
 s_ir_lower_0								when r_rd_sel = '1' else
 x"0000";
 
+-- pc src mux
 s_pc_src_mux_output <=
 s_alu_out									when pc_src = "00" else
 s_ir_lower_0								when pc_src = "01" else
 s_regfile_out_b							when pc_src = "10" else
 x"0000";
 
+-- register write data mux
 s_r_wr_mux_output <=
 s_alu_out									when r_wr_sel = "000" else
 s_mem_data_out								when r_wr_sel = "001" else
@@ -606,6 +466,7 @@ s_ir_lower_0								when r_wr_sel = "100" else
 ("00000000000000" & s_DPRR_OUT(1 downto 0))	when r_wr_sel = "101" else
 x"0000";
 
+-- alu src a mux
 s_alu_src_a_mux_output	<=
 s_pc_output									when alu_src_A = "00" else
 s_ir_lower_0								when alu_src_A = "01" else
@@ -613,6 +474,7 @@ s_regfile_out_a							when alu_src_A = "10" else
 s_regfile_out_b							when alu_src_A = "11" else
 x"0000";
 
+-- alu src b mux
 s_alu_src_b_mux_output	<=
 s_regfile_out_b							when alu_src_B = "00" else
 x"0001"										when alu_src_B = "01" else
@@ -620,7 +482,7 @@ x"0000"										when alu_src_B = "10" else
 s_ir_lower_0								when alu_src_B = "11" else
 x"0000";
 
-
+-- register write address mux
 s_r_wr_r_mux_output <=
 s_ir_upper1									when r_wr_r_sel = '0' else
 x"0"											when r_wr_r_sel = '1' else

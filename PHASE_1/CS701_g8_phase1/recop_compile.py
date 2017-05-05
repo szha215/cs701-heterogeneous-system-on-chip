@@ -176,9 +176,9 @@ def recop():
     args.append('sim:/test_recop/t_recop/datapath_unit/DPC_out')
     args.append('sim:/test_recop/t_recop/datapath_unit/s_z_out')
     args.append('sim:/test_recop/t_recop/datapath_unit/irq_flag')
+    args.append('sim:/test_recop/t_reset ')
 
-
-    args.append('; run 12.5 us')
+    args.append('; run 13.1 us')
     return ' '.join(args)
 
 
@@ -285,8 +285,8 @@ def copy_to_clipboard(arg):
 def compile_and_link():
 
     compile_list = []
-    # compile_list.append('./altera_mf/altera_mf_components.vhd')
-    # compile_list.append('./altera_mf/altera_mf.vhd')
+    compile_list.append('./altera_mf/altera_mf_components.vhd')
+    compile_list.append('./altera_mf/altera_mf.vhd')
     compile_list.append('./ajs_pkgs.vhd')
     compile_list.append('./alu.vhd')
     compile_list.append('./test_alu.vhd')

@@ -1,11 +1,15 @@
+-- UoA - COMPSYS 701 - ADVANCED DIGITAL DESIGN
+-- GROUP 8, TEAM AJS
+-- PHASE ONE: RECOP CONTROL
+-- REFER TO DATAPATH DIAGRAM AND CONTROL ISA
+
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
+USE ieee.numeric_std.ALL;
 use ieee.math_real.all;
 
 use work.recop_opcodes.all;
---use ieee.numeric_std.all;
 
 ---------------------------------------------------------------------------------------------------
 entity recop_control is
@@ -13,6 +17,7 @@ port(	clk				: in std_logic;
 		am				: in std_logic_vector(1 downto 0);
 		opcode			: in std_logic_vector(5 downto 0);
 		irq_flag		: in std_logic;
+		reset			: in std_logic;
 			
 		m_addr_sel 		: out std_logic_vector(2 downto 0);
 		m_data_sel		: out std_logic_vector(1 downto 0);
@@ -49,7 +54,7 @@ end entity recop_control;
 architecture behaviour of recop_control is
 -- type, signal, constant declarations here
 
-type states is (IF1, IF1S, ID1, IF2, ID2, EX, LR, MA, SM, JP, DS, DR, NOOP); -- states
+type states is (IF1, IF1S, ID1, IF2, ID2, EX, LR, MA, SM, JP, DS, DR, NOOP, RST); -- states
 -- 
 signal CS, NS : states := IF1;
 
@@ -63,16 +68,18 @@ begin
 -- component wiring here
 
 
----------------------------------------------------------------------------------------------------
-state_updater: process(clk)
+--------------------------------------------------------------------------------------------------
+state_updater: process(clk, reset)
 begin
-	if (rising_edge(clk)) then
+	if (reset = '1') then
+		CS <= RST;
+	elsif (rising_edge(clk)) then
 		CS <= NS;
 	end if;
 end process state_updater;
 
 ---------------------------------------------------------------------------------------------------
-state_transition_logic : process(clk, irq_flag)
+state_transition_logic : process(clk, irq_flag, am, opcode)
 begin
 	case CS is	-- must cover all states
 		when IF1 => -- Instruction Fetch
@@ -81,7 +88,7 @@ begin
 		when IF2 => -- Operand Fetch
 			NS <= ID2;
 
-		when IF1S =>
+		when IF1S => -- Instruction Fetch, Memory Stall
 			NS <= ID1;
 
 		when ID1 => -- Decode Instruction
@@ -115,10 +122,10 @@ begin
 		 		NS <= EX;
 		 	end if;
 
-		when MA =>
+		when MA => -- Mem Acces
 			NS <= LR;
 
-		when LR =>
+		when LR => -- Load Register
 			if (opcode = dcallbl_op and irq_flag = '0') then
 				NS <= LR;
 			elsif (irq_flag = '1') then
@@ -127,10 +134,10 @@ begin
 				NS <= IF1;
 			end if;
 		
-		when DS =>
+		when DS => -- Data Call Stall
 			NS <= DR;				
 		
-		when DR =>
+		when DR => -- Data Call Reset
 			NS <= IF1;
 		
 		when others =>
@@ -144,7 +151,7 @@ begin
 end process state_transition_logic;
 
 ---------------------------------------------------------------------------------------------------
-output_logic : process(CS, irq_flag)
+output_logic : process(CS, irq_flag, am, opcode)
 begin
 	
 	m_addr_sel 		<= "000";	m_data_sel 		<= "00";	
@@ -165,34 +172,31 @@ begin
 
 	case CS is	-- must cover all states
 		when IF1 => -- Instruction Fetch
-			-- IR[31..16] = M[PC]
-			-- PC = PC + 1
 			alu_src_A <= "00";
 			alu_src_B <= "01";
 			pc_wr <= '1';
 			alu_op <= "000";
 
 		when IF2 => -- Operand Fetch
-			-- IR[15..0] = M[PC]
-			-- PC = PC + 1
 			alu_src_A <= "00";
 			alu_src_B <= "01";
 			pc_wr <= '1';
 			alu_op <= "000";
 
-		when IF1S =>
+		when IF1S => -- Instruction Fetch, Memory Stall
 			alu_src_A <= "00";
 			alu_src_B <= "01";
+			alu_op <= "000";
 			ir_wr <= "01";
 
 		when ID1 => -- Instruction Decode
-			-- Stall for register and instruction register fetch/decode
 			alu_src_A <= "00";
 			alu_src_B <= "01";
+			alu_op <= "000";
 			ir_wr <= "10";
 
 		when ID2 => -- Operand Decode
-			-- Stall for register and instruction register fetch/decode
+			-- Stall for register store
 			null;	
 
 		when EX => -- Execute
@@ -254,13 +258,13 @@ begin
 
 			end case;
 
-		when LR =>
+		when LR => -- Load Register
 			case opcode is
 				when ldr_op =>
 					if (am = immediate_am) then
 						r_wr_d_sel <= "100";
 						r_wr <= '1';
-					elsif (am = register_am) then -- memory access
+					elsif (am = register_am) then
 						m_addr_sel <= "011";
 						r_wr_d_sel <= "001";
 						r_wr <= '1';
@@ -307,7 +311,7 @@ begin
 
 			end case;		
 
-		when MA =>
+		when MA => -- Memory Access
 			if (am = register_am) then
 				m_addr_sel <= "011";
 				r_wr_d_sel <= "001";
@@ -316,7 +320,7 @@ begin
 				r_wr_d_sel <= "001";
 			end if;
 
-		when SM =>
+		when SM => -- Store Memory
 			if (opcode = strpc_op) then
 				m_addr_sel <= "001";
 				m_data_sel <= "01";
@@ -335,7 +339,7 @@ begin
 				m_wr <= '1';
 			end if;
 
-		when JP =>
+		when JP => -- Jump
 			case opcode is
 				when jmp_op =>
 					pc_wr <= '1';
@@ -364,7 +368,7 @@ begin
 			end case;
 
 
-		when DS =>
+		when DS => -- Data Call Store
 			if (opcode = dcallbl_op) then -- blocking
 				r_wr_r_sel <= '1';
 				r_wr_d_sel <= "101";
@@ -375,7 +379,7 @@ begin
 				m_wr <= '1';
 			end if;	
 			
-		when DR =>
+		when DR => -- 
 			-- D-Type: Reset DPRR, DPCR and DPC
 			reset_DPRR <= '1';
 			reset_DPCR <= '1';
@@ -383,6 +387,14 @@ begin
 
 		when NOOP =>
 			null;
+
+		when RST =>
+			reset_DPRR <= '1';
+			reset_DPCR <= '1';
+			reset_DPC  <= '1';
+			reset_EOT <= '1';
+			reset_ER <= '1';
+			reset_Z	 <= '1';
 
 		when others =>
 			report "STATE OUTPUT: BAD STATE";
