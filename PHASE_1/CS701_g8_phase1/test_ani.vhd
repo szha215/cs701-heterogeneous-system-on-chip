@@ -74,8 +74,7 @@ component ani
 
 component asp is
 	generic(
-		constant N : positive := 8;
-		constant L : positive := 4
+		constant N : positive := 8
 	);
 	port(
 		clk		: in std_logic;
@@ -136,8 +135,7 @@ t_ani : ani
 
 t_asp : asp
 	generic map(
-		N => 8,
-		L => 4
+		N => 8
 	)
 	port map(
 		clk	=> t_clk,

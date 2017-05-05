@@ -16,8 +16,7 @@ use altera_mf.all;
 entity asp is
 -- generic and port declration here
 generic(
-	constant N : positive := 16;
-	constant L : positive := 4
+	constant N : positive := 16
 );
 port(	clk		: in std_logic;
 		reset		: in std_logic;
@@ -38,7 +37,7 @@ type states is (IDLE,
 					STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA,
 					XOR_A_INIT, XOR_B_INIT, XOR_P_START, XOR_P, XOR_RES,
 					AVE_A_INIT, AVE_B_INIT, AVE_P_START, AVE_P_RD, AVE_P_WR,
-					MAC_INIT, AVE_P_START, AVE_P, AVE_RES,
+					MAC_INIT, MAC_P_START, MAC_P, MAC_RES,
 					SEND_ACC, SEND_DATA, SEND_PAUSE);
 
 signal CS, NS	: states := IDLE;
@@ -374,19 +373,19 @@ begin
 			NS <= SEND_DATA;
 
 		when MAC_INIT =>
-			NS <= AVE_P_START;
+			NS <= MAC_P_START;
 
-		when AVE_P_START =>
-			NS <= AVE_P;
+		when MAC_P_START =>
+			NS <= MAC_P;
 
-		when AVE_P =>
+		when MAC_P =>
 			if (cmp_rd_pointer_end = '1') then
-				NS <= AVE_RES;
+				NS <= MAC_RES;
 			else
-				NS <= AVE_P;
+				NS <= MAC_P;
 			end if;
 
-		when AVE_RES =>
+		when MAC_RES =>
 			NS <= SEND_DATA;
 
 		when AVE_A_INIT =>
@@ -567,7 +566,7 @@ begin
 
 			busy <= '1';
 
-		when AVE_P_START =>
+		when MAC_P_START =>
 			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '1';
@@ -575,7 +574,7 @@ begin
 
 			busy <= '1';
 			
-		when AVE_P =>
+		when MAC_P =>
 			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '0';
@@ -583,7 +582,7 @@ begin
 
 			busy <= '1';
 
-		when AVE_RES =>
+		when MAC_RES =>
 			rd_pointer_sel <= "00";
 			calc_res_sel <= "10";
 

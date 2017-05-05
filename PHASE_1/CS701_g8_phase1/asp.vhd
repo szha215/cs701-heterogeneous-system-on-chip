@@ -16,8 +16,7 @@ use altera_mf.all;
 entity asp is
 -- generic and port declration here
 generic(
-	constant N : positive := 16;
-	constant L : positive := 4
+	constant N : positive := 16
 );
 port(	clk		: in std_logic;
 		reset		: in std_logic;
@@ -36,9 +35,9 @@ architecture behaviour of asp is
 
 type states is (IDLE, 
 					STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA,
-					XOR_0_A, XOR_0_B, XOR_1, XOR_2, XOR_3,
-					AVE_0_A, AVE_0_B, AVE_1, AVE_2, AVE_3,
-					MAC_0, MAC_1, MAC_2, MAC_3,
+					XOR_A_INIT, XOR_B_INIT, XOR_P_START, XOR_P, XOR_RES,
+					AVE_A_INIT, AVE_B_INIT, AVE_P_START, AVE_P_RD, AVE_P_WR,
+					MAC_INIT, MAC_P_START, MAC_P, MAC_RES,
 					SEND_ACC, SEND_DATA, SEND_PAUSE);
 
 signal CS, NS	: states := IDLE;
@@ -312,19 +311,19 @@ begin
 						NS <= STORE_INIT;
 
 					when "0010" =>
-						NS <= XOR_0_A;
+						NS <= XOR_A_INIT;
 
 					when "0011" =>
-						NS <= XOR_0_B;
+						NS <= XOR_B_INIT;
 
 					when "0100" =>
-						NS <= MAC_0;
+						NS <= MAC_INIT;
 
 					when "0101" =>
-						NS <= AVE_0_A;
+						NS <= AVE_A_INIT;
 
 					when "0110" =>
-						NS <= AVE_0_B;
+						NS <= AVE_B_INIT;
 
 					when others =>
 						NS <= IDLE;
@@ -354,62 +353,62 @@ begin
 				NS <= STORE_WAIT;
 			end if;
 
-		when XOR_0_A =>
-			NS <= XOR_1;
+		when XOR_A_INIT =>
+			NS <= XOR_P_START;
 
-		when XOR_0_B =>
-			NS <= XOR_1;
+		when XOR_B_INIT =>
+			NS <= XOR_P_START;
 
-		when XOR_1 =>
-			NS <= XOR_2;
+		when XOR_P_START =>
+			NS <= XOR_P;
 
-		when XOR_2 =>
+		when XOR_P =>
 			if (cmp_rd_pointer_end = '1') then
-				NS <= XOR_3;
+				NS <= XOR_RES;
 			else
-				NS <= XOR_2;
+				NS <= XOR_P;
 			end if;
 
-		when XOR_3 =>
+		when XOR_RES =>
 			NS <= SEND_DATA;
 
-		when MAC_0 =>
-			NS <= MAC_1;
+		when MAC_INIT =>
+			NS <= MAC_P_START;
 
-		when MAC_1 =>
-			NS <= MAC_2;
+		when MAC_P_START =>
+			NS <= MAC_P;
 
-		when MAC_2 =>
+		when MAC_P =>
 			if (cmp_rd_pointer_end = '1') then
-				NS <= MAC_3;
+				NS <= MAC_RES;
 			else
-				NS <= MAC_2;
+				NS <= MAC_P;
 			end if;
 
-		when MAC_3 =>
+		when MAC_RES =>
 			NS <= SEND_DATA;
 
-		when AVE_0_A =>
-			NS <= AVE_1;
+		when AVE_A_INIT =>
+			NS <= AVE_P_START;
 
-		when AVE_0_B =>
-			NS <= AVE_1;
+		when AVE_B_INIT =>
+			NS <= AVE_P_START;
 
-		when AVE_1 =>
-			NS <= AVE_2;
+		when AVE_P_START =>
+			NS <= AVE_P_RD;
 
-		when AVE_2 =>
+		when AVE_P_RD =>
 			if (cmp_pointer_L = '1') then
-				NS <= AVE_3;
+				NS <= AVE_P_WR;
 			else
-				NS <= AVE_2;
+				NS <= AVE_P_RD;
 			end if;
 
-		when AVE_3 =>
+		when AVE_P_WR =>
 			if (cmp_pointer_1 = '1') then
 				NS <= SEND_ACC;
 			else
-				NS <= AVE_3;
+				NS <= AVE_P_WR;
 			end if;
 
 		when SEND_ACC =>
@@ -504,7 +503,7 @@ begin
 
 			busy <= '1';
 
-		when XOR_0_A =>
+		when XOR_A_INIT =>
 			op_ld <= '1';
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
@@ -518,7 +517,7 @@ begin
 
 			busy <= '1';
 
-		when XOR_0_B =>
+		when XOR_B_INIT =>
 			op_ld <= '1';
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
@@ -532,7 +531,7 @@ begin
 
 			busy <= '1';
 
-		when XOR_1 =>
+		when XOR_P_START =>
 			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '1';
@@ -540,7 +539,7 @@ begin
 
 			busy <= '1';
 
-		when XOR_2 =>
+		when XOR_P =>
 			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '0';
@@ -548,13 +547,13 @@ begin
 
 			busy <= '1';
 
-		when XOR_3 =>
+		when XOR_RES =>
 			rd_pointer_sel <= "00";
 			calc_res_sel <= "01";
 
 			busy <= '1';
 
-		when MAC_0 =>
+		when MAC_INIT =>
 			op_ld <= '1';
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
@@ -567,7 +566,7 @@ begin
 
 			busy <= '1';
 
-		when MAC_1 =>
+		when MAC_P_START =>
 			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '1';
@@ -575,7 +574,7 @@ begin
 
 			busy <= '1';
 			
-		when MAC_2 =>
+		when MAC_P =>
 			rd_pointer_sel <= "01";
 
 			calc_result_reset <= '0';
@@ -583,7 +582,7 @@ begin
 
 			busy <= '1';
 
-		when MAC_3 =>
+		when MAC_RES =>
 			rd_pointer_sel <= "00";
 			calc_res_sel <= "10";
 
@@ -591,7 +590,7 @@ begin
 			words_to_send_sel <= '1';
 			busy <= '1';
 
-		when AVE_0_A =>
+		when AVE_A_INIT =>
 			op_ld <= '1';
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
@@ -608,7 +607,7 @@ begin
 
 			busy <= '1';
 			
-		when AVE_0_B =>
+		when AVE_B_INIT =>
 			op_ld <= '1';
 			start_addr_ld <= '1';
 			end_addr_ld <= '1';
@@ -625,7 +624,7 @@ begin
 
 			busy <= '1';
 			
-		when AVE_1 =>
+		when AVE_P_START =>
 			ave_filter_reset <= '1';
 
 			rd_pointer_sel <= "01";
@@ -634,14 +633,14 @@ begin
 			vector_addr_sel <= '1';
 			busy <= '1';
 
-		when AVE_2 =>
+		when AVE_P_RD =>
 			rd_pointer_sel <= "01";
 			wr_pointer_sel <= "00";
 
 			calc_res_sel <= "00";
 			busy <= '1';
 			
-		when AVE_3 =>
+		when AVE_P_WR =>
 			rd_pointer_sel <= "01";
 			wr_pointer_sel <= "01";
 
