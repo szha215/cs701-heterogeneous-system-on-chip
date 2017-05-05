@@ -12,10 +12,10 @@ start NOOP
   ADD R7 R7 R3
   PRESENT R8 $16
   CLFZ
-run0  NOOP
-run1  NOOP
-run2  NOOP
-run3  NOOP
+  NOOP
+  NOOP
+  NOOP
+  NOOP
   SSOP R1
   LSIP R11
   MAX R1 #200
