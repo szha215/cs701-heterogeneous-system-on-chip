@@ -6,7 +6,7 @@
 
 ***Some degree of pipelining are applied to instructions that involves load and storage, the result will show up in the next cycle (next `IF1`).***
 
-|       Code        |        Time Duration         | Men\Reg\Port Location |
+|       Code        |        Time Duration         | Mem\Reg\Port Location |
 | :---------------: | :--------------------------: | :-------------------: |
 |      `NOOP`       |        $0ns - 160ns$         |          n\a          |
 |   `LDR R1 #123`   |       $160ns - 400ns$        |         `R1`          |
@@ -58,7 +58,7 @@
 |     `SSOP R1`     |     $10720ns - 10880ns$      |         `SOP`         |
 |    `LSIP R11`     |     $10880ns -11040ns $      |         `R11`         |
 |   `MAX R1 #200`   |     $11040ns - 11280ns$      |         `R1`          |
-| `DCALLNB R2 #100` | $11280ns - \infty$ (blocked) |        `DPCR`         |
+| `DCALLBL R2 #100` | $11280ns - \infty$ (blocked) |        `DPCR`         |
 
 
 
