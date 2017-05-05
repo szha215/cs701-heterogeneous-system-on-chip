@@ -49,7 +49,7 @@ end entity recop_control;
 architecture behaviour of recop_control is
 -- type, signal, constant declarations here
 
-type states is (IF1, IF1S, ID1, IF2, IF2S, ID2, EX, LR, MA, SM, JP, DS, DR, NOOP); -- states
+type states is (IF1, IF1S, ID1, IF2, ID2, EX, LR, MA, SM, JP, DS, DR, NOOP); -- states
 -- 
 signal CS, NS : states := IF1;
 
@@ -79,13 +79,10 @@ begin
 			NS <= IF1S;
 
 		when IF2 => -- Operand Fetch
-			NS <= IF2S;
+			NS <= ID2;
 
 		when IF1S =>
 			NS <= ID1;
-
-		when IF2S =>
-			NS <= ID2;
 
 		when ID1 => -- Decode Instruction
 			if (am = immediate_am or am = direct_am) then
@@ -184,18 +181,19 @@ begin
 			alu_op <= "000";
 
 		when IF1S =>
+			alu_src_A <= "00";
+			alu_src_B <= "01";
 			ir_wr <= "01";
-
-		when IF2S =>
-			ir_wr <= "10";
 
 		when ID1 => -- Instruction Decode
 			-- Stall for register and instruction register fetch/decode
-			null;
+			alu_src_A <= "00";
+			alu_src_B <= "01";
+			ir_wr <= "10";
 
 		when ID2 => -- Operand Decode
 			-- Stall for register and instruction register fetch/decode
-			null;
+			null;	
 
 		when EX => -- Execute
 			case opcode is

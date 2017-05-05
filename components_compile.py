@@ -293,8 +293,8 @@ def copy_to_clipboard(arg):
 def compile_and_link():
 
     compile_list = []
-    # compile_list.append('./altera_mf/altera_mf_components.vhd')
-    # compile_list.append('./altera_mf/altera_mf.vhd')
+    compile_list.append('./altera_mf/altera_mf_components.vhd')
+    compile_list.append('./altera_mf/altera_mf.vhd')
     compile_list.append('./ajs_pkgs.vhd')
     compile_list.append('./alu.vhd')
     compile_list.append('./test_alu.vhd')
