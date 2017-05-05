@@ -57,24 +57,6 @@ def reg_file():
 
     return txt
 
-def mux():
-    args = []
-
-    args.append('vsim -novopt work.test_mux;')
-    args.append('add wave -position insertpoint')
-
-    args.append('sim:/test_mux/t_clk')
-    args.append('sim:/test_mux/t_inputs_4_bit')
-    args.append('sim:/test_mux/t_inputs_16_bit')
-    args.append('sim:/test_mux/t_sel_4_bit')
-    args.append('sim:/test_mux/t_sel_16_bit')
-    args.append('sim:/test_mux/t_output_4_bit')
-    args.append('sim:/test_mux/t_output_16_bit')
-
-
-    args.append('; run 1000 ns')
-    return ' '.join(args)
-
 def gen_reg():
     args = []
 
@@ -185,7 +167,17 @@ def recop():
     args.append('; add wave -position insertpoint -color gold')
     args.append('sim:/test_recop/t_recop/datapath_unit/regfile/registers')
 
-    args.append('; run 3 us')
+    args.append('; add wave -position insertpoint -color mediumslateblue')
+    args.append('sim:/test_recop/t_recop/datapath_unit/s_DPRR_out')
+    args.append('sim:/test_recop/t_recop/datapath_unit/EOT_out')
+    args.append('sim:/test_recop/t_recop/datapath_unit/DPCR_out')
+    args.append('sim:/test_recop/t_recop/datapath_unit/SVOP_out')
+    args.append('sim:/test_recop/t_recop/datapath_unit/SOP_out')
+    args.append('sim:/test_recop/t_recop/datapath_unit/DPC_out')
+    args.append('sim:/test_recop/t_recop/datapath_unit/irq_flag')
+
+
+    args.append('; run 12.5 us')
     return ' '.join(args)
 
 
@@ -257,11 +249,9 @@ def copy_to_clipboard(arg):
 
     if (arg.lower() == "alu"):
         txt = alu()  # ALU
+
     elif (arg.lower() == "reg_file"):
         txt = reg_file()  # REG_FILE
-
-    elif (arg.lower() == "mux"):
-        txt = mux() #MUX
 
     elif(arg.lower() == "gen_reg"):
         txt = gen_reg()
@@ -271,6 +261,7 @@ def copy_to_clipboard(arg):
 
     elif(arg.lower() == "ins_reg"):
         txt = ins_reg()
+
     elif(arg.lower() == "datapath"):
         txt = datapath()
 
@@ -281,7 +272,7 @@ def copy_to_clipboard(arg):
         txt = recop()
 
     else:
-        print '\n***BAD ARGUMENT: Refer to README or this script for valid arguments'
+        print '\n***BAD ARGUMENT: refer to README for valid arguments'
         exit()
 
     # copy to clipboard
@@ -300,8 +291,6 @@ def compile_and_link():
     compile_list.append('./test_alu.vhd')
     compile_list.append('./reg_file.vhd')
     compile_list.append('./test_reg_file.vhd')
-    compile_list.append('./mux.vhd')
-    compile_list.append('./test_mux.vhd')
     compile_list.append('./gen_reg.vhd')
     compile_list.append('./test_gen_reg.vhd')
     compile_list.append('./data_mem.vhd')
@@ -311,7 +300,6 @@ def compile_and_link():
     compile_list.append('./recop_control.vhd')
     compile_list.append('./test_recop_control.vhd')
     compile_list.append('./recop_datapath.vhd')
-    compile_list.append('./test_recop_datapath.vhd')
     compile_list.append('./recop.vhd')
     compile_list.append('./test_recop.vhd')
     compile_str = ' '.join(compile_list)

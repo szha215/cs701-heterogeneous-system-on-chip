@@ -210,10 +210,10 @@ begin
 			s_data <= x"C9080E02";  -- MAC [2] to [7], to 2, from 2 -
 
 		when A1 =>
-			s_data <= x"C9440000";  -- AVE A, to 2, from 1
+			s_data <= x"C9440800";  -- AVE A, to 2, from 1, end address = 3 (L = 4)
 
 		when A2 =>
-			s_data <= x"C9800000";  -- AVE B, to 2, from 0
+			s_data <= x"C9801000";  -- AVE B, to 2, from 0, end address = 7 (L = 8)
 
 		when others =>
 			report "Output: BAD STATE";

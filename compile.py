@@ -106,27 +106,7 @@ def ani():
     args.append('sim:/test_ani/t_asp/s_d_out')
     # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
 
-    args.append('; run 3 us')
-
-    txt = ' '.join(args)
-
-    return txt
-
-def alu():
-    args = []
-
-    args.append('vsim -novopt work.test_alu;')
-    args.append('add wave -position insertpoint -radix hexadecimal')
-
-    args.append('sim:/test_alu/t_clk')
-    args.append('sim:/test_alu/t_data_A')
-    args.append('sim:/test_alu/t_data_B')
-    args.append('sim:/test_alu/t_alu_op')
-    args.append('sim:/test_alu/t_overflow')
-    args.append('sim:/test_alu/t_zero')
-    args.append('sim:/test_alu/t_data_out')
-
-    args.append('; run 400 ns')
+    args.append('; run 3.3 us')
 
     txt = ' '.join(args)
 
@@ -175,17 +155,15 @@ def avg():
 def copy_to_clipboard(arg):
 
     if (arg.lower() == "asp"):
-        txt = asp()  # ASP only
+        txt = ani()  # ASP only
     elif (arg.lower() == "ani"):
         txt = ani()  # ANI and ASP
-    elif (arg.lower() == "alu"):
-        txt = alu()
     elif (arg.lower() == "mult"):
         txt = mult()
     elif (arg.lower() == "avg"):
         txt = avg()
     else:
-        print '\n***BAD ARGUMENT: "asp", "ani" or "alu" only'
+        print '\n***BAD ARGUMENT: refer to README for valid arguments'
         exit()
 
     # copy to clipboard
@@ -207,10 +185,6 @@ def compile_and_link():
     compile_list.append('./ani.vhd')
     compile_list.append('./asp.vhd')
     compile_list.append('./test_ani.vhd')
-    # compile_list.append('./test_asp.vhd')
-
-    compile_list.append('./alu.vhd')
-    compile_list.append('./test_alu.vhd')
 
     compile_list.append('./multiplier.vhd')
     compile_list.append('./test_multiplier.vhd')

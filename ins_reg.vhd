@@ -3,9 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 USE ieee.numeric_std.ALL;
 
-library lpm;
-use lpm.lpm_components.all;
-
 
 entity ins_reg is
 generic(

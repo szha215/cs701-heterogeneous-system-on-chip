@@ -381,6 +381,9 @@ begin
 			reset_DPCR <= '1';
 			reset_DPC <= '1';
 
+		when NOOP =>
+			null;
+
 		when others =>
 			report "STATE OUTPUT: BAD STATE";
 			null;
