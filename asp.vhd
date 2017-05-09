@@ -34,7 +34,8 @@ architecture behaviour of asp is
 -- type, signal, constant declarations here
 
 type states is (IDLE, 
-					STORE_RESET, STORE_INIT, STORE_WAIT, STORE_DATA,
+					STORE_R_INIT, STORE_R,
+					STORE_INIT, STORE_WAIT, STORE_DATA,
 					XOR_A_INIT, XOR_B_INIT, XOR_P_START, XOR_P, XOR_RES,
 					AVE_A_INIT, AVE_B_INIT, AVE_P_START, AVE_P_RD, AVE_P_WR,
 					MAC_INIT, MAC_P_START, MAC_P, MAC_RES,
@@ -61,7 +62,7 @@ signal d_packet_sel, calc_res_sel, mem_sel_sel, rd_pointer_sel, wr_pointer_sel 	
 signal d_out_sel, vector_addr_sel, vector_d_sel, words_to_send_sel	: std_logic := '0';
 
 -- comparators from datapath
-signal cmp_store, cmp_sent, cmp_pointer_L, cmp_pointer_1, cmp_rd_pointer_end : std_logic := '0';
+signal cmp_store, cmp_sent, cmp_pointer_L, cmp_pointer_1, cmp_wr_pointer_0, cmp_rd_pointer_end : std_logic := '0';
 
 
 -- Datapath
@@ -305,7 +306,7 @@ begin
 			if (valid = '1') then
 				case (d_in(25 downto 22)) is
 					when "0000" =>
-						NS <= STORE_RESET;
+						NS <= STORE_R_INIT;
 
 					when "0001" =>
 						NS <= STORE_INIT;
@@ -333,8 +334,15 @@ begin
 				NS <= IDLE;
 			end if;
 
-		when STORE_RESET =>
-			NS <= SEND_ACC;
+		when STORE_R_INIT =>
+			NS <= STORE_R;
+
+		when STORE_R =>
+			if (cmp_wr_pointer_0 = '1') then
+				NS <= SEND_ACC;
+			else
+				NS <= STORE_R;
+			end if;
 
 		when STORE_INIT =>
 			NS <= STORE_WAIT;
@@ -476,12 +484,23 @@ begin
 			words_to_send_sel <= '0';
 			words_to_send_ld <= '1';
 
-		when STORE_RESET =>
+		when STORE_R_INIT =>
 			vectors_reset <= '1';
 
 			start_addr_ld <= '1';
 			src_port_ld <= '1';
 			mem_sel_sel <= "11";
+
+			busy <= '1';
+
+		when STORE_R =>
+			wr_pointer_sel <= "01";
+
+			vectors_reset <= '1';
+			vector_d_sel <= '0';
+			vector_addr_sel <= '1';
+
+			busy <= '1';
 
 		when STORE_INIT =>
 			op_ld <= '1';
@@ -601,7 +620,6 @@ begin
 			wr_pointer_sel <= "00";
 
 			ave_filter_reset <= '1';
-			rd_pointer_sel <= "10";
 
 			vector_addr_sel <= '1';
 
@@ -618,7 +636,6 @@ begin
 			wr_pointer_sel <= "00";
 
 			ave_filter_reset <= '1';
-			rd_pointer_sel <= "10";
 
 			vector_addr_sel <= '1';
 
@@ -911,7 +928,7 @@ end process ; -- wr_pointer_process
 ---------------------------------------------------------------------------------------------------
 compare_pointer_L : process(s_pointer)
 begin
-	if (s_pointer = std_logic_vector(to_unsigned(to_integer(unsigned(s_end_addr)), integer(ceil(log2(real(N))))))) then
+	if (s_pointer = s_end_addr) then
 		cmp_pointer_L <= '1';
 	else
 		cmp_pointer_L <= '0';
@@ -927,6 +944,16 @@ begin
 		cmp_pointer_1 <= '0';
 	end if ;
 end process ; -- compare_pointer_1
+
+---------------------------------------------------------------------------------------------------
+compare_wr_pointer_0 : process(s_wr_pointer)
+begin
+	if (s_wr_pointer = std_logic_vector(to_unsigned(N - 1, s_wr_pointer'length))) then
+		cmp_wr_pointer_0 <= '1';
+	else
+		cmp_wr_pointer_0 <= '0';
+	end if;
+end process ; -- compare_wr_pointer_0
 
 ---------------------------------------------------------------------------------------------------
 result_store_low_15 : process(clk, calc_res_sel, calc_result_reset)
@@ -1002,10 +1029,10 @@ with d_out_sel select s_data <=
 	s_packet when '1',  -- data[ID]
 	x"0001" when others;  -- access granted
 
-reg_a_ld <= '1' when vector_ld = '1' and s_mem_sel = '0' else
+reg_a_ld <= '1' when (vector_ld = '1' and s_mem_sel = '0') or vectors_reset = '1' else
 				'0';
 
-reg_b_ld <= '1' when vector_ld = '1' and s_mem_sel = '1' else
+reg_b_ld <= '1' when (vector_ld = '1' and s_mem_sel = '1') or vectors_reset = '1' else
 				'0';
 
 s_d_out <=

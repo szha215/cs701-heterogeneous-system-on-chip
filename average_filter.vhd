@@ -76,14 +76,26 @@ end process; -- filter_process
 ---------------------------------------------------------------------------------------------------
 s_top <= window_size - '1';
 
-s_sum <= ((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(0)) + 
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(1)) + 
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(2)) + 
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(3)) +
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(4)) +
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(5)) + 
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(6)) + 
-			((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(7)); 
+s_sum <= (
+				(
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(0)) + 
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(1))
+				) + 
+				(
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(2)) + 
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(3))
+				)
+			) +
+			(
+				(
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(4)) +
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(5))
+				) + 
+				(
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(6)) + 
+					((s_sum'length - 1 downto s_values(0)'length => '0') & s_values(7))
+				)
+			); 
 
 -- Left shift by 2 or 3 bits depending on window_size
 --s_avg <= s_sum(data_width + to_integer(ceil(log2(real(unsigned(window_size))))) - 1 downto to_integer(ceil(log2(real(unsigned(window_size))))));
