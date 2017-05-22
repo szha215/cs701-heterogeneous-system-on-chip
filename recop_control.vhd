@@ -14,19 +14,19 @@ use work.recop_opcodes.all;
 ---------------------------------------------------------------------------------------------------
 entity recop_control is
 port(	clk				: in std_logic;
-		am				: in std_logic_vector(1 downto 0);
+		am					: in std_logic_vector(1 downto 0);
 		opcode			: in std_logic_vector(5 downto 0);
-		irq_flag		: in std_logic;
-		reset			: in std_logic;
+		irq_flag			: in std_logic;
+		reset				: in std_logic;
 			
-		m_addr_sel 		: out std_logic_vector(2 downto 0);
+		m_addr_sel 		: out std_logic_vector(1 downto 0);
 		m_data_sel		: out std_logic_vector(1 downto 0);
-		m_wr			: out std_logic;
-		ir_wr			: out std_logic_vector(1 downto 0);
+		m_wr				: out std_logic;
+		ir_wr				: out std_logic_vector(1 downto 0);
 		r_wr_d_sel		: out std_logic_vector(2 downto 0);
 		r_wr_r_sel		: out std_logic;
-		r_rd_sel		: out std_logic;
-		r_wr 			: out std_logic;
+		r_rd_sel			: out std_logic;
+		r_wr 				: out std_logic;
 		alu_src_A		: out std_logic_vector(1 downto 0);
 		alu_src_B		: out std_logic_vector(1 downto 0);
 		alu_op			: out std_logic_vector(2 downto 0);
@@ -37,15 +37,15 @@ port(	clk				: in std_logic;
 		reset_DPCR		: out std_logic;
 		reset_DPC 		: out std_logic;
 		reset_EOT		: out std_logic;
-		reset_ER		: out std_logic;
+		reset_ER			: out std_logic;
 		reset_Z			: out std_logic;
-		pc_wr			: out std_logic;
+		pc_wr				: out std_logic;
 		pc_wr_cond_z	: out std_logic;
 		pc_wr_cond_p	: out std_logic;
 		wr_DPCR			: out std_logic;
 		wr_SVOP			: out std_logic;
 		wr_SOP 			: out std_logic;
-		wr_Z 			: out std_logic
+		wr_Z 				: out std_logic
 
 	);
 end entity recop_control;
@@ -154,19 +154,19 @@ end process state_transition_logic;
 output_logic : process(CS, irq_flag, am, opcode)
 begin
 	
-	m_addr_sel 		<= "000";	m_data_sel 		<= "00";	
-	m_wr 			<= '0';		ir_wr 			<= "00";
+	m_addr_sel 		<= "00";		m_data_sel 		<= "00";	
+	m_wr 				<= '0';		ir_wr 			<= "00";
 	r_wr_d_sel 		<= "000";	r_wr_r_sel 		<= '0';
-	r_wr 			<= '0';		alu_src_A 		<= "00";
-	alu_src_B 		<= "00";	wr_Z 			<= '0';
+	r_wr 				<= '0';		alu_src_A 		<= "00";
+	alu_src_B 		<= "00";		wr_Z 				<= '0';
 	alu_op 			<= "000";	pc_src 			<= "00";
-	set_DPC 		<= '0';		set_EOT 		<= '0';
+	set_DPC 			<= '0';		set_EOT 			<= '0';
 	reset_DPRR 		<= '0';		reset_DPCR 		<= '0';
 	reset_DPC 		<= '0';		reset_EOT 		<= '0';
-	reset_ER 		<= '0';		reset_Z 		<= '0';
+	reset_ER 		<= '0';		reset_Z 			<= '0';
 	pc_wr 			<= '0';		pc_wr_cond_z 	<= '0';
-	pc_wr_cond_p 	<= '0';		wr_DPCR 		<= '0';
-	wr_SVOP 		<= '0';		wr_SOP 			<= '0';
+	pc_wr_cond_p 	<= '0';		wr_DPCR 			<= '0';
+	wr_SVOP 			<= '0';		wr_SOP 			<= '0';
 	
 
 
@@ -265,11 +265,11 @@ begin
 						r_wr_d_sel <= "100";
 						r_wr <= '1';
 					elsif (am = register_am) then
-						m_addr_sel <= "011";
+						m_addr_sel <= "10";
 						r_wr_d_sel <= "001";
 						r_wr <= '1';
 					elsif (am = direct_am) then
-						m_addr_sel <= "001";
+						m_addr_sel <= "00";
 						r_wr_d_sel <= "001";
 						r_wr <= '1';
 					end if;	
@@ -313,28 +313,28 @@ begin
 
 		when MA => -- Memory Access
 			if (am = register_am) then
-				m_addr_sel <= "011";
+				m_addr_sel <= "10";
 				r_wr_d_sel <= "001";
 			elsif (am = direct_am) then
-				m_addr_sel <= "001";
+				m_addr_sel <= "00";
 				r_wr_d_sel <= "001";
 			end if;
 
 		when SM => -- Store Memory
 			if (opcode = strpc_op) then
-				m_addr_sel <= "001";
+				m_addr_sel <= "00";
 				m_data_sel <= "01";
 				m_wr <= '1';
 			elsif (am = immediate_am) then -- str_op
-				m_addr_sel <= "010";
+				m_addr_sel <= "01";
 				m_data_sel <= "00";
 				m_wr <= '1';
 			elsif (am = register_am) then
-				m_addr_sel <= "010";
+				m_addr_sel <= "01";
 				m_data_sel <= "10";
 				m_wr <= '1';
 			elsif (am = direct_am) then
-				m_addr_sel <= "001";
+				m_addr_sel <= "00";
 				m_data_sel <= "10";
 				m_wr <= '1';
 			end if;
@@ -374,7 +374,7 @@ begin
 				r_wr_d_sel <= "101";
 				r_wr <= '1';
 			else -- non-block
-				m_addr_sel <= "100";
+				m_addr_sel <= "11";
 				m_data_sel <= "11";
 				m_wr <= '1';
 			end if;	
