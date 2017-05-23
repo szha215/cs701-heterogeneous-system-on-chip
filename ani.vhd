@@ -160,15 +160,24 @@ begin
 end process;
 
 ---------------------------------------------------------------------------------------------------
-
+push_to_noc : process(clk)
+begin
+	if(rising_edge(clk)) then
+		if (((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0') then
+			d_to_noc <= s_out_q_buf;
+		else
+			d_to_noc <= x"00000000";
+		end if;
+	end if;
+end process ; -- push_to_noc
 
 ---------------------------------------------------------------------------------------------------
 -- combinational logic
 
 s_inc_q_buf <= d_from_noc;
 
-s_d_to_noc_sel <= '1' when ((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0' else
-						'0';
+--s_d_to_noc_sel <= '1' when ((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0' else
+--						'0';
 
 s_out_rd_en <= s_d_to_noc_sel;
 
@@ -177,9 +186,9 @@ s_out_wr_en <= asp_res_ready;
 d_to_asp <= s_to_asp;
 
 
-with s_d_to_noc_sel select d_to_noc <=
-	s_out_q_buf	when '1',
-	x"00000000"	when others;
+--with s_d_to_noc_sel select d_to_noc <=
+--	s_out_q_buf	when '1',
+--	x"00000000"	when others;
 
 
 
