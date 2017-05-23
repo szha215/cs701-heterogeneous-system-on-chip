@@ -37,7 +37,7 @@ architecture behaviour of recop is
 	signal s_opcode			: std_logic_vector(5 downto 0);
 	signal s_irq_flag		: std_logic;
 		
-	signal s_m_addr_sel 	: std_logic_vector(2 downto 0);
+	signal s_m_addr_sel 	: std_logic_vector(1 downto 0);
 	signal s_m_data_sel		: std_logic_vector(1 downto 0);
 	signal s_m_wr			: std_logic;
 	signal s_ir_wr			: std_logic_vector(1 downto 0);
@@ -107,7 +107,7 @@ component recop_datapath
 		SIP_in			:	in	std_logic_vector(reg_width - 1 downto 0);
 
 		--mux control signals
-		m_addr_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
+		m_addr_sel		:	in std_logic_vector(1 downto 0);
 		m_data_sel		:	in std_logic_vector(1 downto 0);
 		r_rd_sel		:	in std_logic;
 		r_wr_sel		:	in std_logic_vector(2 downto 0);
@@ -141,7 +141,7 @@ component recop_control
 		irq_flag		: in std_logic;
 		reset			: in std_logic;
 			
-		m_addr_sel 		: out std_logic_vector(2 downto 0);
+		m_addr_sel 		: out std_logic_vector(1 downto 0);
 		m_data_sel		: out std_logic_vector(1 downto 0);
 		m_wr			: out std_logic;
 		ir_wr			: out std_logic_vector(1 downto 0);

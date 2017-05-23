@@ -56,7 +56,7 @@ port (
 	SIP_in			:	in	std_logic_vector(15 downto 0);
 
 	--mux control signals
-	m_addr_sel		:	in std_logic_vector(m_mux_sel_num - 1 downto 0);
+	m_addr_sel		:	in std_logic_vector(1 downto 0);
 	m_data_sel		:	in std_logic_vector(1 downto 0);
 	r_rd_sel			:	in std_logic;
 	r_wr_sel			:	in std_logic_vector(2 downto 0);
@@ -89,7 +89,7 @@ constant s_data_width,s_ram_addr_width,s_regfile_regnum : positive := 16;
 
 signal s_DPCR_in : std_logic_vector(31 downto 0) := (others => '0');
 
-signal s_pc_output, s_mem_data_out, s_ir_lower_0, s_SIP_out, s_regfile_out_a, s_regfile_out_b, s_alu_out : std_logic_vector(s_data_width - 1 downto 0) := (others => '0'); 
+signal s_pc_output, s_mem_data_out, s_ir_lower_0, s_SIP_out, s_regfile_out_a, s_regfile_out_b, s_alu_out,s_prog_mem_out : std_logic_vector(s_data_width - 1 downto 0) := (others => '0'); 
 signal s_m_addr_mux_output, s_m_data_mux_output, s_r_wr_mux_output, s_alu_src_a_mux_output,s_alu_src_b_mux_output,s_r_rd_mux_b_output,s_pc_src_mux_output : std_logic_vector(s_data_width - 1 downto 0) := (others => '0');
 signal s_r_rd_mux_a_output, s_ir_upper1,s_ir_upper2 : std_logic_vector(3 downto 0) := (others => '0');
 signal s_DPRR_out : std_logic_vector(s_data_width * 2 - 1 downto 0) := (others => '0');
@@ -134,6 +134,22 @@ component data_mem
 		data_in	:	in std_logic_vector(ram_data_width - 1 downto 0);
 
 		data_out	:	out std_logic_vector(ram_data_width - 1 downto 0)		
+	) ;
+end component;
+
+--------------------------------------------------------------------------------
+
+component prog_mem
+	generic(
+		constant ram_addr_width : positive := 16;
+		constant ram_data_width : positive := 16
+	);
+
+	port (
+		clk			:	in std_logic;
+		addr			:	in std_logic_vector(ram_addr_width - 1 downto 0);
+
+		data_out		:	out std_logic_vector(ram_data_width - 1 downto 0)		
 	) ;
 end component;
 
@@ -212,7 +228,7 @@ end component;
 
 begin
 
-memory : data_mem
+data_memory : data_mem
 	generic map(
 		ram_addr_width => s_ram_addr_width,
 		ram_data_width => s_data_width
@@ -225,6 +241,19 @@ memory : data_mem
 		data_out => s_mem_data_out
 	);
 
+program_memory : prog_mem
+	generic map(
+		ram_addr_width => s_ram_addr_width,
+		ram_data_width => s_data_width
+	)
+	port map(
+		clk		=>	clk,
+		addr		=>	s_pc_output,
+		data_out => s_prog_mem_out
+
+	);
+
+
 ir : ins_reg
 	generic map(
 		reg_width => s_data_width
@@ -232,7 +261,7 @@ ir : ins_reg
 	port map(
 		clk		=>	clk,
 		reset 	=> reset,
-		data_in 	=> s_mem_data_out,
+		data_in 	=> s_prog_mem_out,
 		ir_wr_en => ir_wr,
 
 		upper_0 	=> s_ir_upper0,
@@ -422,12 +451,12 @@ s_pc_wr_en <= (s_alu_zero and pc_wr_cond_p)  or (pc_wr_cond_z and s_z_out) or pc
 
 -- memory address mux
 s_m_addr_mux_output <=
-s_pc_output									when m_addr_sel = "000" else
-s_ir_lower_0 								when m_addr_sel = "001" else
-s_regfile_out_a 							when m_addr_sel = "010" else
-s_regfile_out_b 						 	when m_addr_sel = "011" else
-(x"0" & s_DPRR_OUT(23 downto 12)) 	when m_addr_sel = "100" else
+s_ir_lower_0								when m_addr_sel = "00" else
+s_regfile_out_a							when m_addr_sel = "01" else
+s_regfile_out_b							when m_addr_sel = "10" else
+(x"0" & s_DPRR_OUT(23 downto 12))	when m_addr_sel = "11" else
 x"0000";
+
 
 -- memory data mux
 s_m_data_mux_output <=

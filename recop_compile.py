@@ -160,9 +160,14 @@ def recop():
     args.append('sim:/test_recop/t_recop/control_unit/CS')
     
     args.append('; add wave -position insertpoint -color lightblue')
-    args.append('sim:/test_recop/t_recop/datapath_unit/memory/addr')
-    args.append('sim:/test_recop/t_recop/datapath_unit/memory/data_in')
-    args.append('sim:/test_recop/t_recop/datapath_unit/memory/data_out')
+
+
+    args.append('sim:/test_recop/t_recop/datapath_unit/program_memory/addr')
+    args.append('sim:/test_recop/t_recop/datapath_unit/program_memory/data_out')
+
+    args.append('sim:/test_recop/t_recop/datapath_unit/data_memory/addr')
+    args.append('sim:/test_recop/t_recop/datapath_unit/data_memory/data_in')
+    args.append('sim:/test_recop/t_recop/datapath_unit/data_memory/data_out')
 
     args.append('; add wave -position insertpoint -color gold')
     args.append('sim:/test_recop/t_recop/datapath_unit/regfile/registers')
@@ -285,8 +290,8 @@ def copy_to_clipboard(arg):
 def compile_and_link():
 
     compile_list = []
-    # compile_list.append('./altera_mf/altera_mf_components.vhd')
-    # compile_list.append('./altera_mf/altera_mf.vhd')
+    compile_list.append('./altera_mf/altera_mf_components.vhd')
+    compile_list.append('./altera_mf/altera_mf.vhd')
     compile_list.append('./ajs_pkgs.vhd')
     compile_list.append('./alu.vhd')
     compile_list.append('./test_alu.vhd')
@@ -296,6 +301,8 @@ def compile_and_link():
     compile_list.append('./test_gen_reg.vhd')
     compile_list.append('./data_mem.vhd')
     compile_list.append('./test_data_mem.vhd')
+    compile_list.append('./prog_mem.vhd')
+    compile_list.append('./test_prog_mem.vhd')
     compile_list.append('./ins_reg.vhd')
     compile_list.append('./test_ins_reg.vhd')
     compile_list.append('./recop_control.vhd')
