@@ -1,0 +1,731 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>multi_jop_program</title><style type='text/css'>html, body {overflow-x: initial !important;}.CodeMirror { height: auto; }
+.CodeMirror-scroll { overflow-y: hidden; overflow-x: auto; }
+.CodeMirror-lines { padding: 4px 0px; }
+.CodeMirror pre { }
+.CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler { background-color: white; }
+.CodeMirror-gutters { border-right-width: 1px; border-right-style: solid; border-right-color: rgb(221, 221, 221); background-color: rgb(247, 247, 247); white-space: nowrap; }
+.CodeMirror-linenumbers { }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.CodeMirror div.CodeMirror-cursor { border-left-width: 1px; border-left-style: solid; border-left-color: black; z-index: 3; }
+.CodeMirror div.CodeMirror-secondarycursor { border-left-width: 1px; border-left-style: solid; border-left-color: silver; }
+.CodeMirror.cm-keymap-fat-cursor div.CodeMirror-cursor { width: auto; border: 0px; background-color: rgb(119, 238, 119); z-index: 1; background-position: initial initial; background-repeat: initial initial; }
+.CodeMirror div.CodeMirror-cursor.CodeMirror-overwrite { }
+.cm-tab { display: inline-block; }
+.cm-s-typora-default .cm-header, .cm-s-typora-default .cm-property { color: rgb(217, 79, 138); }
+.cm-s-typora-default pre.cm-header1:not(.cm-atom) :not(.cm-overlay) { font-size: 2rem; line-height: 2rem; }
+.cm-s-typora-default pre.cm-header2:not(.cm-atom) :not(.cm-overlay) { font-size: 1.4rem; line-height: 1.4rem; }
+.cm-s-typora-default .cm-atom, .cm-s-typora-default .cm-number { color: rgb(149, 132, 134); }
+.cm-s-typora-default .cm-table-row, .cm-s-typora-default .cm-block-start { font-family: monospace; }
+.cm-s-typora-default .cm-comment, .cm-s-typora-default .cm-code { color: rgb(74, 90, 159); font-family: monospace; }
+.cm-s-typora-default .cm-tag { color: rgb(169, 68, 66); }
+.cm-s-typora-default .cm-string { color: rgb(126, 134, 169); }
+.cm-s-typora-default .cm-link { color: rgb(196, 122, 15); text-decoration: underline; }
+.cm-s-typora-default .cm-variable-2, .cm-s-typora-default .cm-variable-1 { color: inherit; }
+.cm-s-typora-default .cm-overlay { font-size: 1rem; font-family: monospace; }
+.CodeMirror.cm-s-typora-default div.CodeMirror-cursor { border-left-width: 3px; border-left-style: solid; border-left-color: rgb(228, 98, 154); }
+.cm-s-typora-default .CodeMirror-activeline-background { left: -60px; right: -30px; background-color: rgba(204, 204, 204, 0.2); background-position: initial initial; background-repeat: initial initial; }
+.cm-s-typora-default .CodeMirror-gutters { border-right-style: none; background-color: inherit; }
+.cm-s-typora-default .cm-trailing-space-new-line::after, .cm-startspace::after, .cm-starttab .cm-tab::after { content: '•'; position: absolute; left: 0px; opacity: 0; font-family: LetterGothicStd, monospace; }
+.os-windows .cm-startspace::after, .os-windows .cm-starttab .cm-tab::after { left: -0.1em; }
+.cm-starttab .cm-tab::after { content: ' '; }
+.cm-startspace, .cm-tab, .cm-starttab, .cm-trailing-space-a, .cm-trailing-space-b, .cm-trailing-space-new-line { font-family: monospace; position: relative; }
+.cm-s-typora-default .cm-trailing-space-new-line::after { content: '↓'; opacity: 0.3; }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: black; }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-property { color: black; }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: blue; }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: bold; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: rgb(255, 0, 0); }
+.cm-invalidchar { color: rgb(255, 0, 0); }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background-image: inherit; background-size: inherit; background-attachment: inherit; background-origin: inherit; background-clip: inherit; background-color: inherit; background-position: inherit inherit; background-repeat: inherit inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { margin-bottom: -30px; margin-right: -30px; padding-bottom: 30px; padding-right: 30px; height: 100%; outline: none; position: relative; box-sizing: content-box; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-vscrollbar, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler { position: absolute; z-index: 6; display: none; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow-x: hidden; overflow-y: scroll; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow-y: hidden; overflow-x: scroll; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 30px; z-index: 3; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-width: 0px; background-color: transparent; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; word-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; background-position: initial initial; background-repeat: initial initial; }
+.CodeMirror-wrap pre { word-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right-width: 30px; border-right-style: solid; border-right-color: transparent; width: -webkit-fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right-style: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-widget { }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right-style: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.CodeMirror-selected { background-color: rgb(217, 217, 217); background-position: initial initial; background-repeat: initial initial; }
+.CodeMirror-focused .CodeMirror-selected { background-color: rgb(215, 212, 240); background-position: initial initial; background-repeat: initial initial; }
+.cm-searching { background-color: rgba(255, 255, 0, 0.4); background-position: initial initial; background-repeat: initial initial; }
+.CodeMirror span { }
+@media print { 
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+.CodeMirror-lint-markers { width: 16px; }
+.CodeMirror-lint-tooltip { background-color: infobackground; border: 1px solid black; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; color: infotext; font-family: monospace; overflow: hidden; padding: 2px 5px; position: fixed; white-space: pre-wrap; z-index: 10000; max-width: 600px; opacity: 0; transition: opacity 0.4s; font-size: 0.8em; }
+.CodeMirror-lint-mark-error, .CodeMirror-lint-mark-warning { background-position: left bottom; background-repeat: repeat no-repeat; }
+.CodeMirror-lint-mark-error { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAYAAAC09K7GAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sJDw4cOCW1/KIAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAHElEQVQI12NggIL/DAz/GdA5/xkY/qPKMDAwAADLZwf5rvm+LQAAAABJRU5ErkJggg==); }
+.CodeMirror-lint-marker-error, .CodeMirror-lint-marker-warning { cursor: pointer; display: inline-block; height: 16px; width: 16px; vertical-align: middle; position: relative; background-position: center center; background-repeat: no-repeat no-repeat; }
+.CodeMirror-lint-message-error, .CodeMirror-lint-message-warning { padding-left: 18px; background-position: left top; background-repeat: no-repeat no-repeat; }
+.CodeMirror-lint-marker-error, .CodeMirror-lint-message-error { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEW7AAC7AACxAAC7AAC7AAAAAAC4AAC5AAD///+7AAAUdclpAAAABnRSTlMXnORSiwCK0ZKSAAAATUlEQVR42mWPOQ7AQAgDuQLx/z8csYRmPRIFIwRGnosRrpamvkKi0FTIiMASR3hhKW+hAN6/tIWhu9PDWiTGNEkTtIOucA5Oyr9ckPgAWm0GPBog6v4AAAAASUVORK5CYII=); }
+.CodeMirror-lint-marker-warning, .CodeMirror-lint-message-warning { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAANlBMVEX/uwDvrwD/uwD/uwD/uwD/uwD/uwD/uwD/uwD6twD/uwAAAADurwD2tQD7uAD+ugAAAAD/uwDhmeTRAAAADHRSTlMJ8mN1EYcbmiixgACm7WbuAAAAVklEQVR42n3PUQqAIBBFUU1LLc3u/jdbOJoW1P08DA9Gba8+YWJ6gNJoNYIBzAA2chBth5kLmG9YUoG0NHAUwFXwO9LuBQL1giCQb8gC9Oro2vp5rncCIY8L8uEx5ZkAAAAASUVORK5CYII=); }
+.CodeMirror-lint-marker-multiple { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAMAAADzjKfhAAAACVBMVEUAAAAAAAC/v7914kyHAAAAAXRSTlMAQObYZgAAACNJREFUeNo1ioEJAAAIwmz/H90iFFSGJgFMe3gaLZ0od+9/AQZ0ADosbYraAAAAAElFTkSuQmCC); width: 100%; height: 100%; background-position: right bottom; background-repeat: no-repeat no-repeat; }
+
+
+html { font-size: 14px; background-color: rgb(255, 255, 255); color: rgb(51, 51, 51); }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; line-height: 1.42857143; overflow-x: hidden; background-image: inherit; background-size: inherit; background-attachment: inherit; background-origin: inherit; background-clip: inherit; background-color: inherit; background-position: inherit inherit; background-repeat: inherit inherit; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { background-color: rgb(181, 214, 252); text-shadow: none; background-position: initial initial; background-repeat: initial initial; }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; word-wrap: break-word; position: relative; padding-bottom: 70px; white-space: pre-wrap; overflow-x: auto; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+@media screen and (max-width: 500px) { 
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+.typora-export #write { margin: 0px auto; }
+#write > p:first-child, #write > ul:first-child, #write > ol:first-child, #write > pre:first-child, #write > blockquote:first-child, #write > div:first-child, #write > table:first-child { margin-top: 30px; }
+#write li > table:first-child { margin-top: -20px; }
+img { max-width: 100%; vertical-align: middle; }
+input, button, select, textarea { color: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-caps: inherit; font-weight: inherit; line-height: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+::before, ::after, * { box-sizing: border-box; }
+#write p, #write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write div, #write pre { width: inherit; }
+#write p, #write h1, #write h2, #write h3, #write h4, #write h5, #write h6 { position: relative; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+p { -webkit-margin-before: 1rem; -webkit-margin-after: 1rem; -webkit-margin-start: 0px; -webkit-margin-end: 0px; }
+.mathjax-block { margin-top: 0px; margin-bottom: 0px; -webkit-margin-before: 0rem; -webkit-margin-after: 0rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: bold; font-style: italic; }
+a { cursor: pointer; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; margin: 4px 0px 0px; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 80px; }
+.CodeMirror-gutters { border-right-width: 0px; background-color: inherit; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+pre { white-space: pre-wrap; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background-image: inherit; background-size: inherit; background-attachment: inherit; background-origin: inherit; background-clip: inherit; background-color: inherit; position: relative !important; background-position: inherit inherit; background-repeat: inherit inherit; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+.md-fences .CodeMirror.CodeMirror-wrap { top: -1.6em; margin-bottom: -1.6em; }
+.md-fences.mock-cm { white-space: pre-wrap; }
+.show-fences-line-number .md-fences { padding-left: 0px; }
+.show-fences-line-number .md-fences.mock-cm { padding-left: 40px; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; padding-top: 1em; padding-bottom: 1em; }
+.footnotes + .footnotes { margin-top: -1em; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background-color: transparent; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; line-height: normal; font-weight: normal; text-align: left; box-sizing: content-box; direction: ltr; background-position: initial initial; background-repeat: initial initial; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li p, li .mathjax-block { margin: 0.5rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; }
+@media print { 
+  html, body { height: 100%; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  h1, h2, h3, h4, h5, h6 { break-after: avoid-page; orphans: 2; }
+  p { orphans: 4; }
+  html.blink-to-pdf { font-size: 13px; }
+  .typora-export #write { padding-left: 1cm; padding-right: 1cm; }
+  .typora-export #write::after { height: 0px; }
+  @page { margin: 20mm 0mm; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 2.86rem; white-space: pre-wrap; background-color: rgb(204, 204, 204); display: block; overflow-x: hidden; background-position: initial initial; background-repeat: initial initial; }
+p .md-image:only-child { display: inline-block; width: 100%; text-align: center; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.mathjax-block { white-space: pre; overflow: hidden; width: 100%; }
+p + .mathjax-block { margin-top: -1.143rem; }
+.mathjax-block:not(:empty)::after { display: none; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus { outline: none; box-shadow: none; }
+.task-list { list-style-type: none; }
+.task-list-item { position: relative; padding-left: 1em; }
+.task-list-item input { position: absolute; top: 0px; left: 0px; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc::after, .md-toc-content::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); text-decoration: none; }
+.md-toc-inner:hover { }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: bold; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) { 
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: '.'; }
+.md-tag { opacity: 0.5; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: monospace; }
+code { text-align: left; }
+h1 .md-tag, h2 .md-tag, h3 .md-tag, h4 .md-tag, h5 .md-tag, h6 .md-tag { font-weight: initial; opacity: 0.35; }
+a.md-print-anchor { border: none !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: none !important; background-color: transparent !important; text-shadow: initial !important; background-position: initial initial !important; background-repeat: initial initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.mathjax-block .MathJax_SVG_Display { text-align: center; margin: 1em 0em; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: monospace; }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: normal; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none; }
+
+
+@import-when-export url(http://fonts.googleapis.com/css?family=Merriweather:900,900italic,300,300italic);
+@import-when-export url(http://fonts.googleapis.com/css?family=Lato:900,300);
+
+
+/**
+ * forked from pixyll.com
+ * MIT license
+ */
+
+@charset "UTF-8";
+@font-face {
+	font-family: 'Merriweather';
+	font-style: normal;
+	font-weight: 300;
+	src: local('Merriweather Light'), local('Merriweather-Light'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Merriweather-Light.ttf);
+}
+@font-face {
+	font-family: 'Merriweather';
+	font-style: normal;
+	font-weight: 900;
+	src: local('Merriweather Heavy'), local('Merriweather-Heavy'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Merriweather-Bold.ttf);
+}
+@font-face {
+	font-family: 'Merriweather';
+	font-style: italic;
+	font-weight: 300;
+	src: local('Merriweather Light Italic'), local('Merriweather-LightItalic'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Merriweather-LightItalic.ttf);
+}
+@font-face {
+	font-family: 'Merriweather';
+	font-style: italic;
+	font-weight: 900;
+	src: local('Merriweather Heavy Italic'), local('Merriweather-HeavyItalic'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Merriweather-HeavyItalic.ttf);
+}
+
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 300;
+	src: local('Lato Light'), local('Lato-Light'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Lato-Light.ttf);
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 900;
+	src: local('Lato Black'), local('Lato-Blcak'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Lato-Black.ttf);
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: bold;
+	src: local('Lato Black'), local('Lato-Blcak'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Lato-Black.ttf);
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: italic;
+	font-weight: 900;
+	src: local('Lato BlackItalic'), local('Lato-BlackItalic'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Lato-BlackItalic.ttf);
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: italic;
+	font-weight: bold;
+	src: local('Lato BlackItalic'), local('Lato-BlackItalic'), url(file:///Users/seanwu/Library/Application%20Support/abnerworks.Typora/themes/pixyll/Lato-BlackItalic.ttf);
+}
+
+h1,
+.h1,
+.f1 {
+	font-size: 2rem;
+	line-height: 2.5rem;
+}
+h2,
+.h2,
+.f2 {
+	font-size: 1.5rem;
+	line-height: 2rem;
+}
+h3,
+.h3,
+.f3 {
+	font-size: 1.25rem;
+	line-height: 1.5rem;
+}
+p,
+.p,
+.f4,
+h4,
+h5,
+h6,
+dl,
+ol,
+ul,
+pre[cid],
+div[cid],
+#typora-source {
+	font-size: 1.125rem;
+	line-height: 1.5rem;
+}
+
+h4 {
+	font-size: 1.13rem;
+}
+/*
+ Pixyll
+ A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff.
+ Best served with BASSCSS (http://jxnblk.github.io/basscss)
+ Crafted with <3 by John Otander (@4lpine) - ©2015 John Otander MIT License http://opensource.org/licenses/MIT
+
+*/
+
+body {
+	font-family: "Merriweather", "PT Serif", Georgia, "Times New Roman", "STSong", Serif;
+	line-height: 1.5rem;
+	font-weight: 400;
+}
+
+#write {
+	max-width: 914px;
+	color: #333;
+}
+
+img {
+	width: auto;
+	max-width: 100%;
+}
+body {
+	font-size: 1.5rem;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+.md-table-edit {
+	background: #ededed;
+    padding-top: 4px;
+}
+
+table {
+	width: 100%;
+	font-size: 1.125rem;
+}
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td,
+table > tfoot > tr > th,
+table > tfoot > tr > td {
+	padding: 12px;
+	line-height: 1.2;
+	vertical-align: top;
+	border-top: 1px solid #333;
+}
+table > thead > tr > th {
+	vertical-align: bottom;
+	border-bottom: 2px solid #333;
+}
+table > caption + thead > tr:first-child > th,
+table > caption + thead > tr:first-child > td,
+table > colgroup + thead > tr:first-child > th,
+table > colgroup + thead > tr:first-child > td,
+table > thead:first-child > tr:first-child > th,
+table > thead:first-child > tr:first-child > td {
+	border-top: 0;
+}
+table > tbody + tbody {
+	border-top: 2px solid #333;
+}
+p {
+	font-weight: 300;
+	line-height: 1.5;
+}
+abbr {
+	border-bottom: 1px black dotted;
+	cursor: help;
+}
+pre,
+code {
+	font-family: Menlo, Monaco, "Courier New", monospace;
+}
+
+code,
+.md-fences  {
+	color: #7a7a7a;
+}
+
+.md-fences .CodeMirror.CodeMirror-wrap {
+	top: -1.5em;
+    margin-bottom: -1.5em;
+}
+
+.md-fences {
+	padding: 1.125em;
+	margin-bottom: 0.88em;
+	font-size: 1rem;
+	border: 1px solid #7a7a7a;
+}
+
+blockquote {
+	padding: 1.33em;
+	font-style: italic;
+	border-left: 5px solid #7a7a7a;
+	color: #555;
+}
+blockquote em {
+	color: #000;
+}
+blockquote footer {
+	font-size: .85rem;
+	font-style: normal;
+	background-color: #fff;
+	color: #7a7a7a;
+	border-color: transparent;
+}
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+	font-family: "Lato", 'Helvetica Neue', Helvetica, sans-serif;
+	font-weight: 900;
+	line-height: 1.2;
+	margin: 1em 0 0.5em;
+}
+@media screen and (min-width: 48em) {
+	.h1,
+	h1 {
+		font-size: 3.250rem;
+	}
+	.h2,
+	h2 {
+		font-size: 2.298rem;
+	}
+	.h3,
+	h3 {
+		font-size: 1.625rem;
+	}
+	.h4,
+	h4 {
+		font-size: 1.3rem;
+	}
+	#write>h4.md-focus:before,
+	#write>h5.md-focus:before,
+	#write>h6.md-focus:before{
+		top: 1px;
+	}
+	.p,
+	p,
+	li {
+		font-size: 1.25rem;
+		line-height: 1.8;
+	}
+	table {
+		font-size: 1.25rem;
+	}
+}
+@media (max-width: 48em) {
+	blockquote {
+		margin-left: 1rem;
+		margin-right: 0;
+		padding: 0.5em;
+	}
+	.h1,
+	h1 {
+		font-size: 2.827rem;
+	}
+	.h2,
+	h2 {
+		font-size: 1.999rem;
+	}
+	.h3,
+	h3 {
+		font-size: 1.413rem;
+	}
+	.h4,
+	h4 {
+		font-size: 1.3rem;
+	}
+}
+@media screen and (min-width: 64em) {
+	.h1,
+	h1 {
+		font-size: 4.498rem;
+	}
+	.h2,
+	h2 {
+		font-size: 2.29rem;
+	}
+	.h3,
+	h3 {
+		font-size: 1.9rem;
+	}
+	.h4,
+	h4 {
+		font-size: 1.591rem;
+	}
+	#write>h4.md-focus:before{
+		top:4px;
+	}
+}
+a {
+	color: #463F5C;
+	text-decoration: underline;
+}
+
+#write {
+	padding-top: 2rem;
+}
+
+#write pre.md-meta-block {
+	min-height: 35px;
+	padding: 0.5em 1em;
+	white-space: pre;
+	border: 0px;
+
+	border-left: 30px #f8f8f8 solid;
+	border-right: 30px #f8f8f8 solid;
+	width: 100vw;
+	max-width: calc(100% + 60px);
+
+	margin-left: -30px;
+	margin-bottom: 2em;
+	margin-top: -2010px;
+	padding-top: 2000px;
+	padding-bottom: 10px;
+	line-height: 1.5em;
+	color: #7a7a7a;
+	background-color: #fafafa;
+	font-family: 'Lato', 'Helvetica Neue', Helvetica, sans-serif;
+	font-weight: 300;
+	clear: both;
+	padding-left: 0;
+	font-size:1.125rem;
+}
+.md-image>.md-meta {
+	color: #463F5C
+}
+.footnotes {
+	font-size:1.1rem;
+}
+.md-tag {
+	font-family: 'Lato', 'Helvetica Neue', Helvetica, sans-serif;
+}
+.code-tooltip {
+	background: white;
+}
+.code-tooltip-content {
+	font-size: 1.1rem;
+}
+
+.task-list{
+	padding-left: 0;
+}
+
+.task-list-item {
+	padding-left:34px;
+}
+
+.task-list-item input{
+	width: 1.25rem;
+	height: 1.25rem;
+	display: block;
+	-webkit-appearance: initial;
+	top: -2px;
+}
+
+.task-list-item input:focus{
+	outline: none;
+	box-shadow: none;
+}
+
+.task-list-item input:before{
+	border: 1px solid #555;
+	border-radius: 1.5rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	background: #fff;
+	content: ' ';
+	transition: background-color 200ms ease-in-out;
+	display: block;
+}
+
+.task-list-item input:checked:before,
+.task-list-item input[checked]:before{
+	background: #333;
+	border-width: 2px;
+	display:inline-block;
+	transition: background-color 200ms ease-in-out;
+}
+
+.task-list-item input:checked:after,
+.task-list-item input[checked]:after {
+	opacity: 1;
+}
+
+.task-list-item input:after {
+	opacity: 1;
+	-webkit-transition: opacity 0.05s ease-in-out;
+	-moz-transition: opacity 0.05s ease-in-out;
+	transition: opacity 0.05s ease-in-out;
+	-webkit-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	position: absolute;
+	top: 0.4375rem;
+	left: 0.28125rem;
+	width: 0.9375rem;
+	height: 0.5rem;
+	border: 3px solid #fff;
+	border-top: 0;
+	border-right: 0;
+	content: ' ';
+	opacity: 0;
+}
+
+.md-tag {
+	color:inherit;
+}
+
+.md-toc:focus .md-toc-content{
+	margin-top: 19px;
+}
+
+#outline-dropmenu {
+	background-color:white;
+	font-size:1rem !important;
+}
+
+#outline-content li, #outline-content ul {
+	font-size:1rem !important;
+}
+
+.outline-title {
+	line-height: inherit;
+	margin-top: 10px;
+}
+
+.outline-expander {
+	width: 18px;
+}
+
+.outline-expander:before {
+ 	content: "+";
+	font-family: inherit;
+	color: rgb(108, 108, 108); 
+  	font-size: 1.5rem;
+ 	top: 0.1rem;
+}
+
+.outline-expander:hover:before {
+	content: "+";
+}
+
+.outline-item-open>.outline-item>.outline-expander:before{
+	content: "-";
+}
+
+/** source code mode */
+#typora-source {
+	font-family: Courier, monospace;
+    color: #6A6A6A;
+}
+
+.os-windows #typora-source {
+	font-family: inherit;
+}
+
+.cm-s-typora-default .cm-header, 
+.cm-s-typora-default .cm-property,
+.CodeMirror.cm-s-typora-default div.CodeMirror-cursor {
+	color: #428bca;
+}
+
+.cm-s-typora-default .cm-atom, .cm-s-typora-default .cm-number {
+	color: #777777;
+}
+
+
+.md-diagram-panel {
+	margin-top: 24px;
+	margin-left: -1.2em;
+}
+
+
+</style>
+</head>
+<body class='typora-export' >
+<div  id='write'  class = 'is-mac'><h1><a name='header-c5' class='md-header-anchor '></a>Multi-JOP Java Program</h1><h2><a name='header-c7' class='md-header-anchor '></a>Description</h2><p>A simple multi-jop java program was developed to perform a simple matrix multiplication:</p><p><span class="MathJax_Preview"></span><span class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-1-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.791ex" height="2.066ex" viewBox="0 -789.3 5076.5 889.7" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E1-MJMAINB-41" d="M296 0Q278 3 164 3Q58 3 49 0H40V62H92Q144 62 144 64Q388 682 397 689Q403 698 434 698Q463 698 471 689Q475 686 538 530T663 218L724 64Q724 62 776 62H828V0H817Q796 3 658 3Q509 3 485 0H472V62H517Q561 62 561 63L517 175H262L240 120Q218 65 217 64Q217 62 261 62H306V0H296ZM390 237L492 238L440 365Q390 491 388 491Q287 239 287 237H390Z"></path><path stroke-width="1" id="E1-MJMAIN-D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path><path stroke-width="1" id="E1-MJMAINB-42" d="M720 510Q720 476 704 448T665 404T619 377T580 362L564 359L583 356Q602 353 632 342T690 312Q712 292 725 276Q752 235 752 189V183Q752 160 741 125Q698 18 547 2Q543 1 288 0H39V62H147V624H39V686H264H409Q502 686 542 681T624 655Q720 607 720 510ZM563 513Q563 553 548 578T518 611T486 622Q479 624 385 624H293V382H375Q458 383 467 385Q563 405 563 513ZM590 192Q590 307 505 329Q504 330 503 330L398 331H293V62H391H400H444Q496 62 528 75T580 131Q590 155 590 192Z"></path><path stroke-width="1" id="E1-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path stroke-width="1" id="E1-MJMAINB-43" d="M64 343Q64 502 174 599T468 697Q502 697 533 691T586 674T623 655T647 639T657 632L694 663Q703 670 711 677T723 687T730 692T735 695T740 696T746 697Q759 697 762 692T766 668V627V489V449Q766 428 762 424T742 419H732H720Q699 419 697 436Q690 498 657 545Q611 618 532 632Q522 634 496 634Q356 634 286 553Q232 488 232 343T286 133Q355 52 497 52Q597 52 650 112T704 237Q704 248 709 251T729 254H735Q750 254 755 253T763 248T766 234Q766 136 680 63T469 -11Q285 -11 175 86T64 343Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E1-MJMAINB-41" x="0" y="0"></use><use xlink:href="#E1-MJMAIN-D7" x="1091" y="0"></use><use xlink:href="#E1-MJMAINB-42" x="2092" y="0"></use><use xlink:href="#E1-MJMAIN-3D" x="3188" y="0"></use><use xlink:href="#E1-MJMAINB-43" x="4245" y="0"></use></g></svg></span></span><script type="math/tex; mode=display" id="MathJax-Element-1">\textbf{A} \times \textbf{B} = \textbf{C}</script></p><p>where:</p><p><span class="MathJax_Preview"></span><span class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-2-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="25.028ex" height="9.152ex" viewBox="0 -2216.3 10775.8 3940.5" role="img" focusable="false" style="vertical-align: -4.005ex;"><defs><path stroke-width="1" id="E2-MJMAINB-41" d="M296 0Q278 3 164 3Q58 3 49 0H40V62H92Q144 62 144 64Q388 682 397 689Q403 698 434 698Q463 698 471 689Q475 686 538 530T663 218L724 64Q724 62 776 62H828V0H817Q796 3 658 3Q509 3 485 0H472V62H517Q561 62 561 63L517 175H262L240 120Q218 65 217 64Q217 62 261 62H306V0H296ZM390 237L492 238L440 365Q390 491 388 491Q287 239 287 237H390Z"></path><path stroke-width="1" id="E2-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path stroke-width="1" id="E2-MJMAIN-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path stroke-width="1" id="E2-MJMAIN-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path stroke-width="1" id="E2-MJMAIN-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path stroke-width="1" id="E2-MJMAIN-35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z"></path><path stroke-width="1" id="E2-MJMAIN-34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path><path stroke-width="1" id="E2-MJMAIN-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path stroke-width="1" id="E2-MJMAIN-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path><path stroke-width="1" id="E2-MJSZ4-239B" d="M837 1154Q843 1148 843 1145Q843 1141 818 1106T753 1002T667 841T574 604T494 299Q417 -84 417 -609Q417 -641 416 -647T411 -654Q409 -655 366 -655Q299 -655 297 -654Q292 -652 292 -643T291 -583Q293 -400 304 -242T347 110T432 470T574 813T785 1136Q787 1139 790 1142T794 1147T796 1150T799 1152T802 1153T807 1154T813 1154H819H837Z"></path><path stroke-width="1" id="E2-MJSZ4-239D" d="M843 -635Q843 -638 837 -644H820Q801 -644 800 -643Q792 -635 785 -626Q684 -503 605 -363T473 -75T385 216T330 518T302 809T291 1093Q291 1144 291 1153T296 1164Q298 1165 366 1165Q409 1165 411 1164Q415 1163 416 1157T417 1119Q417 529 517 109T833 -617Q843 -631 843 -635Z"></path><path stroke-width="1" id="E2-MJSZ4-239C" d="M413 -9Q412 -9 407 -9T388 -10T354 -10Q300 -10 297 -9Q294 -8 293 -5Q291 5 291 127V300Q291 602 292 605L296 609Q298 610 366 610Q382 610 392 610T407 610T412 609Q416 609 416 592T417 473V127Q417 -9 413 -9Z"></path><path stroke-width="1" id="E2-MJSZ4-239E" d="M31 1143Q31 1154 49 1154H59Q72 1154 75 1152T89 1136Q190 1013 269 873T401 585T489 294T544 -8T572 -299T583 -583Q583 -634 583 -643T577 -654Q575 -655 508 -655Q465 -655 463 -654Q459 -653 458 -647T457 -609Q457 -58 371 340T100 1037Q87 1059 61 1098T31 1143Z"></path><path stroke-width="1" id="E2-MJSZ4-23A0" d="M56 -644H50Q31 -644 31 -635Q31 -632 37 -622Q69 -579 100 -527Q286 -228 371 170T457 1119Q457 1161 462 1164Q464 1165 520 1165Q575 1165 577 1164Q582 1162 582 1153T583 1093Q581 910 570 752T527 400T442 40T300 -303T89 -626Q78 -640 75 -642T61 -644H56Z"></path><path stroke-width="1" id="E2-MJSZ4-239F" d="M579 -9Q578 -9 573 -9T554 -10T520 -10Q466 -10 463 -9Q460 -8 459 -5Q457 5 457 127V300Q457 602 458 605L462 609Q464 610 532 610Q548 610 558 610T573 610T578 609Q582 609 582 592T583 473V127Q583 -9 579 -9Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E2-MJMAINB-41" x="0" y="0"></use><use xlink:href="#E2-MJMAIN-3D" x="1147" y="0"></use><g transform="translate(2203,0)"><g transform="translate(0,2150)"><use xlink:href="#E2-MJSZ4-239B" x="0" y="-1156"></use><g transform="translate(0,-2033.6645264847511) scale(1,0.4446227929373997)"><use xlink:href="#E2-MJSZ4-239C"></use></g><use xlink:href="#E2-MJSZ4-239D" x="0" y="-3155"></use></g><g transform="translate(1042,0)"><g transform="translate(-16,0)"><use xlink:href="#E2-MJMAIN-32" x="0" y="1350"></use><use xlink:href="#E2-MJMAIN-33" x="0" y="-50"></use><use xlink:href="#E2-MJMAIN-32" x="0" y="-1450"></use></g><g transform="translate(1485,0)"><use xlink:href="#E2-MJMAIN-33" x="0" y="1350"></use><use xlink:href="#E2-MJMAIN-32" x="0" y="-50"></use><use xlink:href="#E2-MJMAIN-33" x="0" y="-1450"></use></g><g transform="translate(2985,0)"><use xlink:href="#E2-MJMAIN-35" x="0" y="1350"></use><use xlink:href="#E2-MJMAIN-33" x="0" y="-50"></use><use xlink:href="#E2-MJMAIN-31" x="0" y="-1450"></use></g><g transform="translate(4486,0)"><use xlink:href="#E2-MJMAIN-32" x="0" y="1350"></use><use xlink:href="#E2-MJMAIN-34" x="0" y="-50"></use><use xlink:href="#E2-MJMAIN-32" x="0" y="-1450"></use></g><g transform="translate(5986,0)"><use xlink:href="#E2-MJMAIN-33" x="0" y="1350"></use><use xlink:href="#E2-MJMAIN-31" x="0" y="-50"></use><use xlink:href="#E2-MJMAIN-33" x="0" y="-1450"></use></g></g><g transform="translate(7696,2150)"><use xlink:href="#E2-MJSZ4-239E" x="0" y="-1155"></use><g transform="translate(0,-2033.645264847512) scale(1,0.4462279293739968)"><use xlink:href="#E2-MJSZ4-239F"></use></g><use xlink:href="#E2-MJSZ4-23A0" x="0" y="-3155"></use></g></g></g></svg></span></span><script type="math/tex; mode=display" id="MathJax-Element-2">\textbf{A} = \begin{pmatrix}	2&3&5&2&3\\	3&2&3&4&1 \\ 2&3&1&2&3	\end{pmatrix}</script></p><p><span class="MathJax_Preview"></span><span class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-3-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.454ex" height="15.666ex" viewBox="0 -3643.3 6223.3 6745.2" role="img" focusable="false" style="vertical-align: -7.205ex;"><defs><path stroke-width="1" id="E3-MJMAINB-42" d="M720 510Q720 476 704 448T665 404T619 377T580 362L564 359L583 356Q602 353 632 342T690 312Q712 292 725 276Q752 235 752 189V183Q752 160 741 125Q698 18 547 2Q543 1 288 0H39V62H147V624H39V686H264H409Q502 686 542 681T624 655Q720 607 720 510ZM563 513Q563 553 548 578T518 611T486 622Q479 624 385 624H293V382H375Q458 383 467 385Q563 405 563 513ZM590 192Q590 307 505 329Q504 330 503 330L398 331H293V62H391H400H444Q496 62 528 75T580 131Q590 155 590 192Z"></path><path stroke-width="1" id="E3-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path stroke-width="1" id="E3-MJMAIN-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path stroke-width="1" id="E3-MJMAIN-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path stroke-width="1" id="E3-MJMAIN-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path stroke-width="1" id="E3-MJMAIN-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path stroke-width="1" id="E3-MJMAIN-36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z"></path><path stroke-width="1" id="E3-MJMAIN-35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z"></path><path stroke-width="1" id="E3-MJMAIN-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path><path stroke-width="1" id="E3-MJSZ4-239B" d="M837 1154Q843 1148 843 1145Q843 1141 818 1106T753 1002T667 841T574 604T494 299Q417 -84 417 -609Q417 -641 416 -647T411 -654Q409 -655 366 -655Q299 -655 297 -654Q292 -652 292 -643T291 -583Q293 -400 304 -242T347 110T432 470T574 813T785 1136Q787 1139 790 1142T794 1147T796 1150T799 1152T802 1153T807 1154T813 1154H819H837Z"></path><path stroke-width="1" id="E3-MJSZ4-239D" d="M843 -635Q843 -638 837 -644H820Q801 -644 800 -643Q792 -635 785 -626Q684 -503 605 -363T473 -75T385 216T330 518T302 809T291 1093Q291 1144 291 1153T296 1164Q298 1165 366 1165Q409 1165 411 1164Q415 1163 416 1157T417 1119Q417 529 517 109T833 -617Q843 -631 843 -635Z"></path><path stroke-width="1" id="E3-MJSZ4-239C" d="M413 -9Q412 -9 407 -9T388 -10T354 -10Q300 -10 297 -9Q294 -8 293 -5Q291 5 291 127V300Q291 602 292 605L296 609Q298 610 366 610Q382 610 392 610T407 610T412 609Q416 609 416 592T417 473V127Q417 -9 413 -9Z"></path><path stroke-width="1" id="E3-MJSZ4-239E" d="M31 1143Q31 1154 49 1154H59Q72 1154 75 1152T89 1136Q190 1013 269 873T401 585T489 294T544 -8T572 -299T583 -583Q583 -634 583 -643T577 -654Q575 -655 508 -655Q465 -655 463 -654Q459 -653 458 -647T457 -609Q457 -58 371 340T100 1037Q87 1059 61 1098T31 1143Z"></path><path stroke-width="1" id="E3-MJSZ4-23A0" d="M56 -644H50Q31 -644 31 -635Q31 -632 37 -622Q69 -579 100 -527Q286 -228 371 170T457 1119Q457 1161 462 1164Q464 1165 520 1165Q575 1165 577 1164Q582 1162 582 1153T583 1093Q581 910 570 752T527 400T442 40T300 -303T89 -626Q78 -640 75 -642T61 -644H56Z"></path><path stroke-width="1" id="E3-MJSZ4-239F" d="M579 -9Q578 -9 573 -9T554 -10T520 -10Q466 -10 463 -9Q460 -8 459 -5Q457 5 457 127V300Q457 602 458 605L462 609Q464 610 532 610Q548 610 558 610T573 610T578 609Q582 609 582 592T583 473V127Q583 -9 579 -9Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E3-MJMAINB-42" x="0" y="0"></use><use xlink:href="#E3-MJMAIN-3D" x="1096" y="0"></use><g transform="translate(2152,0)"><g transform="translate(0,3550)"><use xlink:href="#E3-MJSZ4-239B" x="0" y="-1156"></use><g transform="translate(0,-4779.731942215089) scale(1,4.93900481540931)"><use xlink:href="#E3-MJSZ4-239C"></use></g><use xlink:href="#E3-MJSZ4-239D" x="0" y="-5955"></use></g><g transform="translate(1042,0)"><g transform="translate(-16,0)"><use xlink:href="#E3-MJMAIN-31" x="0" y="2750"></use><use xlink:href="#E3-MJMAIN-32" x="0" y="1350"></use><use xlink:href="#E3-MJMAIN-36" x="0" y="-50"></use><use xlink:href="#E3-MJMAIN-31" x="0" y="-1450"></use><use xlink:href="#E3-MJMAIN-32" x="0" y="-2850"></use></g><g transform="translate(1485,0)"><use xlink:href="#E3-MJMAIN-32" x="0" y="2750"></use><use xlink:href="#E3-MJMAIN-33" x="0" y="1350"></use><use xlink:href="#E3-MJMAIN-35" x="0" y="-50"></use><use xlink:href="#E3-MJMAIN-32" x="0" y="-1450"></use><use xlink:href="#E3-MJMAIN-32" x="0" y="-2850"></use></g></g><g transform="translate(3195,3550)"><use xlink:href="#E3-MJSZ4-239E" x="0" y="-1155"></use><g transform="translate(0,-4779.71268057785) scale(1,4.940609951845907)"><use xlink:href="#E3-MJSZ4-239F"></use></g><use xlink:href="#E3-MJSZ4-23A0" x="0" y="-5955"></use></g></g></g></svg></span></span><script type="math/tex; mode=display" id="MathJax-Element-3">\textbf{B} = \begin{pmatrix} 1&2 \\ 2&3 \\ 6&5 \\ 1&2 \\ 2&2 \end{pmatrix}</script></p><p><span class="MathJax_Preview"></span><span class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-4-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="16.809ex" height="9.152ex" viewBox="0 -2216.3 7237.3 3940.5" role="img" focusable="false" style="vertical-align: -4.005ex;"><defs><path stroke-width="1" id="E4-MJMAINB-43" d="M64 343Q64 502 174 599T468 697Q502 697 533 691T586 674T623 655T647 639T657 632L694 663Q703 670 711 677T723 687T730 692T735 695T740 696T746 697Q759 697 762 692T766 668V627V489V449Q766 428 762 424T742 419H732H720Q699 419 697 436Q690 498 657 545Q611 618 532 632Q522 634 496 634Q356 634 286 553Q232 488 232 343T286 133Q355 52 497 52Q597 52 650 112T704 237Q704 248 709 251T729 254H735Q750 254 755 253T763 248T766 234Q766 136 680 63T469 -11Q285 -11 175 86T64 343Z"></path><path stroke-width="1" id="E4-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path stroke-width="1" id="E4-MJMAIN-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path stroke-width="1" id="E4-MJMAIN-34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path><path stroke-width="1" id="E4-MJMAIN-36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z"></path><path stroke-width="1" id="E4-MJMAIN-38" d="M70 417T70 494T124 618T248 666Q319 666 374 624T429 515Q429 485 418 459T392 417T361 389T335 371T324 363L338 354Q352 344 366 334T382 323Q457 264 457 174Q457 95 399 37T249 -22Q159 -22 101 29T43 155Q43 263 172 335L154 348Q133 361 127 368Q70 417 70 494ZM286 386L292 390Q298 394 301 396T311 403T323 413T334 425T345 438T355 454T364 471T369 491T371 513Q371 556 342 586T275 624Q268 625 242 625Q201 625 165 599T128 534Q128 511 141 492T167 463T217 431Q224 426 228 424L286 386ZM250 21Q308 21 350 55T392 137Q392 154 387 169T375 194T353 216T330 234T301 253T274 270Q260 279 244 289T218 306L210 311Q204 311 181 294T133 239T107 157Q107 98 150 60T250 21Z"></path><path stroke-width="1" id="E4-MJMAIN-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path stroke-width="1" id="E4-MJMAIN-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path stroke-width="1" id="E4-MJMAIN-37" d="M55 458Q56 460 72 567L88 674Q88 676 108 676H128V672Q128 662 143 655T195 646T364 644H485V605L417 512Q408 500 387 472T360 435T339 403T319 367T305 330T292 284T284 230T278 162T275 80Q275 66 275 52T274 28V19Q270 2 255 -10T221 -22Q210 -22 200 -19T179 0T168 40Q168 198 265 368Q285 400 349 489L395 552H302Q128 552 119 546Q113 543 108 522T98 479L95 458V455H55V458Z"></path><path stroke-width="1" id="E4-MJMAIN-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path stroke-width="1" id="E4-MJMAIN-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path><path stroke-width="1" id="E4-MJSZ4-239B" d="M837 1154Q843 1148 843 1145Q843 1141 818 1106T753 1002T667 841T574 604T494 299Q417 -84 417 -609Q417 -641 416 -647T411 -654Q409 -655 366 -655Q299 -655 297 -654Q292 -652 292 -643T291 -583Q293 -400 304 -242T347 110T432 470T574 813T785 1136Q787 1139 790 1142T794 1147T796 1150T799 1152T802 1153T807 1154T813 1154H819H837Z"></path><path stroke-width="1" id="E4-MJSZ4-239D" d="M843 -635Q843 -638 837 -644H820Q801 -644 800 -643Q792 -635 785 -626Q684 -503 605 -363T473 -75T385 216T330 518T302 809T291 1093Q291 1144 291 1153T296 1164Q298 1165 366 1165Q409 1165 411 1164Q415 1163 416 1157T417 1119Q417 529 517 109T833 -617Q843 -631 843 -635Z"></path><path stroke-width="1" id="E4-MJSZ4-239C" d="M413 -9Q412 -9 407 -9T388 -10T354 -10Q300 -10 297 -9Q294 -8 293 -5Q291 5 291 127V300Q291 602 292 605L296 609Q298 610 366 610Q382 610 392 610T407 610T412 609Q416 609 416 592T417 473V127Q417 -9 413 -9Z"></path><path stroke-width="1" id="E4-MJSZ4-239E" d="M31 1143Q31 1154 49 1154H59Q72 1154 75 1152T89 1136Q190 1013 269 873T401 585T489 294T544 -8T572 -299T583 -583Q583 -634 583 -643T577 -654Q575 -655 508 -655Q465 -655 463 -654Q459 -653 458 -647T457 -609Q457 -58 371 340T100 1037Q87 1059 61 1098T31 1143Z"></path><path stroke-width="1" id="E4-MJSZ4-23A0" d="M56 -644H50Q31 -644 31 -635Q31 -632 37 -622Q69 -579 100 -527Q286 -228 371 170T457 1119Q457 1161 462 1164Q464 1165 520 1165Q575 1165 577 1164Q582 1162 582 1153T583 1093Q581 910 570 752T527 400T442 40T300 -303T89 -626Q78 -640 75 -642T61 -644H56Z"></path><path stroke-width="1" id="E4-MJSZ4-239F" d="M579 -9Q578 -9 573 -9T554 -10T520 -10Q466 -10 463 -9Q460 -8 459 -5Q457 5 457 127V300Q457 602 458 605L462 609Q464 610 532 610Q548 610 558 610T573 610T578 609Q582 609 582 592T583 473V127Q583 -9 579 -9Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E4-MJMAINB-43" x="0" y="0"></use><use xlink:href="#E4-MJMAIN-3D" x="1109" y="0"></use><g transform="translate(2165,0)"><g transform="translate(0,2150)"><use xlink:href="#E4-MJSZ4-239B" x="0" y="-1156"></use><g transform="translate(0,-2033.6645264847511) scale(1,0.4446227929373997)"><use xlink:href="#E4-MJSZ4-239C"></use></g><use xlink:href="#E4-MJSZ4-239D" x="0" y="-3155"></use></g><g transform="translate(1042,0)"><g transform="translate(-16,0)"><g transform="translate(0,1350)"><use xlink:href="#E4-MJMAIN-34"></use><use xlink:href="#E4-MJMAIN-36" x="500" y="0"></use></g><g transform="translate(0,-50)"><use xlink:href="#E4-MJMAIN-33"></use><use xlink:href="#E4-MJMAIN-31" x="500" y="0"></use></g><g transform="translate(0,-1450)"><use xlink:href="#E4-MJMAIN-32"></use><use xlink:href="#E4-MJMAIN-32" x="500" y="0"></use></g></g><g transform="translate(1985,0)"><g transform="translate(0,1350)"><use xlink:href="#E4-MJMAIN-34"></use><use xlink:href="#E4-MJMAIN-38" x="500" y="0"></use></g><g transform="translate(0,-50)"><use xlink:href="#E4-MJMAIN-33"></use><use xlink:href="#E4-MJMAIN-37" x="500" y="0"></use></g><g transform="translate(0,-1450)"><use xlink:href="#E4-MJMAIN-32"></use><use xlink:href="#E4-MJMAIN-38" x="500" y="0"></use></g></g></g><g transform="translate(4196,2150)"><use xlink:href="#E4-MJSZ4-239E" x="0" y="-1155"></use><g transform="translate(0,-2033.645264847512) scale(1,0.4462279293739968)"><use xlink:href="#E4-MJSZ4-239F"></use></g><use xlink:href="#E4-MJSZ4-23A0" x="0" y="-3155"></use></g></g></g></svg></span></span><script type="math/tex; mode=display" id="MathJax-Element-4">\textbf{C} = \begin{pmatrix} 46&48 \\ 31&37 \\22&28 \end{pmatrix}</script></p><p>One JOP will perform a row of matrix multiplication. </p><p>Therefore for <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-33-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.866ex" height="2.752ex" viewBox="0 -838.5 6400.7 1184.9" role="img" focusable="false" style="vertical-align: -0.805ex;"><defs><path stroke-width="1" id="E44-MJMATHI-4A" d="M447 625Q447 637 354 637H329Q323 642 323 645T325 664Q329 677 335 683H352Q393 681 498 681Q541 681 568 681T605 682T619 682Q633 682 633 672Q633 670 630 658Q626 642 623 640T604 637Q552 637 545 623Q541 610 483 376Q420 128 419 127Q397 64 333 21T195 -22Q137 -22 97 8T57 88Q57 130 80 152T132 174Q177 174 182 130Q182 98 164 80T123 56Q115 54 115 53T122 44Q148 15 197 15Q235 15 271 47T324 130Q328 142 387 380T447 625Z"></path><path stroke-width="1" id="E44-MJMATHI-4F" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path stroke-width="1" id="E44-MJMATHI-50" d="M287 628Q287 635 230 637Q206 637 199 638T192 648Q192 649 194 659Q200 679 203 681T397 683Q587 682 600 680Q664 669 707 631T751 530Q751 453 685 389Q616 321 507 303Q500 302 402 301H307L277 182Q247 66 247 59Q247 55 248 54T255 50T272 48T305 46H336Q342 37 342 35Q342 19 335 5Q330 0 319 0Q316 0 282 1T182 2Q120 2 87 2T51 1Q33 1 33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM645 554Q645 567 643 575T634 597T609 619T560 635Q553 636 480 637Q463 637 445 637T416 636T404 636Q391 635 386 627Q384 621 367 550T332 412T314 344Q314 342 395 342H407H430Q542 342 590 392Q617 419 631 471T645 554Z"></path><path stroke-width="1" id="E44-MJMATHI-69" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path><path stroke-width="1" id="E44-MJMAIN-2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path><path stroke-width="1" id="E44-MJMAIN-2208" d="M84 250Q84 372 166 450T360 539Q361 539 377 539T419 540T469 540H568Q583 532 583 520Q583 511 570 501L466 500Q355 499 329 494Q280 482 242 458T183 409T147 354T129 306T124 272V270H568Q583 262 583 250T568 230H124V228Q124 207 134 177T167 112T231 48T328 7Q355 1 466 0H570Q583 -10 583 -20Q583 -32 568 -40H471Q464 -40 446 -40T417 -41Q262 -41 172 45Q84 127 84 250Z"></path><path stroke-width="1" id="E44-MJMAIN-5B" d="M118 -250V750H255V710H158V-210H255V-250H118Z"></path><path stroke-width="1" id="E44-MJMAIN-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path stroke-width="1" id="E44-MJMAIN-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path stroke-width="1" id="E44-MJMAIN-5D" d="M22 710V750H159V-250H22V-210H119V710H22Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E44-MJMATHI-4A" x="0" y="0"></use><use xlink:href="#E44-MJMATHI-4F" x="633" y="0"></use><g transform="translate(1397,0)"><use xlink:href="#E44-MJMATHI-50" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E44-MJMATHI-69" x="908" y="-213"></use></g><use xlink:href="#E44-MJMAIN-2C" x="2383" y="0"></use><use xlink:href="#E44-MJMATHI-69" x="2828" y="0"></use><use xlink:href="#E44-MJMAIN-2208" x="3452" y="0"></use><use xlink:href="#E44-MJMAIN-5B" x="4397" y="0"></use><use xlink:href="#E44-MJMAIN-30" x="4676" y="0"></use><use xlink:href="#E44-MJMAIN-2C" x="5176" y="0"></use><use xlink:href="#E44-MJMAIN-32" x="5621" y="0"></use><use xlink:href="#E44-MJMAIN-5D" x="6122" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-33">JOP_i, i \in [0,2]</script>, the calculations it will perform are:</p><p><span class="MathJax_Preview"></span><span class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-96-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="24.174ex" height="7.552ex" viewBox="0 -1822.6 10408.3 3251.6" role="img" focusable="false" style="vertical-align: -3.319ex;"><defs><path stroke-width="1" id="E141-MJSZ2-2211" d="M60 948Q63 950 665 950H1267L1325 815Q1384 677 1388 669H1348L1341 683Q1320 724 1285 761Q1235 809 1174 838T1033 881T882 898T699 902H574H543H251L259 891Q722 258 724 252Q725 250 724 246Q721 243 460 -56L196 -356Q196 -357 407 -357Q459 -357 548 -357T676 -358Q812 -358 896 -353T1063 -332T1204 -283T1307 -196Q1328 -170 1348 -124H1388Q1388 -125 1381 -145T1356 -210T1325 -294L1267 -449L666 -450Q64 -450 61 -448Q55 -446 55 -439Q55 -437 57 -433L590 177Q590 178 557 222T452 366T322 544L56 909L55 924Q55 945 60 948Z"></path><path stroke-width="1" id="E141-MJMATHI-6A" d="M297 596Q297 627 318 644T361 661Q378 661 389 651T403 623Q403 595 384 576T340 557Q322 557 310 567T297 596ZM288 376Q288 405 262 405Q240 405 220 393T185 362T161 325T144 293L137 279Q135 278 121 278H107Q101 284 101 286T105 299Q126 348 164 391T252 441Q253 441 260 441T272 442Q296 441 316 432Q341 418 354 401T367 348V332L318 133Q267 -67 264 -75Q246 -125 194 -164T75 -204Q25 -204 7 -183T-12 -137Q-12 -110 7 -91T53 -71Q70 -71 82 -81T95 -112Q95 -148 63 -167Q69 -168 77 -168Q111 -168 139 -140T182 -74L193 -32Q204 11 219 72T251 197T278 308T289 365Q289 372 288 376Z"></path><path stroke-width="1" id="E141-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path stroke-width="1" id="E141-MJMAIN-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path stroke-width="1" id="E141-MJMATHI-4C" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path><path stroke-width="1" id="E141-MJMAINB-43" d="M64 343Q64 502 174 599T468 697Q502 697 533 691T586 674T623 655T647 639T657 632L694 663Q703 670 711 677T723 687T730 692T735 695T740 696T746 697Q759 697 762 692T766 668V627V489V449Q766 428 762 424T742 419H732H720Q699 419 697 436Q690 498 657 545Q611 618 532 632Q522 634 496 634Q356 634 286 553Q232 488 232 343T286 133Q355 52 497 52Q597 52 650 112T704 237Q704 248 709 251T729 254H735Q750 254 755 253T763 248T766 234Q766 136 680 63T469 -11Q285 -11 175 86T64 343Z"></path><path stroke-width="1" id="E141-MJMATHI-69" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path><path stroke-width="1" id="E141-MJMATHI-6B" d="M121 647Q121 657 125 670T137 683Q138 683 209 688T282 694Q294 694 294 686Q294 679 244 477Q194 279 194 272Q213 282 223 291Q247 309 292 354T362 415Q402 442 438 442Q468 442 485 423T503 369Q503 344 496 327T477 302T456 291T438 288Q418 288 406 299T394 328Q394 353 410 369T442 390L458 393Q446 405 434 405H430Q398 402 367 380T294 316T228 255Q230 254 243 252T267 246T293 238T320 224T342 206T359 180T365 147Q365 130 360 106T354 66Q354 26 381 26Q429 26 459 145Q461 153 479 153H483Q499 153 499 144Q499 139 496 130Q455 -11 378 -11Q333 -11 305 15T277 90Q277 108 280 121T283 145Q283 167 269 183T234 206T200 217T182 220H180Q168 178 159 139T145 81T136 44T129 20T122 7T111 -2Q98 -11 83 -11Q66 -11 57 -1T48 16Q48 26 85 176T158 471L195 616Q196 629 188 632T149 637H144Q134 637 131 637T124 640T121 647Z"></path><path stroke-width="1" id="E141-MJMATHI-4E" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path><path stroke-width="1" id="E141-MJMAINB-41" d="M296 0Q278 3 164 3Q58 3 49 0H40V62H92Q144 62 144 64Q388 682 397 689Q403 698 434 698Q463 698 471 689Q475 686 538 530T663 218L724 64Q724 62 776 62H828V0H817Q796 3 658 3Q509 3 485 0H472V62H517Q561 62 561 63L517 175H262L240 120Q218 65 217 64Q217 62 261 62H306V0H296ZM390 237L492 238L440 365Q390 491 388 491Q287 239 287 237H390Z"></path><path stroke-width="1" id="E141-MJMAIN-D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path><path stroke-width="1" id="E141-MJMAINB-42" d="M720 510Q720 476 704 448T665 404T619 377T580 362L564 359L583 356Q602 353 632 342T690 312Q712 292 725 276Q752 235 752 189V183Q752 160 741 125Q698 18 547 2Q543 1 288 0H39V62H147V624H39V686H264H409Q502 686 542 681T624 655Q720 607 720 510ZM563 513Q563 553 548 578T518 611T486 622Q479 624 385 624H293V382H375Q458 383 467 385Q563 405 563 513ZM590 192Q590 307 505 329Q504 330 503 330L398 331H293V62H391H400H444Q496 62 528 75T580 131Q590 155 590 192Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E141-MJSZ2-2211" x="0" y="0"></use><g transform="translate(124,-1090)"><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-6A" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMAIN-3D" x="412" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMAIN-30" x="1191" y="0"></use></g><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-4C" x="680" y="1627"></use><g transform="translate(1611,0)"><use xlink:href="#E141-MJMAINB-43" x="0" y="0"></use><g transform="translate(831,-150)"><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-69" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-6A" x="345" y="0"></use></g></g><use xlink:href="#E141-MJMAIN-3D" x="3356" y="0"></use><g transform="translate(4412,0)"><use xlink:href="#E141-MJSZ2-2211" x="0" y="0"></use><g transform="translate(85,-1110)"><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-6B" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMAIN-3D" x="521" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMAIN-30" x="1300" y="0"></use></g><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-4E" x="577" y="1627"></use></g><g transform="translate(6023,0)"><use xlink:href="#E141-MJMAINB-41" x="0" y="0"></use><g transform="translate(869,-150)"><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-6B" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-69" x="521" y="0"></use></g></g><use xlink:href="#E141-MJMAIN-D7" x="7828" y="0"></use><g transform="translate(8829,0)"><use xlink:href="#E141-MJMAINB-42" x="0" y="0"></use><g transform="translate(818,-150)"><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-6A" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E141-MJMATHI-6B" x="412" y="0"></use></g></g></g></svg></span></span><script type="math/tex; mode=display" id="MathJax-Element-96">\sum\limits_{j=0}^{L}\textbf{C}_{ij} = \sum\limits_{k=0}^{N} \textbf{A}_{ki} \times \textbf{B}_{jk}</script></p><p>Where <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-75-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.583ex" height="1.952ex" viewBox="0 -740.1 681.5 840.5" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E118-MJMATHI-4C" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E118-MJMATHI-4C" x="0" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-75">L</script> is the number of columns of <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-82-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="2.066ex" viewBox="0 -789.3 831.5 889.7" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E125-MJMAINB-43" d="M64 343Q64 502 174 599T468 697Q502 697 533 691T586 674T623 655T647 639T657 632L694 663Q703 670 711 677T723 687T730 692T735 695T740 696T746 697Q759 697 762 692T766 668V627V489V449Q766 428 762 424T742 419H732H720Q699 419 697 436Q690 498 657 545Q611 618 532 632Q522 634 496 634Q356 634 286 553Q232 488 232 343T286 133Q355 52 497 52Q597 52 650 112T704 237Q704 248 709 251T729 254H735Q750 254 755 253T763 248T766 234Q766 136 680 63T469 -11Q285 -11 175 86T64 343Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E125-MJMAINB-43" x="0" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-82">\textbf{C}</script>, and <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-85-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.064ex" height="1.952ex" viewBox="0 -740.1 888.5 840.5" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E128-MJMATHI-4E" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E128-MJMATHI-4E" x="0" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-85">N</script> is the number of columns of <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-5-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.019ex" height="2.066ex" viewBox="0 -789.3 869.5 889.7" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E5-MJMAINB-41" d="M296 0Q278 3 164 3Q58 3 49 0H40V62H92Q144 62 144 64Q388 682 397 689Q403 698 434 698Q463 698 471 689Q475 686 538 530T663 218L724 64Q724 62 776 62H828V0H817Q796 3 658 3Q509 3 485 0H472V62H517Q561 62 561 63L517 175H262L240 120Q218 65 217 64Q217 62 261 62H306V0H296ZM390 237L492 238L440 365Q390 491 388 491Q287 239 287 237H390Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E5-MJMAINB-41" x="0" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-5">\textbf{A}</script>. Notice the number of rows of <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-87-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.901ex" height="1.952ex" viewBox="0 -740.1 818.5 840.5" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E130-MJMAINB-42" d="M720 510Q720 476 704 448T665 404T619 377T580 362L564 359L583 356Q602 353 632 342T690 312Q712 292 725 276Q752 235 752 189V183Q752 160 741 125Q698 18 547 2Q543 1 288 0H39V62H147V624H39V686H264H409Q502 686 542 681T624 655Q720 607 720 510ZM563 513Q563 553 548 578T518 611T486 622Q479 624 385 624H293V382H375Q458 383 467 385Q563 405 563 513ZM590 192Q590 307 505 329Q504 330 503 330L398 331H293V62H391H400H444Q496 62 528 75T580 131Q590 155 590 192Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E130-MJMAINB-42" x="0" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-87">\textbf{B}</script> is equal to <span class="MathJax_Preview"></span><span class="MathJax_SVG" id="MathJax-Element-85-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.064ex" height="1.952ex" viewBox="0 -740.1 888.5 840.5" role="img" focusable="false" style="vertical-align: -0.233ex;"><defs><path stroke-width="1" id="E128-MJMATHI-4E" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E128-MJMATHI-4E" x="0" y="0"></use></g></svg></span><script type="math/tex" id="MathJax-Element-85">N</script> as well.</p><p></p><p></p><pre class="md-fences md-end-block md-fences-with-lineno" lang="java"> <div class="CodeMirror cm-s-inner CodeMirror-wrap "><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 51px;"></div><div class="CodeMirror-hscrollbar" style="left: 47px; min-height: 18px;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-vscrollbar" style="min-width: 18px;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-scrollbar-filler"></div><div class="CodeMirror-gutter-filler"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 47px; min-height: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines"><div style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">1</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">package</span> <span class="cm-def">test</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">2</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">3</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">import</span> <span class="cm-variable">java</span>.<span class="cm-variable">util</span>.<span class="cm-variable">Vector</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">4</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">5</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">import</span> <span class="cm-variable">joprt</span>.<span class="cm-variable">RtThread</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">6</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">7</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">import</span> <span class="cm-variable">com</span>.<span class="cm-variable">jopdesign</span>.<span class="cm-variable">io</span>.<span class="cm-variable">IOFactory</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">8</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">import</span> <span class="cm-variable">com</span>.<span class="cm-variable">jopdesign</span>.<span class="cm-variable">io</span>.<span class="cm-variable">SysDevice</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">9</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">import</span> <span class="cm-variable">com</span>.<span class="cm-variable">jopdesign</span>.<span class="cm-variable">sys</span>.<span class="cm-variable">Startup</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">10</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">11</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-keyword">public</span> <span class="cm-keyword">class</span> <span class="cm-def">matrix</span> <span class="cm-keyword">implements</span> <span class="cm-variable">Runnable</span>{</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">12</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">13</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">14</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-variable-3">Integer</span> <span class="cm-variable">matA</span>[][];</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">15</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-variable-3">Integer</span> <span class="cm-variable">matB</span>[][];</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">16</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-variable-3">Integer</span> <span class="cm-variable">matC</span>[][];</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">17</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">18</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">static</span> <span class="cm-variable">Vector</span> <span class="cm-variable">msg</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">19</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-keyword">static</span> <span class="cm-variable-3">Integer</span>[][] <span class="cm-variable">A</span><span class="cm-operator">=</span> {{<span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">5</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>}, {<span class="cm-number">3</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">1</span>}, {<span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>}}; ;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">20</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-keyword">static</span> <span class="cm-variable-3">Integer</span>[][] <span class="cm-variable">B</span><span class="cm-operator">=</span> {{<span class="cm-number">1</span>, <span class="cm-number">2</span>}, {<span class="cm-number">2</span>, <span class="cm-number">3</span>}, {<span class="cm-number">6</span>, <span class="cm-number">5</span>}, {<span class="cm-number">1</span>, <span class="cm-number">2</span>}, {<span class="cm-number">2</span>, <span class="cm-number">2</span>}};;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">21</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-keyword">static</span> <span class="cm-variable-3">Integer</span>[][] <span class="cm-variable">C</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">22</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-variable-3">int</span> <span class="cm-variable">cpu_id</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">23</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-comment">// Matrix multiplication for one row.</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">24</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-keyword">static</span> <span class="cm-variable-3">void</span> <span class="cm-variable">matrix_mult</span>(<span class="cm-variable-3">Integer</span>[] <span class="cm-variable">row</span>, <span class="cm-variable-3">int</span> <span class="cm-variable">row_num</span>, <span class="cm-variable-3">Integer</span>[][] <span class="cm-variable">cols</span>, <span class="cm-variable-3">Integer</span>[][] <span class="cm-variable">C</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">25</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable-3">int</span> <span class="cm-variable">i</span>, <span class="cm-variable">j</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">26</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span> (<span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>; <span class="cm-variable">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">cols</span>[<span class="cm-number">0</span>].<span class="cm-variable">length</span>; <span class="cm-variable">i</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">27</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span> (<span class="cm-variable">j</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>; <span class="cm-variable">j</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">row</span>.<span class="cm-variable">length</span>; <span class="cm-variable">j</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">28</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">C</span>[<span class="cm-variable">row_num</span>][<span class="cm-variable">i</span>] <span class="cm-operator">+=</span> <span class="cm-variable">row</span>[<span class="cm-variable">j</span>] <span class="cm-operator">*</span> <span class="cm-variable">cols</span>[<span class="cm-variable">j</span>][<span class="cm-variable">i</span>];</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">29</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">30</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">31</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">32</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">33</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-keyword">static</span> <span class="cm-variable-3">void</span> <span class="cm-variable">print_matrix</span>(<span class="cm-variable-3">Integer</span>[][] <span class="cm-variable">mat</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">34</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable-3">int</span> <span class="cm-variable">i</span>, <span class="cm-variable">j</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">35</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">36</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span> (<span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>; <span class="cm-variable">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">mat</span>.<span class="cm-variable">length</span>; <span class="cm-variable">i</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">37</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span> (<span class="cm-variable">j</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>; <span class="cm-variable">j</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">mat</span>[<span class="cm-number">0</span>].<span class="cm-variable">length</span>; <span class="cm-variable">j</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">38</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">print</span>(<span class="cm-variable">mat</span>[<span class="cm-variable">i</span>][<span class="cm-variable">j</span>] <span class="cm-operator">+</span> <span class="cm-string">"\t"</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">39</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">40</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">print</span>(<span class="cm-string">"\n"</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">41</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">42</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">43</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">println</span>(<span class="cm-string">"------------------------"</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">44</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">45</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">46</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">47</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">48</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-variable">matrix</span>(<span class="cm-variable-3">int</span> <span class="cm-variable">identity</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">49</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">cpu_id</span> <span class="cm-operator">=</span> <span class="cm-variable">identity</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">50</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">51</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">52</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">53</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-keyword">static</span> <span class="cm-variable-3">void</span> <span class="cm-variable">main</span>(<span class="cm-variable-3">String</span>[] <span class="cm-variable">args</span>) {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">54</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">55</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">56</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-comment">// Values from lab 3</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">57</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">58</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">C</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable-3">Integer</span>[<span class="cm-variable">A</span>.<span class="cm-variable">length</span>][<span class="cm-variable">B</span>[<span class="cm-number">0</span>].<span class="cm-variable">length</span>];</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">59</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">60</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">msg</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Vector</span>();</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">61</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-comment">// Initialising C</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">62</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span> (<span class="cm-variable-3">int</span> <span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>; <span class="cm-variable">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">C</span>.<span class="cm-variable">length</span>; <span class="cm-variable">i</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">63</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span> (<span class="cm-variable-3">int</span> <span class="cm-variable">j</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>; <span class="cm-variable">j</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">C</span>[<span class="cm-number">0</span>].<span class="cm-variable">length</span>; <span class="cm-variable">j</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">64</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">C</span>[<span class="cm-variable">i</span>][<span class="cm-variable">j</span>] <span class="cm-operator">=</span> <span class="cm-number">0</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">65</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">66</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">67</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">68</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">println</span>(<span class="cm-string">"A = "</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">69</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">print_matrix</span>(<span class="cm-variable">A</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">70</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">71</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">println</span>(<span class="cm-string">"B = "</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">72</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">print_matrix</span>(<span class="cm-variable">B</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">73</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">74</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">if</span> (<span class="cm-variable">A</span>[<span class="cm-number">0</span>].<span class="cm-variable">length</span> <span class="cm-operator">!=</span> <span class="cm-variable">B</span>.<span class="cm-variable">length</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">75</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">println</span>(<span class="cm-string">"Error: number of columns in A does not match the number of rows in B."</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">76</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">77</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">78</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">SysDevice</span> <span class="cm-variable">sys</span> <span class="cm-operator">=</span> <span class="cm-variable">IOFactory</span>.<span class="cm-variable">getFactory</span>().<span class="cm-variable">getSysDevice</span>();</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">79</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">80</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-keyword">for</span>(<span class="cm-variable-3">int</span> <span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span> ; <span class="cm-variable">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">sys</span>.<span class="cm-variable">nrCpu</span><span class="cm-operator">-</span><span class="cm-number">1</span>;<span class="cm-variable">i</span><span class="cm-operator">++</span>){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">81</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">Runnable</span> <span class="cm-variable">r</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">matrix</span>(<span class="cm-variable">i</span><span class="cm-operator">+</span><span class="cm-number">1</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">82</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">Startup</span>.<span class="cm-variable">setRunnable</span>(<span class="cm-variable">r</span>,<span class="cm-variable">i</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">83</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">84</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">85</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-comment">//do the first row</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">86</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">matrix_mult</span>(<span class="cm-variable">A</span>[<span class="cm-number">0</span>],<span class="cm-number">0</span>,<span class="cm-variable">B</span>,<span class="cm-variable">C</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">87</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">88</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">sys</span>.<span class="cm-variable">signal</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">89</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">90</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">91</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-comment">//wait for other JOPs to finish</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">92</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">RtThread</span>.<span class="cm-variable">sleepMs</span>(<span class="cm-number">1000</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">93</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">94</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">println</span>(<span class="cm-string">"A x B = "</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">95</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">print_matrix</span>(<span class="cm-variable">C</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">96</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">97</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">System</span>.<span class="cm-variable">out</span>.<span class="cm-variable">println</span>(<span class="cm-string">"END"</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">98</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">99</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">100</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">101</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-keyword">public</span> <span class="cm-variable-3">void</span> <span class="cm-variable">run</span>(){</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">102</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span><span class="cm-tab">    </span><span class="cm-variable">matrix_mult</span>(<span class="cm-variable">A</span>[<span class="cm-variable">cpu_id</span>],<span class="cm-variable">cpu_id</span>,<span class="cm-variable">B</span>,<span class="cm-variable">C</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">103</div></div><pre class=""><span style="padding-right: 0.1px;"><span class="cm-tab">    </span>}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">104</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">105</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 39px;">106</div></div><pre class=""><span style="padding-right: 0.1px;"><span>​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="position: absolute; left: -47px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt CodeMirror-linenumber-show" style="left: 0px; width: 39px;">107</div></div><pre class=""><span style="padding-right: 0.1px;">}</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 30px; width: 1px; top: 0px;"></div><div class="CodeMirror-gutters" style="height: 2432px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 47px;"></div></div></div></div></pre><p></p></div>
+</body>
+</html>
