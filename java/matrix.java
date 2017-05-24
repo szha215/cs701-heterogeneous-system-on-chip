@@ -1,7 +1,21 @@
 package matrix_mult;
 
-public class matrix {
+import java.util.Vector;
 
+import joprt.RtThread;
+
+import com.jopdesign.io.IOFactory;
+import com.jopdesign.io.SysDevice;
+import com.jopdesign.sys.Startup;
+
+public class matrix implements Runnable{
+
+
+	private Integer A[][] = {{2, 3, 5, 2, 3}, {3, 2, 3, 4, 1}, {2, 3, 1, 2, 3}}; 
+	private Integer B[][] = {{1, 2}, {2, 3}, {6, 5}, {1, 2}, {2, 2}};
+
+
+	int cpu_id;
 	// Matrix multiplication for one row.
 	public static void matrix_mult(Integer[] row, int row_num, Integer[][] cols, Integer[][] C){
 		int i, j;
@@ -27,14 +41,17 @@ public class matrix {
 		
 		System.out.println("------------------------");
 	}
+
+	public matrix(int identity){
+		cpu_id = identity;
+	}
 	
 	
 	public static void main(String[] args) {
-		int i, j;
+		
 		
 		// Values from lab 3
-		Integer A[][] = {{2, 3, 5, 2, 3}, {3, 2, 3, 4, 1}, {2, 3, 1, 2, 3}}; 
-		Integer B[][] = {{1, 2}, {2, 3}, {6, 5}, {1, 2}, {2, 2}};
+		
 		
 		Integer[][] C = new Integer[A.length][B[0].length];
 		
@@ -55,17 +72,30 @@ public class matrix {
 			System.out.println("Error: number of columns in A does not match the number of rows in B.");
 		}
 		
-		// Allowcating each row to a JOP
-		for (i = 0; i < A.length; i++){
-			
-			// Insert specific JOP call
-			matrix_mult(A[i], i, B, C);
+		SysDevice sys = IOFactory.getFactory().getSysDevice();
+
+		for(int i = 0 ; i < sys.nrCpu-1;i++){
+			Runnable r = new marix(i);
+			Startup.setRunnable(r,i);
 		}
+
+		// // Allowcating each row to a JOP
+		// for (i = 0; i < A.length; i++){
+			
+		// 	// Insert specific JOP call
+		// 	matrix_mult(A[i], i, B, C);
+		// }
 		
 		System.out.println("A x B = ");
 		print_matrix(C);
 		
 		System.out.println("END");
 	}
+
+	public void run(){
+		matrix_mult(A[cpu_id],cpu_id,B,C);
+	}
+
+
 
 }
