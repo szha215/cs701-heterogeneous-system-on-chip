@@ -13,13 +13,13 @@ use ieee.math_real.all;
 entity recop is
 -- generic and port declration here
 generic(
-	constant reg_width : positive := 16
+	constant recop_id  : integer := 0
 );
 
 port(	clk				: in std_logic;
 		ER_in			: in std_logic;
 		DPRR_in			: in std_logic_vector(31 downto 0);
-		SIP_in			: in std_logic_vector(reg_width - 1 downto 0);
+		SIP_in			: in std_logic_vector(15 downto 0);
 		reset 			: in std_logic;
 
 		EOT_out			: out std_logic;
@@ -104,7 +104,7 @@ component recop_datapath
 		--register inputs for ER and SIP
 		ER_in			:	in std_logic;
 		DPRR_in			:	in std_logic_vector(31 downto 0);
-		SIP_in			:	in	std_logic_vector(reg_width - 1 downto 0);
+		SIP_in			:	in	std_logic_vector(15 downto 0);
 
 		--mux control signals
 		m_addr_sel		:	in std_logic_vector(1 downto 0);
