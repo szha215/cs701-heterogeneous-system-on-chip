@@ -1,59 +1,13 @@
 package matrix_mult;
 
-import java.util.Vector;
-
-import joprt.RtThread;
-
-import com.jopdesign.io.IOFactory;
-import com.jopdesign.io.SysDevice;
-import com.jopdesign.sys.Startup;
-
-public class matrix implements Runnable{
-
-
+public class MatrixRun {
 	private Integer A[][] = {{2, 3, 5, 2, 3}, {3, 2, 3, 4, 1}, {2, 3, 1, 2, 3}}; 
 	private Integer B[][] = {{1, 2}, {2, 3}, {6, 5}, {1, 2}, {2, 2}};
 	private Integer[][] C = new Integer[A.length][B[0].length];
 
-	int cpu_id;
-	// Matrix multiplication for one row.
-	public static void matrix_mult(Integer[] row, int row_num, Integer[][] cols, Integer[][] C){
-		int i, j;
-		
-		System.out.println("Mat_mult, row = " + row_num);
-		
-		for (i = 0; i < cols[0].length; i++){
-			for (j = 0; j < row.length; j++){
-				C[row_num][i] += row[j] * cols[j][i];
-			}
-		}
-	}
-	
-	public static void print_matrix(Integer[][] mat){
-		int i, j;
-		
-		for (i = 0; i < mat.length; i++){
-			for (j = 0; j < mat[0].length; j++){
-				System.out.print(mat[i][j] + "\t");
-			}
-			System.out.print("\n");
-		}
-		
-		System.out.println("------------------------");
-	}
 
-	public matrix(int identity){
-		cpu_id = identity;
-	}
-	
-	
+
 	public static void main(String[] args) {
-		
-		
-		// Values from lab 3
-		
-		
-		
 		
 		// Initialising C
 		for (int i = 0; i < C.length; i++){
@@ -91,11 +45,4 @@ public class matrix implements Runnable{
 		
 		System.out.println("END");
 	}
-
-	public void run(){
-		matrix_mult(A[cpu_id],cpu_id,B,C);
-	}
-
-
-
 }
