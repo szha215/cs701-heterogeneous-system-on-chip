@@ -1,4 +1,4 @@
-package matrix_mult;
+package test;
 
 import java.util.Vector;
 
@@ -11,16 +11,20 @@ import com.jopdesign.sys.Startup;
 public class matrix implements Runnable{
 
 
-	private Integer A[][] = {{2, 3, 5, 2, 3}, {3, 2, 3, 4, 1}, {2, 3, 1, 2, 3}}; 
-	private Integer B[][] = {{1, 2}, {2, 3}, {6, 5}, {1, 2}, {2, 2}};
-	private Integer[][] C = new Integer[A.length][B[0].length];
+	Integer matA[][];
+	Integer matB[][];
+	Integer matC[][];
 
+	static Vector msg;
+	public static Integer[][] A= {{2, 3, 5, 2, 3}, {3, 2, 3, 4, 1}, {2, 3, 1, 2, 3}}; ;
+	public static Integer[][] B= {{1, 2}, {2, 3}, {6, 5}, {1, 2}, {2, 2}};;
+	public static Integer[][] C;
 	int cpu_id;
 	// Matrix multiplication for one row.
 	public static void matrix_mult(Integer[] row, int row_num, Integer[][] cols, Integer[][] C){
 		int i, j;
 		
-		System.out.println("Mat_mult, row = " + row_num);
+		// System.out.println("Mat_mult, row = " + row_num);
 		
 		for (i = 0; i < cols[0].length; i++){
 			for (j = 0; j < row.length; j++){
@@ -42,7 +46,12 @@ public class matrix implements Runnable{
 		System.out.println("------------------------");
 	}
 
+
+	
 	public matrix(int identity){
+		// this.matA = A;
+		// this.matB = B;
+		// this.matC = C;
 		cpu_id = identity;
 	}
 	
@@ -51,10 +60,10 @@ public class matrix implements Runnable{
 		
 		
 		// Values from lab 3
+	
+		C = new Integer[A.length][B[0].length];
 		
-		
-		
-		
+		msg = new Vector();
 		// Initialising C
 		for (int i = 0; i < C.length; i++){
 			for (int j = 0; j < C[0].length; j++){
@@ -75,21 +84,24 @@ public class matrix implements Runnable{
 		SysDevice sys = IOFactory.getFactory().getSysDevice();
 
 		for(int i = 0 ; i < sys.nrCpu-1;i++){
-			Runnable r = new marix(i);
+			Runnable r = new matrix(i+1);
 			Startup.setRunnable(r,i);
 		}
 
-		// // Allowcating each row to a JOP
-		// for (i = 0; i < A.length; i++){
-			
-		// 	// Insert specific JOP call
-		// 	matrix_mult(A[i], i, B, C);
-		// }
-		
+		//do the first row
+		matrix_mult(A[0],0,B,C);
+
+		sys.signal = 1;
+
+
+		//wait for other JOPs to finish
+		RtThread.sleepMs(1000);
+
 		System.out.println("A x B = ");
 		print_matrix(C);
 		
 		System.out.println("END");
+		
 	}
 
 	public void run(){
