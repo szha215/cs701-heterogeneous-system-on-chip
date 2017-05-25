@@ -160,14 +160,12 @@ begin
 end process;
 
 ---------------------------------------------------------------------------------------------------
-push_to_noc : process(clk)
+push_to_noc : process(tdm_slot)
 begin
-	if(rising_edge(clk)) then
-		if (((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0') then
-			d_to_noc <= s_out_q_buf;
-		else
-			d_to_noc <= x"00000000";
-		end if;
+	if (((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0') then
+		d_to_noc <= s_out_q_buf;
+	else
+		d_to_noc <= x"00000000";
 	end if;
 end process ; -- push_to_noc
 

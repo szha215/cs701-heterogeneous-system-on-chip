@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
@@ -33,8 +34,11 @@ architecture rtl of jop_tdm_min_interface is
 	type int_array is array(integer range <>) of integer;
 	type port_array is array(integer range <>) of std_logic_vector(6 downto 0);
 	signal dprr_valid			: bit_array(jop_cnt-1 downto 0);
+	signal dprr_legacy		: bit_array(jop_cnt-1 downto 0);  -- AJS
 	signal dprr_recop_ID		: int_array(jop_cnt-1 downto 0);
+	signal dprr_asp_ID		: int_array(jop_cnt-1 downto 0);  -- AJS
 	signal dprr_recop_port	: port_array(jop_cnt-1 downto 0);
+	signal dprr_asp_port		: port_array(jop_cnt-1 downto 0);  -- AJS
 	signal dprr_jop_port		: port_array(jop_cnt-1 downto 0);
 	signal dprr_int			: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
 	signal dprr_fifo			: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
@@ -68,12 +72,15 @@ architecture rtl of jop_tdm_min_interface is
 	type expected_packets_in_array is array (integer range <>) of std_logic_vector(1 downto 0);
 	type expected_packets_out_array is array (integer range <>) of std_logic_vector(8 downto 0);
 	-- ASP STUFF
-	signal wrreq_asp_ni					: bit_array(jop_cnt-1 downto 0);
-	signal wrreq_recop_ni				: bit_array(jop_cnt-1 downto 0);
-	signal dpcr_out_recop, dpcr_out_asp	: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
-	signal recop_ack						: bit_array(jop_cnt-1 downto 0);
-	signal asp_ack							: bit_array(jop_cnt-1 downto 0);
-	signal dpcr_out_sel					: std_logic := '0';
+	signal wrreq_asp_ni					: bit_array(jop_cnt-1 downto 0) :=  (others => '0');
+	signal wrreq_recop_ni				: bit_array(jop_cnt-1 downto 0) := (others => '0');
+
+	signal dpcr_out_sel					: bit_array(jop_cnt-1 downto 0) := (others => '0');
+	signal dpcr_out_recop, dpcr_out_asp	: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0) := (others => (others => '0'));
+	signal recop_ack						: bit_array(jop_cnt-1 downto 0) := (others => '0');
+	signal asp_ack							: bit_array(jop_cnt-1 downto 0) := (others => '0');
+
+	signal done								: bit_array(jop_cnt-1 downto 0) := (others => '0');
 	signal expected_asp_packets_in	: expected_packets_in_array(jop_cnt-1 downto 0) := (others => (others => '0'));
 	signal expected_asp_packets_out	: expected_packets_out_array(jop_cnt-1 downto 0) := (others => (others => '0'));
 	signal packet_count					: expected_packets_out_array(jop_cnt-1 downto 0) := (others => (others => '0'));
@@ -135,7 +142,9 @@ begin
 
 	dprr_interface: for i in 0 to jop_cnt-1 generate
 		dprr_valid(i)			<= dprr_in(i)(31);
-		dprr_recop_ID(i)		<= to_integer(unsigned(dprr_in(i)(30 downto 24)));
+		dprr_legacy(i)			<= dprr_in(i)(30);  -- AJS
+		dprr_recop_ID(i)		<= to_integer(unsigned(dprr_in(i)(29 downto 24)));  -- AJS
+		dprr_asp_ID(i)			<= to_integer(unsigned(dprr_in(i)(29 downto 26)));  -- AJS
 		
 		dprr_jop_port(i)<= std_logic_vector(to_unsigned(get_jop_mapping(i, nodes, recop_cnt), 7));
 		
@@ -145,10 +154,21 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(0, nodes, recop_cnt), 7)) when 0,
 				std_logic_vector(to_unsigned(get_recop_mapping(1, nodes, recop_cnt), 7)) when 1,
 				(others => 'X') when others;
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				(others => 'X') when others;
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
 								(others => '0') ;
 		end generate;
-		
+
+
+
+
 		addr_loopup4: if TOTAL_NI_NUM > 2 and TOTAL_NI_NUM <= 4 generate
 			with dprr_recop_ID(i) select dprr_recop_port(i) <=
 				std_logic_vector(to_unsigned(get_recop_mapping(0, nodes, recop_cnt), 7)) when 0,
@@ -156,10 +176,25 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(2, nodes, recop_cnt), 7)) when 2,
 				std_logic_vector(to_unsigned(get_recop_mapping(3, nodes, recop_cnt), 7)) when 3,
 				(others => 'X') when others;
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				std_logic_vector(to_unsigned(get_asp_mapping(2, nodes, jop_cnt, recop_cnt), 7)) when 2,
+				std_logic_vector(to_unsigned(get_asp_mapping(3, nodes, jop_cnt, recop_cnt), 7)) when 3,
+				(others => 'X') when others;
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
 								(others => '0') ;
 		end generate;
-		
+
+
+
+
+
+
 		addr_loopup8: if TOTAL_NI_NUM > 4 and TOTAL_NI_NUM <= 8 generate
 			with dprr_recop_ID(i) select dprr_recop_port(i) <=
 				std_logic_vector(to_unsigned(get_recop_mapping(0, nodes, recop_cnt), 7)) when 0,
@@ -171,10 +206,29 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(6, nodes, recop_cnt), 7)) when 6,
 				std_logic_vector(to_unsigned(get_recop_mapping(7, nodes, recop_cnt), 7)) when 7,
 				(others => 'X') when others;
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
-							(others => '0') ;
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				std_logic_vector(to_unsigned(get_asp_mapping(2, nodes, jop_cnt, recop_cnt), 7)) when 2,
+				std_logic_vector(to_unsigned(get_asp_mapping(3, nodes, jop_cnt, recop_cnt), 7)) when 3,
+				std_logic_vector(to_unsigned(get_asp_mapping(4, nodes, jop_cnt, recop_cnt), 7)) when 4,
+				std_logic_vector(to_unsigned(get_asp_mapping(5, nodes, jop_cnt, recop_cnt), 7)) when 5,
+				std_logic_vector(to_unsigned(get_asp_mapping(6, nodes, jop_cnt, recop_cnt), 7)) when 6,
+				std_logic_vector(to_unsigned(get_asp_mapping(7, nodes, jop_cnt, recop_cnt), 7)) when 7,
+				(others => 'X') when others;
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								(others => '0') ;
 		end generate;
-		
+
+
+
+
+
+
 		addr_loopup16: if TOTAL_NI_NUM > 8 and TOTAL_NI_NUM <= 16 generate
 			with dprr_recop_ID(i) select dprr_recop_port(i) <=
 				std_logic_vector(to_unsigned(get_recop_mapping(0, nodes, recop_cnt), 7)) when 0,
@@ -193,13 +247,35 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(13, nodes, recop_cnt), 7)) when 13,
 				std_logic_vector(to_unsigned(get_recop_mapping(14, nodes, recop_cnt), 7)) when 14,
 				std_logic_vector(to_unsigned(get_recop_mapping(15, nodes, recop_cnt), 7)) when 15,
+				(others => 'X') when others;	
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				std_logic_vector(to_unsigned(get_asp_mapping(2, nodes, jop_cnt, recop_cnt), 7)) when 2,
+				std_logic_vector(to_unsigned(get_asp_mapping(3, nodes, jop_cnt, recop_cnt), 7)) when 3,
+				std_logic_vector(to_unsigned(get_asp_mapping(4, nodes, jop_cnt, recop_cnt), 7)) when 4,
+				std_logic_vector(to_unsigned(get_asp_mapping(5, nodes, jop_cnt, recop_cnt), 7)) when 5,
+				std_logic_vector(to_unsigned(get_asp_mapping(6, nodes, jop_cnt, recop_cnt), 7)) when 6,
+				std_logic_vector(to_unsigned(get_asp_mapping(7, nodes, jop_cnt, recop_cnt), 7)) when 7,
+				std_logic_vector(to_unsigned(get_asp_mapping(8, nodes, jop_cnt, recop_cnt), 7)) when 8,
+				std_logic_vector(to_unsigned(get_asp_mapping(9, nodes, jop_cnt, recop_cnt), 7)) when 9,
+				std_logic_vector(to_unsigned(get_asp_mapping(10, nodes, jop_cnt, recop_cnt), 7)) when 10,
+				std_logic_vector(to_unsigned(get_asp_mapping(11, nodes, jop_cnt, recop_cnt), 7)) when 11,
+				std_logic_vector(to_unsigned(get_asp_mapping(12, nodes, jop_cnt, recop_cnt), 7)) when 12,
+				std_logic_vector(to_unsigned(get_asp_mapping(13, nodes, jop_cnt, recop_cnt), 7)) when 13,
+				std_logic_vector(to_unsigned(get_asp_mapping(14, nodes, jop_cnt, recop_cnt), 7)) when 14,
+				std_logic_vector(to_unsigned(get_asp_mapping(15, nodes, jop_cnt, recop_cnt), 7)) when 15,
 				(others => 'X') when others;
-				
-				
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
 								(others => '0') ;
 		end generate;
-		
+
+
+
 		addr_loopup32: if TOTAL_NI_NUM > 16 and TOTAL_NI_NUM <= 32 generate
 			with dprr_recop_ID(i) select dprr_recop_port(i) <=
 				std_logic_vector(to_unsigned(get_recop_mapping(0, nodes, recop_cnt), 7)) when 0,
@@ -235,7 +311,29 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(30, nodes, recop_cnt), 7)) when 30,
 				std_logic_vector(to_unsigned(get_recop_mapping(31, nodes, recop_cnt), 7)) when 31,
 				(others => 'X') when others;
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				std_logic_vector(to_unsigned(get_asp_mapping(2, nodes, jop_cnt, recop_cnt), 7)) when 2,
+				std_logic_vector(to_unsigned(get_asp_mapping(3, nodes, jop_cnt, recop_cnt), 7)) when 3,
+				std_logic_vector(to_unsigned(get_asp_mapping(4, nodes, jop_cnt, recop_cnt), 7)) when 4,
+				std_logic_vector(to_unsigned(get_asp_mapping(5, nodes, jop_cnt, recop_cnt), 7)) when 5,
+				std_logic_vector(to_unsigned(get_asp_mapping(6, nodes, jop_cnt, recop_cnt), 7)) when 6,
+				std_logic_vector(to_unsigned(get_asp_mapping(7, nodes, jop_cnt, recop_cnt), 7)) when 7,
+				std_logic_vector(to_unsigned(get_asp_mapping(8, nodes, jop_cnt, recop_cnt), 7)) when 8,
+				std_logic_vector(to_unsigned(get_asp_mapping(9, nodes, jop_cnt, recop_cnt), 7)) when 9,
+				std_logic_vector(to_unsigned(get_asp_mapping(10, nodes, jop_cnt, recop_cnt), 7)) when 10,
+				std_logic_vector(to_unsigned(get_asp_mapping(11, nodes, jop_cnt, recop_cnt), 7)) when 11,
+				std_logic_vector(to_unsigned(get_asp_mapping(12, nodes, jop_cnt, recop_cnt), 7)) when 12,
+				std_logic_vector(to_unsigned(get_asp_mapping(13, nodes, jop_cnt, recop_cnt), 7)) when 13,
+				std_logic_vector(to_unsigned(get_asp_mapping(14, nodes, jop_cnt, recop_cnt), 7)) when 14,
+				std_logic_vector(to_unsigned(get_asp_mapping(15, nodes, jop_cnt, recop_cnt), 7)) when 15,
+				(others => 'X') when others;
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 		
@@ -306,10 +404,35 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(62, nodes, recop_cnt), 7)) when 62,
 				std_logic_vector(to_unsigned(get_recop_mapping(63, nodes, recop_cnt), 7)) when 63,
 				(others => 'X') when others;
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				std_logic_vector(to_unsigned(get_asp_mapping(2, nodes, jop_cnt, recop_cnt), 7)) when 2,
+				std_logic_vector(to_unsigned(get_asp_mapping(3, nodes, jop_cnt, recop_cnt), 7)) when 3,
+				std_logic_vector(to_unsigned(get_asp_mapping(4, nodes, jop_cnt, recop_cnt), 7)) when 4,
+				std_logic_vector(to_unsigned(get_asp_mapping(5, nodes, jop_cnt, recop_cnt), 7)) when 5,
+				std_logic_vector(to_unsigned(get_asp_mapping(6, nodes, jop_cnt, recop_cnt), 7)) when 6,
+				std_logic_vector(to_unsigned(get_asp_mapping(7, nodes, jop_cnt, recop_cnt), 7)) when 7,
+				std_logic_vector(to_unsigned(get_asp_mapping(8, nodes, jop_cnt, recop_cnt), 7)) when 8,
+				std_logic_vector(to_unsigned(get_asp_mapping(9, nodes, jop_cnt, recop_cnt), 7)) when 9,
+				std_logic_vector(to_unsigned(get_asp_mapping(10, nodes, jop_cnt, recop_cnt), 7)) when 10,
+				std_logic_vector(to_unsigned(get_asp_mapping(11, nodes, jop_cnt, recop_cnt), 7)) when 11,
+				std_logic_vector(to_unsigned(get_asp_mapping(12, nodes, jop_cnt, recop_cnt), 7)) when 12,
+				std_logic_vector(to_unsigned(get_asp_mapping(13, nodes, jop_cnt, recop_cnt), 7)) when 13,
+				std_logic_vector(to_unsigned(get_asp_mapping(14, nodes, jop_cnt, recop_cnt), 7)) when 14,
+				std_logic_vector(to_unsigned(get_asp_mapping(15, nodes, jop_cnt, recop_cnt), 7)) when 15,
+				(others => 'X') when others;
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
 								(others => '0') ;
 		end generate;
-		
+
+
+
+
 		addr_loopup128: if TOTAL_NI_NUM > 64 and TOTAL_NI_NUM <= 128 generate
 			with dprr_recop_ID(i) select dprr_recop_port(i) <=
 				std_logic_vector(to_unsigned(get_recop_mapping(0, nodes, recop_cnt), 7)) when 0,
@@ -441,8 +564,30 @@ begin
 				std_logic_vector(to_unsigned(get_recop_mapping(126, nodes, recop_cnt), 7)) when 126,
 				std_logic_vector(to_unsigned(get_recop_mapping(127, nodes, recop_cnt), 7)) when 127,
 				(others => 'X') when others;
-			dprr_int(i)	<= dprr_valid(i) & dprr_recop_port(i) & dprr_in(i)(23 downto 0) when dprr_valid(i) = '1' else
-							(others => '0') ;
+
+			with dprr_asp_ID(i) select dprr_asp_port(i) <=
+				std_logic_vector(to_unsigned(get_asp_mapping(0, nodes, jop_cnt, recop_cnt), 7)) when 0,
+				std_logic_vector(to_unsigned(get_asp_mapping(1, nodes, jop_cnt, recop_cnt), 7)) when 1,
+				std_logic_vector(to_unsigned(get_asp_mapping(2, nodes, jop_cnt, recop_cnt), 7)) when 2,
+				std_logic_vector(to_unsigned(get_asp_mapping(3, nodes, jop_cnt, recop_cnt), 7)) when 3,
+				std_logic_vector(to_unsigned(get_asp_mapping(4, nodes, jop_cnt, recop_cnt), 7)) when 4,
+				std_logic_vector(to_unsigned(get_asp_mapping(5, nodes, jop_cnt, recop_cnt), 7)) when 5,
+				std_logic_vector(to_unsigned(get_asp_mapping(6, nodes, jop_cnt, recop_cnt), 7)) when 6,
+				std_logic_vector(to_unsigned(get_asp_mapping(7, nodes, jop_cnt, recop_cnt), 7)) when 7,
+				std_logic_vector(to_unsigned(get_asp_mapping(8, nodes, jop_cnt, recop_cnt), 7)) when 8,
+				std_logic_vector(to_unsigned(get_asp_mapping(9, nodes, jop_cnt, recop_cnt), 7)) when 9,
+				std_logic_vector(to_unsigned(get_asp_mapping(10, nodes, jop_cnt, recop_cnt), 7)) when 10,
+				std_logic_vector(to_unsigned(get_asp_mapping(11, nodes, jop_cnt, recop_cnt), 7)) when 11,
+				std_logic_vector(to_unsigned(get_asp_mapping(12, nodes, jop_cnt, recop_cnt), 7)) when 12,
+				std_logic_vector(to_unsigned(get_asp_mapping(13, nodes, jop_cnt, recop_cnt), 7)) when 13,
+				std_logic_vector(to_unsigned(get_asp_mapping(14, nodes, jop_cnt, recop_cnt), 7)) when 14,
+				std_logic_vector(to_unsigned(get_asp_mapping(15, nodes, jop_cnt, recop_cnt), 7)) when 15,
+				(others => 'X') when others;
+
+			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								(others => '0') ;
 		end generate;
 	end generate;
 	
@@ -479,15 +624,18 @@ begin
 			debug4(i)	<= dprr_fifo(i)(30 downto 24);
 			
 			n_rx(i)(n_rx(i)'LENGTH-1 downto stages_cnt) := (others=> '0');
-			if "1" & n_rx(i) = dprr_fifo(i)(31 downto 24) then
-				--if ()
 
-
-				dprr_out(i) <= dprr_fifo(i);
-				fifo_ack(i)	<= '1';
-			else
-				dprr_out(i) <= (others => '0');
-				fifo_ack(i) <= '0';
+			if (dprr_fifo(i)(31) = '1') then
+				if ((dprr_fifo(i)(30) = '1') and (n_rx(i)(3 downto 0) = dprr_fifo(i)(29 downto 26))) then
+					dprr_out(i) <= dprr_fifo(i);
+					fifo_ack(i)	<= '1';
+				elsif ((n_rx(i) = dprr_fifo(i)(30 downto 24))) then
+					dprr_out(i) <= dprr_fifo(i);
+					fifo_ack(i)	<= '1';
+				else
+					dprr_out(i) <= (others => '0');
+					fifo_ack(i) <= '0';
+				end if;
 			end if;
 		end loop;
 	end process;
@@ -495,26 +643,24 @@ begin
 	dprr_count : process(dprr_int)
 	begin
 		dprr_count_loop : for i in 0 to jop_cnt-1 loop
-			if (dprr_int(i)(31) = '1' and dprr_int(i)(30) = '1') then  -- valid and legacy (ASP)
-				if (expected_asp_packets_out(i) = "000000000") then
-					case( dprr_int(i)(25 downto 22) ) is
-					
-						when "0001" =>  -- STORE
-							expected_asp_packets_out(i) <= dprr_int(i)(8 downto 0);
-							expected_asp_packets_in(i) <= "01";
-					
-						when "0100" =>  -- MAC
-							expected_asp_packets_out(i) <= "000000000";
-							expected_asp_packets_in(i) <= "11";
+			if(done(i) = '1') then
+				expected_asp_packets_in(i) <= "00";
+			elsif(expected_asp_packets_out(i) = "000000000") then
+				case( dprr_int(i)(25 downto 22) ) is
+					when "0001" =>  -- STORE
+						expected_asp_packets_out(i) <= dprr_int(i)(8 downto 0);
+						expected_asp_packets_in(i) <= "01";
 
-						when others =>
-							expected_asp_packets_out(i) <= "000000000";
-							expected_asp_packets_in(i) <= "01";
+					when "0100" =>  -- MAC
+						expected_asp_packets_out(i) <= "000000000";
+						expected_asp_packets_in(i) <= "11";
 
-					end case ;
-				else
-					expected_asp_packets_out(i) <= expected_asp_packets_out(i) + '1';
-				end if;
+					when others =>
+						expected_asp_packets_out(i) <= "000000000";
+						expected_asp_packets_in(i) <= "01";
+				end case;
+			else
+				expected_asp_packets_out(i) <= expected_asp_packets_out(i) - '1';
 			end if;
 		end loop ; -- dprr_count_loop
 
@@ -522,27 +668,34 @@ begin
 	end process ; -- dprr_count
 
 
-	dpcr_out_sel : process(dpcr_ack, expected_asp_packets_in)
+	dpcr_out_sel_p : process(dpcr_ack, expected_asp_packets_in)
 	begin
 		dprr_count_loop : for i in 0 to jop_cnt-1 loop
-			if (expected_asp_packets_in(i) > "000000000") then
+			if (expected_asp_packets_in(i) > "00") then
 				dpcr_out_sel(i) <= '1';
 			else
 				dpcr_out_sel(i) <= '0';
 			end if;
 
-
 			if (dpcr_ack(i) = '1') then
-				if (dpcr_out_sel(i) = '1') then
+				if (expected_asp_packets_in(i) > "00") then
 					asp_ack(i) <= '1';
+					if (dpcr_out_asp(i) = (expected_asp_packets_in(i) - '1')) then
+						done(i) <= '1';
+					else
+						done(i) <= '0';
+					end if;
 				else
 					recop_ack(i) <= '1';
+					done(i) <= '0';
 				end if;
-				packet_count(i) <= packet_count(i) + '1';
 
-				if (packet_count = expected_asp_packets_in(i)
-						--- fhsahdofsuahfpse;
-				end if;
+				--packet_count(i) <= packet_count(i) + '1';
+
+				--if (packet_count(i) = expected_asp_packets_in(i)) then
+				--	done(i) <= '1';
+				--	packet_count(i) <= (others => '0');
+				--end if;
 			else
 				asp_ack(i) <= '0';
 				recop_ack(i) <= '0';
@@ -552,14 +705,14 @@ begin
 		end loop;
 	end process ; -- dpcr_in_sel
 
-	dpcr_out_mux : process(dpcr_out_sel)
+	dpcr_out_mux : process(dpcr_out_sel, dpcr_out_asp, dpcr_out_recop)
 	begin
 		dprr_count_loop : for i in 0 to jop_cnt-1 loop
-			if (dpcr_out_sel = '1') then
+			if (dpcr_out_sel(i) = '1') then
 				dpcr_out(i) <= dpcr_out_asp(i);
 			else
 				dpcr_out(i) <= dpcr_out_recop(i);
-			end if ;
+			end if;
 		end loop;
 	end process ; -- dpcr_out_mux
 
