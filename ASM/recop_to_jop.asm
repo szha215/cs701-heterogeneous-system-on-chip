@@ -1,0 +1,6 @@
+start NOOP
+  ADD R1 R1 #1
+  DCALLBL R1 #32768
+  JMP 0
+ENDPROG 
+
