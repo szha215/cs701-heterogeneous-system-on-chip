@@ -10,6 +10,7 @@ package min_ports_pkg is
 	function get_addr_width (d	: integer) return integer;
 	function get_recop_mapping(recop_id : integer; nodes : integer; recop_cnt : integer) return integer;
 	function get_jop_mapping(jop_id : integer; nodes : integer; recop_cnt : integer) return integer;
+	function get_asp_mapping(asp_id : integer; nodes : integer; jop_cnt : integer; recop_cnt : integer) return integer;
 	function reverse_n_bits(in_vector : std_logic_vector;	n : integer) return std_logic_vector;
 
 end min_ports_pkg;

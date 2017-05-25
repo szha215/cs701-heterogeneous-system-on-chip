@@ -109,51 +109,118 @@ identifier : process(clk)
 	   end if;
    end process ; -- identifier
 
-process
+dprr_test : process
 begin
 	wait for 2 ns;
-	dpcr_in(0) <= x"00000000";
-	dpcr_in(1) <= x"81000AAA";
-	dpcr_in(2) <= x"00000000";
 
 	dprr_in(0) <= x"00000000";
 	dprr_in(1) <= x"00000000";
 	dprr_in(2) <= x"00000000";
 
-	wait for t_clk_period ;
+	wait for t_clk_period * 5 ;  -- #5
 
-	dpcr_in(1) <= x"00000000";
-	dpcr_in(1) <= x"81000BBB";
+	wait for t_clk_period * 4;   -- #9
 
+	dprr_in(1) <= x"C1000E02";  -- ASP call, MAC, sets expected packets in to be 3
 	wait for t_clk_period;
-
-	dpcr_in(1) <= x"81000CCC";
-
-	wait for t_clk_period;
-
-	dpcr_in(1) <= x"00000000";
-	dprr_in(1) <= x"80000551";
-wait for t_clk_period * 16;
 	dprr_in(1) <= x"00000000";
-	dpcr_ack(0) <= '0';
-	dpcr_ack(1) <= '1';
-	dpcr_ack(2) <= '0';
 
+
+	wait for t_clk_period * 16;
+
+	dprr_in(1) <= x"00000000";
 	wait for t_clk_period;
-	dpcr_ack(1) <= '0';
 
 	wait for 9 * t_clk_period;
 
+ wait;
+end process; -- dprr_test
+
+
+dpcr_test : process
+begin
+	wait for 2 ns;
+
+	dpcr_in(0) <= x"00000000";
+	dpcr_in(1) <= x"00000000";
+	dpcr_in(2) <= x"00000000";
+
+	wait for t_clk_period * 5;  -- #5
+
+	dpcr_in(0) <= x"00000000";
+	dpcr_in(1) <= x"81000AAA";  -- ReCOP call
+	dpcr_in(2) <= x"00000000";
+	wait for t_clk_period;      -- #6
+
+	dpcr_in(1) <= x"00000000";
+	wait for t_clk_period * 3;  -- #9
+
+
+	dpcr_in(1) <= x"81000BBB";  -- ReCOP call 2, should not be popped to JOP yet
+	wait for t_clk_period;      -- #10
+
+	dpcr_in(1) <= x"C104D3F8";  -- MAC 0
+	wait for t_clk_period;      -- #11
+
+	dpcr_in(1) <= x"C1050015";  -- MAC 1
+	wait for t_clk_period;      -- #12
+
+	dpcr_in(1) <= x"C1060000";  -- MAC 2
+	wait for t_clk_period;      -- #13
+
+	dpcr_in(1) <= x"00000000";
+	wait for t_clk_period * 10; -- #23
+
+
+
+	wait;
+end process ; -- dpcr_test
+
+
+dpcr_ack_test : process
+begin
+	wait for 2 ns;
+
+	dpcr_ack(0) <= '0';
+	dpcr_ack(1) <= '0';
+	dpcr_ack(2) <= '0';
+
+	wait for t_clk_period * 6;  -- #8
+
+	dpcr_ack(1) <= '1';
+	wait for t_clk_period;      -- #9
+
+	dpcr_ack(1) <= '0';
+	wait for t_clk_period * 3;  -- #12
+
+	dpcr_ack(1) <= '1';
+	wait for t_clk_period;      -- #13
+
+	dpcr_ack(1) <= '0';
+	wait for t_clk_period * 3;  -- #16
+
+	dpcr_ack(1) <= '1';
+	wait for t_clk_period;      -- #17
+
+	dpcr_ack(1) <= '0';
+	wait for t_clk_period * 3;  -- #20
+
+	dpcr_ack(1) <= '1';
+	wait for t_clk_period;      -- #17
+
+	dpcr_ack(1) <= '0';
+	wait for t_clk_period * 3;  -- #20
 
 	dpcr_ack(1) <= '1';
 	wait for t_clk_period;
+
 	dpcr_ack(1) <= '0';
-
- wait;
-end process;
+	wait for t_clk_period * 3;
 
 
-	
+
+	wait;
+end process ; -- dpcr_ack
 
 
 

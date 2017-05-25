@@ -9,7 +9,7 @@ use work.min_ports_pkg.all;
 ---------------------------------------------------------------------------------------------------
 entity ani is
 	generic(
-		constant tdm_port_id		: std_logic_vector(3 downto 0) := "0010";
+		constant tdm_port_id		: std_logic_vector(3 downto 0) := "0010";  -- not used
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
 		constant in_depth			: positive := 16;  -- minimum 16
@@ -133,7 +133,7 @@ begin
 ---------------------------------------------------------------------------------------------------
 update_inc_q_buf : process (d_from_noc)
 begin
-	if (d_from_noc(31) = '1' and d_from_noc(29 downto 26) = tdm_port_id(3 downto 0)) then
+	if (d_from_noc(31 downto 30) = "11") then
 		s_inc_wr_en <= '1';
 	else
 		s_inc_wr_en <= '0';
