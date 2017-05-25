@@ -51,7 +51,10 @@ component ani
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
 		constant in_depth			: positive := 16;
-		constant out_depth		: positive := 16
+		constant out_depth		: positive := 16;
+		constant jop_cnt			: integer := 3;
+		constant recop_cnt		: integer := 1;
+		constant asp_id			: integer := 0
 	);
 	port(
 		-- control inputs
@@ -116,7 +119,10 @@ t_ani : ani
 		tdm_slot_width	=> t_tdm_slot_width,
 		data_width		=> 32,
 		in_depth			=> 16,
-		out_depth		=> 16
+		out_depth		=> 16,
+		jop_cnt			=> 1,
+		recop_cnt 		=> 1,
+		asp_id			=> 0
 	)
 	port map(
 		clk		=> t_clk,

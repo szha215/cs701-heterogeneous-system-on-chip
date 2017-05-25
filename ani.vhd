@@ -1,6 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
+use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 use ieee.math_real.all;
 
@@ -13,7 +13,10 @@ entity ani is
 		constant tdm_slot_width	: positive := 4;
 		constant data_width		: positive := 32;
 		constant in_depth			: positive := 16;  -- minimum 16
-		constant out_depth		: positive := 16
+		constant out_depth		: positive := 16;
+		constant jop_cnt			: integer := 3;
+		constant recop_cnt		: integer := 1;
+		constant asp_id			: integer := 0
 	);
 	port(
 		-- control inputs
@@ -37,6 +40,8 @@ end entity ani;
 ---------------------------------------------------------------------------------------------------
 architecture behaviour of ani is
 -- type, signal declarations
+
+	signal asp_port : std_logic_vector(6 downto 0);
 
 	signal s_inc_rd_en, s_inc_wr_en, s_inc_empty, s_inc_full		: std_logic := '0';
 	signal s_inc_q_buf, s_to_asp	: std_logic_vector(data_width - 1 downto 0) := (others => '0');
@@ -161,8 +166,11 @@ end process;
 
 ---------------------------------------------------------------------------------------------------
 push_to_noc : process(tdm_slot)
+variable n_rx : std_logic_vector(6 downto 0);
 begin
-	if (((reverse_n_bits(tdm_port_id, 4) xor tdm_slot(3 downto 0)) = s_out_q_buf(29 downto 26)) and s_out_empty = '0') then
+	n_rx(tdm_slot_width-1 downto 0) :=reverse_n_bits(asp_port, tdm_slot_width) xor tdm_slot;
+
+	if ((n_rx(3 downto 0) = s_out_q_buf(29 downto 26)) and s_out_empty = '0') then
 		d_to_noc <= s_out_q_buf;
 	else
 		d_to_noc <= x"00000000";
@@ -171,6 +179,9 @@ end process ; -- push_to_noc
 
 ---------------------------------------------------------------------------------------------------
 -- combinational logic
+
+asp_port <= std_logic_vector(to_unsigned(get_asp_mapping(0, jop_cnt+recop_cnt, jop_cnt, recop_cnt), 7));
+
 
 s_inc_q_buf <= d_from_noc;
 

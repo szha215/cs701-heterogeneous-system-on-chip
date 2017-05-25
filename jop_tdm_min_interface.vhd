@@ -634,6 +634,9 @@ begin
 					dprr_out(i) <= (others => '0');
 					fifo_ack(i) <= '0';
 				end if;
+			else
+				dprr_out(i) <= (others => '0');
+				fifo_ack(i) <= '0';
 			end if;
 		end loop;
 	end process;
