@@ -23,14 +23,14 @@ signal t_SIP_in,t_SVOP_out,t_SOP_out : std_logic_vector(15 downto 0) := (others 
 component recop is
 -- generic and port declration here
 generic(
-	constant reg_width : positive := 16
+	constant recop_id	 : integer := 0
 );
 
 
 port(	clk				: in std_logic;
 		ER_in			: in std_logic;
 		DPRR_in			: in std_logic_vector(31 downto 0);
-		SIP_in			: in std_logic_vector(reg_width - 1 downto 0);
+		SIP_in			: in std_logic_vector(15 downto 0);
 		reset			: in std_logic;
 
 		EOT_out			: out std_logic;
@@ -43,7 +43,7 @@ begin
 
 t_recop : recop
 	generic map(
-		reg_width => 16
+		recop_id	 => 0
 	)
 	port map(
 		clk => t_clk,
