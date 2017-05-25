@@ -68,9 +68,8 @@ architecture rtl of jop_tdm_min_interface is
 
 
 	-- AJS
-
 	type expected_packets_in_array is array (integer range <>) of std_logic_vector(1 downto 0);
-	type expected_packets_out_array is array (integer range <>) of std_logic_vector(8 downto 0);
+
 	-- ASP STUFF
 	signal wrreq_asp_ni					: bit_array(jop_cnt-1 downto 0) :=  (others => '0');
 	signal wrreq_recop_ni				: bit_array(jop_cnt-1 downto 0) := (others => '0');
@@ -80,10 +79,7 @@ architecture rtl of jop_tdm_min_interface is
 	signal recop_ack						: bit_array(jop_cnt-1 downto 0) := (others => '0');
 	signal asp_ack							: bit_array(jop_cnt-1 downto 0) := (others => '0');
 
-	signal done								: bit_array(jop_cnt-1 downto 0) := (others => '0');
 	signal expected_asp_packets_in	: expected_packets_in_array(jop_cnt-1 downto 0) := (others => (others => '0'));
-	signal expected_asp_packets_out	: expected_packets_out_array(jop_cnt-1 downto 0) := (others => (others => '0'));
-	signal packet_count					: expected_packets_out_array(jop_cnt-1 downto 0) := (others => (others => '0'));
 
 begin
 
@@ -105,6 +101,7 @@ begin
 		);
 	end generate;
 
+	-- AJS
 	asp_interface: for i in 0 to jop_cnt-1 generate
 		asp_fifo : min_switch_in_fifo
 		generic map(
@@ -161,8 +158,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 
@@ -185,8 +182,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 
@@ -219,8 +216,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 
@@ -269,8 +266,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 
@@ -332,8 +329,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 		
@@ -425,8 +422,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 
@@ -585,8 +582,8 @@ begin
 				(others => 'X') when others;
 
 			dprr_int(i)	<= dprr_valid(i) & '0' & dprr_recop_port(i)(5 downto 0) & dprr_in(i)(23 downto 0) 																			when (dprr_valid(i) = '1' and dprr_legacy(i) = '0') else
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) = "000000000") else -- Sending INVOKE
-								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and expected_asp_packets_out(i) > "000000000") else -- Sending STORE data
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & dprr_in(i)(25 downto 22) & dprr_jop_port(i)(3 downto 0) & dprr_in(i)(17 downto 0) when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '0') else -- Sending INVOKE
+								dprr_valid(i) & '1' & dprr_asp_port(i)(3 downto 0) & '0' & dprr_in(i)(24 downto 0) 																		when (dprr_valid(i) = '1' and dprr_legacy(i) = '1' and dpcr_out_sel(i) = '1') else -- Sending STORE data
 								(others => '0') ;
 		end generate;
 	end generate;
@@ -625,6 +622,7 @@ begin
 			
 			n_rx(i)(n_rx(i)'LENGTH-1 downto stages_cnt) := (others=> '0');
 
+			-- AJS
 			if (dprr_fifo(i)(31) = '1') then
 				if ((dprr_fifo(i)(30) = '1') and (n_rx(i)(3 downto 0) = dprr_fifo(i)(29 downto 26))) then
 					dprr_out(i) <= dprr_fifo(i);
@@ -640,78 +638,44 @@ begin
 		end loop;
 	end process;
 	
-	dprr_count : process(dprr_int)
+	-- AJS
+	process (dprr_int, clk, dpcr_out_sel)
 	begin
-		dprr_count_loop : for i in 0 to jop_cnt-1 loop
-			if(done(i) = '1') then
-				expected_asp_packets_in(i) <= "00";
-			elsif(expected_asp_packets_out(i) = "000000000") then
-				case( dprr_int(i)(25 downto 22) ) is
-					when "0001" =>  -- STORE
-						expected_asp_packets_out(i) <= dprr_int(i)(8 downto 0);
-						expected_asp_packets_in(i) <= "01";
-
-					when "0100" =>  -- MAC
-						expected_asp_packets_out(i) <= "000000000";
-						expected_asp_packets_in(i) <= "11";
-
-					when others =>
-						expected_asp_packets_out(i) <= "000000000";
-						expected_asp_packets_in(i) <= "01";
-				end case;
-			else
-				expected_asp_packets_out(i) <= expected_asp_packets_out(i) - '1';
-			end if;
-		end loop ; -- dprr_count_loop
-
-
-	end process ; -- dprr_count
-
-
-	dpcr_out_sel_p : process(dpcr_ack, expected_asp_packets_in)
-	begin
-		dprr_count_loop : for i in 0 to jop_cnt-1 loop
-			if (expected_asp_packets_in(i) > "00") then
-				dpcr_out_sel(i) <= '1';
-			else
-				dpcr_out_sel(i) <= '0';
-			end if;
-
-			if (dpcr_ack(i) = '1') then
-				if (expected_asp_packets_in(i) > "00") then
-					asp_ack(i) <= '1';
-					if (dpcr_out_asp(i) = (expected_asp_packets_in(i) - '1')) then
-						done(i) <= '1';
-					else
-						done(i) <= '0';
+		for i in 0 to jop_cnt-1 loop
+			if (rising_edge(clk)) then
+				if (dpcr_out_sel(i) = '0') then
+					if (dprr_int(i)(31 downto 30) = "11") then
+						dpcr_out_sel(i) <= '1';
+						if (dprr_int(i)(25 downto 22) = "0100") then
+							expected_asp_packets_in(i) <= "10";
+						else
+							expected_asp_packets_in(i) <= "00";
+						end if;
 					end if;
 				else
-					recop_ack(i) <= '1';
-					done(i) <= '0';
+					if (dpcr_out_asp(i)(31 downto 30) = "11") and
+						(dpcr_out_asp(i)(17 downto 16) = expected_asp_packets_in(i)) and
+						(asp_ack(i) = '1') then
+						dpcr_out_sel(i) <= '0';
+					end if;
 				end if;
-
-				--packet_count(i) <= packet_count(i) + '1';
-
-				--if (packet_count(i) = expected_asp_packets_in(i)) then
-				--	done(i) <= '1';
-				--	packet_count(i) <= (others => '0');
-				--end if;
-			else
-				asp_ack(i) <= '0';
-				recop_ack(i) <= '0';
 			end if;
-
-
 		end loop;
-	end process ; -- dpcr_in_sel
 
-	dpcr_out_mux : process(dpcr_out_sel, dpcr_out_asp, dpcr_out_recop)
+	end process;
+
+	-- AJS
+	dpcr_out_mux : process(dpcr_out_sel, dpcr_out_asp, dpcr_out_recop, dpcr_ack)
 	begin
-		dprr_count_loop : for i in 0 to jop_cnt-1 loop
+		for i in 0 to jop_cnt-1 loop
 			if (dpcr_out_sel(i) = '1') then
 				dpcr_out(i) <= dpcr_out_asp(i);
+				asp_ack(i) <= dpcr_ack(i);
+				recop_ack(i) <= '0';
 			else
 				dpcr_out(i) <= dpcr_out_recop(i);
+				asp_ack(i) <= '0';
+				recop_ack(i) <= dpcr_ack(i);
 			end if;
 		end loop;
 	end process ; -- dpcr_out_mux
