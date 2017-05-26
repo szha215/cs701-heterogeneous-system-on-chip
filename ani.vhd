@@ -185,7 +185,7 @@ end process ; -- push_to_noc
 ---------------------------------------------------------------------------------------------------
 -- combinational logic
 
-asp_port <= std_logic_vector(to_unsigned(get_asp_mapping(0, jop_cnt+recop_cnt, jop_cnt, recop_cnt), 7));
+asp_port <= std_logic_vector(to_unsigned(get_asp_mapping(asp_id, jop_cnt+recop_cnt, jop_cnt, recop_cnt), 7));
 
 
 s_inc_q_buf <= d_from_noc;

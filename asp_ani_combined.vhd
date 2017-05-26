@@ -110,7 +110,7 @@ ani_component : ani
 
 asp_component : asp
 	generic map(
-		N => 8
+		N => 512
 	)
 	port map(
 		clk	=> clk,
