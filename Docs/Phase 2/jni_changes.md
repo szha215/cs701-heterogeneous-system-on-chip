@@ -6,7 +6,7 @@ A new function `get_asp_mapping()` has been added to `min_ports_pkg.vhd`.
 
 The function is used within the "retarded" mapping code in order to correctly send outgoing packets to the NoC in the correct format and port. 
 
-### Additional DPCR FIFO for ASP
+### Additional DPCR FIFO for ASP and DPCR Multiplexer
 
 When JOP sends an Invoke command to ASP, it would not want to receive a ReCOP command until the ASP has sent responds back. 
 
