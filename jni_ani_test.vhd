@@ -69,9 +69,7 @@ signal ani_port : port_array(asp_cnt-1 downto 0);
 signal datacall_jop_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
 signal datacall_jop_if_array	: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
 signal result_jop_if_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
-signal result_asp_array			: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);
 signal result_asp_if_array		: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);
-signal datacall_asp_array		: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
 signal datacall_asp_if_array	: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
 signal min_in_port		: NOC_LINK_ARRAY_TYPE(0 to max_nodes-1) := (others => (others => '0'));
 signal min_out_port		: NOC_LINK_ARRAY_TYPE(0 to max_nodes-1);
@@ -191,6 +189,7 @@ begin
 	---------------------------------
 	--  Network Interface for ASP  --
 	---------------------------------
+	ani_gen: for i in 0 to asp_cnt-1 generate
 	ani_1 : ani
 		generic map(
 			tdm_slot_width	=> number_of_stages,
@@ -213,25 +212,64 @@ begin
 			asp_busy			=> t_asp_busy,
 			asp_res_ready  => t_asp_res_ready,
 			d_from_asp		=> t_d_from_asp,
-			d_to_noc			=> t_d_to_noc
+			d_to_noc			=> result_asp_if_array(i)
 		);
+	end generate;
 
 
-
-	ani_port(0) <=  std_logic_vector(to_unsigned(get_asp_mapping(0, number_of_nodes, 3, 1), 7));
+	--ani_port(0) <=  std_logic_vector(to_unsigned(get_asp_mapping(0, number_of_nodes, 3, 1), 7));
 
 	--min_in_port(0) <= t_d_to_noc;
 	--min_out_port(0) <= t_d_from_noc;
 
-	min_in_port(1) <= dprr_out(0);
-	min_in_port(2) <= dprr_out(1);
-	min_in_port(3) <= dprr_out(2);
-	min_in_port(4) <= t_d_to_noc;
+	--min_in_port(1) <= dprr_out(0);
+	--min_in_port(2) <= dprr_out(1);
+	--min_in_port(3) <= dprr_out(2);
+	--min_in_port(4) <= t_d_to_noc;
 
-	dpcr_in(0) <= min_out_port(3);
-	dpcr_in(1) <= min_out_port(2);
-	dpcr_in(2) <= min_out_port(3);
-	t_d_from_noc <= min_out_port(4);
+	--dpcr_in(0) <= min_out_port(3);
+	--dpcr_in(1) <= min_out_port(2);
+	--dpcr_in(2) <= min_out_port(3);
+	--t_d_from_noc <= min_out_port(4);
+
+
+	------------------------------------------------------
+	--  physical wire connections between IF and cores  --
+	------------------------------------------------------
+	port_mapping: for j in 0 to max_nodes-1 generate
+
+		jop_lookup: for i in 0 to jop_cnt-1 generate
+			jop_link: if j = get_jop_mapping(i, number_of_nodes, recop_cnt) generate
+				min_in_port(j)					<= result_jop_if_array(i);				--TODO: selective reading from TX buffer
+				datacall_jop_if_array(i)	<= min_out_port(j);
+			end generate;
+--			jop_linka: if j = 1 and i = 2 generate
+--				noc_in_port(j)					<= result_jop_if_array(i);
+--				ifrd_req(j)						<= datacall_interf_rdreq(i);
+--				ifrd_addr(j)					<= (others => '0');										--TODO: selective reading from TX buffer
+--				datacall_jop_if_array(i)	<= noc_out_port(j);
+--			end generate;
+--			jop_linkb: if j = 2 and i = 1 generate
+--				noc_in_port(j)					<= result_jop_if_array(i);
+--				ifrd_req(j)						<= datacall_interf_rdreq(i);
+--				ifrd_addr(j)					<= (others => '0');										--TODO: selective reading from TX buffer
+--				datacall_jop_if_array(i)	<= noc_out_port(j);
+--			end generate;
+--			jop_linkc: if j = 3 and i = 0 generate
+--				noc_in_port(j)					<= result_jop_if_array(i);
+--				ifrd_req(j)						<= datacall_interf_rdreq(i);
+--				ifrd_addr(j)					<= (others => '0');										--TODO: selective reading from TX buffer
+--				datacall_jop_if_array(i)	<= noc_out_port(j);
+--			end generate;
+		end generate;
+		asp_look_up: for i in 0 to asp_cnt-1 generate
+			asp_link: if j = get_asp_mapping(i, number_of_nodes, jop_cnt, recop_cnt) generate
+				min_in_port(j)					<= result_asp_if_array(i);
+				datacall_asp_if_array(i)	<= min_out_port(j);
+			end generate;
+		end generate;
+	end generate;
+	
 
 
 

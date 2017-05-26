@@ -303,7 +303,7 @@ state_transition_logic : process(clk)
 begin
 	case CS is
 		when IDLE =>
-			if (valid = '1') then
+			if (valid = '1' and d_in(31 downto 30) = "11") then
 				case (d_in(25 downto 22)) is
 					when "0000" =>
 						NS <= STORE_R_INIT;
@@ -928,7 +928,7 @@ end process ; -- wr_pointer_process
 ---------------------------------------------------------------------------------------------------
 compare_pointer_L : process(s_pointer)
 begin
-	if (s_pointer = s_end_addr) then
+	if (s_pointer = s_end_addr(s_pointer'length - 1 downto 0)) then
 		cmp_pointer_L <= '1';
 	else
 		cmp_pointer_L <= '0';

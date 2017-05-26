@@ -4,6 +4,9 @@ use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 use ieee.math_real.all;
 
+library altera_mf;
+use altera_mf.all;
+
 library work;
 use work.min_ports_pkg.all;
 ---------------------------------------------------------------------------------------------------
@@ -166,14 +169,16 @@ end process;
 
 ---------------------------------------------------------------------------------------------------
 push_to_noc : process(tdm_slot)
-variable n_rx : std_logic_vector(6 downto 0);
+variable n_rx : std_logic_vector(6 downto 0) := "0000000";
 begin
-	n_rx(tdm_slot_width-1 downto 0) :=reverse_n_bits(asp_port, tdm_slot_width) xor tdm_slot;
+	n_rx(tdm_slot_width-1 downto 0) :=reverse_n_bits(asp_port(tdm_slot_width-1 downto 0), tdm_slot_width) xor tdm_slot;
 
 	if ((n_rx(3 downto 0) = s_out_q_buf(29 downto 26)) and s_out_empty = '0') then
 		d_to_noc <= s_out_q_buf;
+		s_d_to_noc_sel <= '1';
 	else
 		d_to_noc <= x"00000000";
+		s_d_to_noc_sel <= '0';
 	end if;
 end process ; -- push_to_noc
 
