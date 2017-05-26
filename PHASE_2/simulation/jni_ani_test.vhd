@@ -38,6 +38,7 @@ signal dprr_in : NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);		 	-- test bench contr
 --signal dprr_out : NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);        -- replaced by result_jop_if_array
 	
 --signal datacall_jop_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);  -- unused
+signal datacall_jop_if_array	: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
 signal result_jop_if_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
 signal result_asp_if_array		: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
 signal datacall_asp_if_array	: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
