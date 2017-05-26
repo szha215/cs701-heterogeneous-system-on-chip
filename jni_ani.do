@@ -3,8 +3,11 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /jni_ani_test/clk
 add wave -noupdate /jni_ani_test/reset
 add wave -noupdate /jni_ani_test/tdm_slot
+add wave -noupdate -divider {ReCOP to NoC}
+add wave -noupdate -color {Dark Orchid} /jni_ani_test/dpcr_in_recop
+add wave -noupdate -color {Dark Orchid} /jni_ani_test/datacall_recop_if_array
 add wave -noupdate -divider {NoC to JOP}
-add wave -noupdate -color Orange -expand -subitemconfig {/jni_ani_test/dpcr_in(2) {-color Orange -height 15} /jni_ani_test/dpcr_in(1) {-color Orange -height 15} /jni_ani_test/dpcr_in(0) {-color Orange -height 15}} /jni_ani_test/dpcr_in
+add wave -noupdate -color {Medium Spring Green} -expand -subitemconfig {/jni_ani_test/datacall_jop_if_array(2) {-color {Medium Spring Green} -height 15} /jni_ani_test/datacall_jop_if_array(1) {-color {Medium Spring Green} -height 15} /jni_ani_test/datacall_jop_if_array(0) {-color {Medium Spring Green} -height 15}} /jni_ani_test/datacall_jop_if_array
 add wave -noupdate -color Gold -expand -subitemconfig {/jni_ani_test/dpcr_ack(2) {-color Gold -height 15} /jni_ani_test/dpcr_ack(1) {-color Gold -height 15} /jni_ani_test/dpcr_ack(0) {-color Gold -height 15}} /jni_ani_test/dpcr_ack
 add wave -noupdate -color Gold -expand -subitemconfig {/jni_ani_test/dpcr_out(2) {-color Gold -height 15} /jni_ani_test/dpcr_out(1) {-color Gold -height 15} /jni_ani_test/dpcr_out(0) {-color Gold -height 15}} /jni_ani_test/dpcr_out
 add wave -noupdate -divider {JOP to NoC}
@@ -16,7 +19,7 @@ add wave -noupdate -color {Lime Green} /jni_ani_test/ani_gen(0)/asp_ani/asp_busy
 add wave -noupdate -divider {ASP to NoC}
 add wave -noupdate -color {Yellow Green} -expand -subitemconfig {/jni_ani_test/result_asp_if_array(0) {-color {Yellow Green} -height 15}} /jni_ani_test/result_asp_if_array
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {205 ns} 0}
+WaveRestoreCursors {{Cursor 1} {227 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 263
 configure wave -valuecolwidth 100
@@ -32,4 +35,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {86 ns} {471 ns}
+WaveRestoreZoom {100 ns} {459 ns}

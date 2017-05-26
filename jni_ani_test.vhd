@@ -33,14 +33,21 @@ constant	max_nodes			: integer := integer(2 ** (number_of_stages));
 
 signal dpcr_ack : std_logic_vector(jop_cnt-1 downto 0) := "000";  -- test bench controlled
 signal dpcr_in : NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);			-- test bench controlled
+signal dpcr_in_recop : NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);			-- test bench controlled
 signal dpcr_out : NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);        -- JNI controlled
 signal dprr_in : NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);		 	-- test bench controlled
 --signal dprr_out : NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);        -- replaced by result_jop_if_array
 	
---signal datacall_jop_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);  -- unused
-signal result_jop_if_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
-signal result_asp_if_array		: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
+signal datacall_jop_if_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
+signal datacall_recop_if_array	: NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);
 signal datacall_asp_if_array	: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
+
+signal result_jop_if_array		: NOC_LINK_ARRAY_TYPE(jop_cnt-1 downto 0);
+signal result_recop_array		: NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);
+signal result_recop_if_array	: NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);
+signal result_asp_if_array		: NOC_LINK_ARRAY_TYPE(asp_cnt-1 downto 0);  -- AJS
+
+
 signal min_in_port		: NOC_LINK_ARRAY_TYPE(0 to max_nodes-1);
 signal min_out_port		: NOC_LINK_ARRAY_TYPE(0 to max_nodes-1);
 
@@ -78,6 +85,30 @@ component jop_tdm_min_interface is
 	);
 end component;
 
+component recop_tdm_min_interface is
+	generic(
+		recop_cnt: integer;
+		jop_cnt	: integer;
+		fifo_depth	: integer;
+		asp_cnt	: integer
+	);
+	port(
+		clk		: in std_logic;
+		reset		: in std_logic;
+		jop_free : in std_logic_vector(num_recop-1 downto 0); 
+		dispatched : out std_logic_vector(recop_cnt-1 downto 0);
+		dispatched_io : out std_logic_vector(recop_cnt-1 downto 0);
+		tdm_slot	: in std_logic_vector(integer(ceil(log2(real(recop_cnt+jop_cnt+asp_cnt))))-1 downto 0);
+		dpcr_in	: in NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);
+		dpcr_out	: out NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);
+		dprr_in	: in NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0);
+		dprr_ack	: in std_logic_vector(recop_cnt-1 downto 0);
+		dprr_out	: out NOC_LINK_ARRAY_TYPE(recop_cnt-1 downto 0)
+	);
+end component;
+
+
+
 -- GROUP 8 ANI
 component asp_ani_combined is
 	generic(
@@ -97,37 +128,8 @@ component asp_ani_combined is
 
 end component;
 
-
-
-
 ---------------------------------------------------------------------------------------------------
-begin
-
-
-	jop_min_if : jop_tdm_min_interface
-	generic map(
-		recop_cnt => recop_cnt,
-		jop_cnt	=> jop_cnt,
-		fifo_depth => 8
-		)
-	port map (
--- list connections between master ports and signals
-	clk => clk,
-	dpcr_ack => dpcr_ack,
-	dpcr_in => dpcr_in,
-	dpcr_out => dpcr_out,
-	dprr_in => dprr_in,
-	dprr_out => result_jop_if_array,
-	reset => reset,
-	tdm_slot => tdm_slot
-	);
-
-	--initialize : process
-	--begin
-	--	reset <= '1', '0' after 10 ns;
-	--	wait;
-	--end process;
-
+begin		
 	-----------------------------------------------------------
 	--   TDMA Mesh Network for constant transmission times   --
 	-----------------------------------------------------------
@@ -143,7 +145,52 @@ begin
 		in_port	=> min_in_port,
 		out_port	=> min_out_port
 	);
-	
+
+	---------------------------------
+	--  Network Interface for JOP  --
+	---------------------------------
+	jop_min_if : jop_tdm_min_interface
+	generic map(
+		recop_cnt => recop_cnt,
+		jop_cnt	=> jop_cnt,
+		fifo_depth => 8
+		)
+	port map (
+	-- list connections between master ports and signals
+		clk => clk,
+		dpcr_ack => dpcr_ack,
+		dpcr_in => datacall_jop_if_array,
+		dpcr_out => dpcr_out,
+		dprr_in => dprr_in,
+		dprr_out => result_jop_if_array,
+		reset => reset,
+		tdm_slot => tdm_slot
+		);
+
+	-----------------------------------
+	--  Network Interface for ReCOP  --
+	-----------------------------------
+	recop_min_if: recop_tdm_min_interface
+		generic map(
+			recop_cnt	=> recop_cnt,
+			jop_cnt		=> jop_cnt,
+			fifo_depth	=> 4,
+			asp_cnt		=> asp_cnt  -- AJS
+		)
+		port map(
+			clk		=> clk,
+			reset		=> reset,
+			jop_free => "0",
+			dispatched => open,
+			dispatched_io => open,
+			tdm_slot	=> tdm_slot,
+			dpcr_in	=> dpcr_in_recop,
+			dpcr_out	=> datacall_recop_if_array,
+			dprr_in	=> result_recop_if_array,
+			dprr_ack	=> "0",
+			dprr_out	=> result_recop_array
+		);
+
 	---------------------------------
 	--  Network Interface for ASP  --
 	---------------------------------
@@ -171,7 +218,12 @@ begin
 	--  physical wire connections between IF and cores  --
 	------------------------------------------------------
 	port_mapping: for j in 0 to max_nodes-1 generate
-
+		recop_lookup: for i in 0 to recop_cnt-1 generate
+			recop_link: if j = get_recop_mapping(i, number_of_nodes, recop_cnt) generate
+				result_recop_if_array(i)	<= min_out_port(j);
+				min_in_port(j)					<= datacall_recop_if_array(i);
+			end generate;
+		end generate;
 		jop_lookup: for i in 0 to jop_cnt-1 generate
 			jop_link: if j = get_jop_mapping(i, number_of_nodes, recop_cnt) generate
 				min_in_port(j)					<= result_jop_if_array(i);				--TODO: selective reading from TX buffer
@@ -241,7 +293,7 @@ begin
 	dprr_in(1) <= x"00000000";
 	dprr_in(2) <= x"00000000";
 
-	wait for t_clk_period * 7 ;  -- #5
+	wait for t_clk_period * 14 ;  -- #5
 
 	dprr_in(1) <= x"C1000E02";  -- ASP call, MAC, sets expected packets in to be 3
 	wait for t_clk_period;
@@ -259,43 +311,68 @@ begin
 end process; -- t_dprr
 
 
-t_dpcr : process
+t_dprr_ReCOP : process
 begin
 	wait for 2 ns;
 
-	dpcr_in(0) <= x"00000000";
-	dpcr_in(1) <= x"00000000";
-	dpcr_in(2) <= x"00000000";
+	dpcr_in_recop(0) <= x"00000000";
 
-	wait for t_clk_period * 5;  -- #5
+	wait for t_clk_period * 3;  -- #5
 
-	dpcr_in(0) <= x"00000000";
-	dpcr_in(1) <= x"81000AAA";  -- ReCOP call
-	dpcr_in(2) <= x"00000000";
+	dpcr_in_recop(0) <= x"81000AAA";  -- ReCOP call JOP
 	wait for t_clk_period;      -- #6
 
-	dpcr_in(1) <= x"00000000";
+	dpcr_in_recop(0) <= x"00000000";
 	wait for t_clk_period * 3;  -- #9
 
-	dpcr_in(1) <= x"81000BBB";  -- ReCOP call 2, should not be popped to JOP yet
+	dpcr_in_recop(0) <= x"81000BBB";  -- ReCOP call JOP 2, should not be popped to JOP yet
 	wait for t_clk_period;      -- #10
 
-	dpcr_in(1) <= x"C104D3F8";  -- MAC 0
-	wait for t_clk_period;      -- #11
-
-	dpcr_in(1) <= x"C1050015";  -- MAC 1
-	wait for t_clk_period;      -- #12
-
-	dpcr_in(1) <= x"C1060000";  -- MAC 2
-	wait for t_clk_period;      -- #13
-
-	dpcr_in(1) <= x"00000000";
-	wait for t_clk_period * 10; -- #23
-
-
+	dpcr_in_recop(0) <= x"00000000";
 
 	wait;
-end process ; -- t_dpcr
+
+end process ; -- t_dprr_ReCOP
+
+
+-- JOP DPCR
+--t_dpcr : process
+--begin
+--	wait for 2 ns;
+
+--	dpcr_in(0) <= x"00000000";
+--	dpcr_in(1) <= x"00000000";
+--	dpcr_in(2) <= x"00000000";
+
+--	wait for t_clk_period * 5;  -- #5
+
+--	dpcr_in(0) <= x"00000000";
+--	dpcr_in(1) <= x"81000AAA";  -- ReCOP call
+--	dpcr_in(2) <= x"00000000";
+--	wait for t_clk_period;      -- #6
+
+--	dpcr_in(1) <= x"00000000";
+--	wait for t_clk_period * 3;  -- #9
+
+--	dpcr_in(1) <= x"81000BBB";  -- ReCOP call 2, should not be popped to JOP yet
+--	wait for t_clk_period;      -- #10
+
+--	dpcr_in(1) <= x"C104D3F8";  -- MAC 0
+--	wait for t_clk_period;      -- #11
+
+--	dpcr_in(1) <= x"C1050015";  -- MAC 1
+--	wait for t_clk_period;      -- #12
+
+--	dpcr_in(1) <= x"C1060000";  -- MAC 2
+--	wait for t_clk_period;      -- #13
+
+--	dpcr_in(1) <= x"00000000";
+--	wait for t_clk_period * 10; -- #23
+
+
+
+--	wait;
+--end process ; -- t_dpcr
 
 
 t_dpcr_ack : process
@@ -306,7 +383,7 @@ begin
 	dpcr_ack(1) <= '0';
 	dpcr_ack(2) <= '0';
 
-	wait for t_clk_period * 6;  -- #6
+	wait for t_clk_period * 12;  -- #6
 
 	dpcr_ack(1) <= '1';
 	wait for t_clk_period;      -- #7
@@ -314,30 +391,13 @@ begin
 	dpcr_ack(1) <= '0';
 	wait for t_clk_period * 3;  -- #10
 
-	dpcr_ack(1) <= '1';
-	wait for t_clk_period;      -- #11
+	for i in 0 to 15 loop
+		dpcr_ack(1) <= '1';
+		wait for t_clk_period;      -- #11
 
-	dpcr_ack(1) <= '0';
-	wait for t_clk_period * 3;  -- #14
-
-	dpcr_ack(1) <= '1';
-	wait for t_clk_period;      -- #15
-
-	dpcr_ack(1) <= '0';
-	wait for t_clk_period * 3;  -- #18
-
-	dpcr_ack(1) <= '1';
-	wait for t_clk_period;      -- #19
-
-	dpcr_ack(1) <= '0';
-	wait for t_clk_period * 3;  -- #22
-
-	dpcr_ack(1) <= '1';
-	wait for t_clk_period;
-
-	dpcr_ack(1) <= '0';
-	wait for t_clk_period * 3;
-
+		dpcr_ack(1) <= '0';
+		wait for t_clk_period * 3;  -- #14
+	end loop;
 
 
 	wait;
