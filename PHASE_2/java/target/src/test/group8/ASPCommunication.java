@@ -6,6 +6,7 @@ import com.jopdesign.sys.Const;
 import com.jopdesign.sys.Native;
 import joprt.RtThread;
 
+
 public class ASPCommunication {
 
 	public static void sendPacket(int packet){
@@ -27,6 +28,7 @@ public class ASPCommunication {
 	}
 
 	public static int storeReset(int memSel){
+
 		// STORE reset command
 		int packet = 0 | (0x3 << 30) | (memSel & 1 << 17);
 
@@ -52,6 +54,7 @@ public class ASPCommunication {
 	}
 
 	public static int xor(int memSel, int start, int end){
+
 		// XOR command
 		int packet = 0 | (0x3 << 30) | ((2 + memSel) << 22) | (end << 9) | (start << 0);
 
@@ -76,13 +79,12 @@ public class ASPCommunication {
 	}
 
 	public static int ave(int windowSize, int memSel){
-		// XOR command
+
+		// AVE command
 		int packet = 0 | (0x3 << 30) | ((5 + memSel) << 22) | (windowSize << 9);
 
 		sendPacket(packet);
 
 		return pollASPResponse();
 	}
-
-
 }
