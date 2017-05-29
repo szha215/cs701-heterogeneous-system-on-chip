@@ -16,3 +16,5 @@ To enable the interfacing of the JOP to the ASP, the ASP interface is added into
 In the test bench, the DataCall, there exists `XXX` signals for some of the ports. These are indicate that the port are not connected to the NoC.
 
 ### Integration of ReCOP and JOP using TDMA-MIN
+
+ReCOP will send datacall packets to JOP and by using a specific Java program JOP is able to respond accordingly. Specifically JOP will then proceed to send different commands to ASP. Refer to `recop_asp_jop_integration` document for more details. 
