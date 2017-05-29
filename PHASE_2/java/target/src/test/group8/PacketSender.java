@@ -122,6 +122,53 @@ public class PacketSender{
 
 					break;
 
+				case 0xCCC:
+					//Doing Matrix multiplication
+					// Values from lab 3
+	
+					matrix.C = new Integer[matrix.A.length][matrix.B[0].length];
+					
+					
+					// Initialising C
+					for (int i = 0; i < matrix.C.length; i++){
+						for (int j = 0; j < matrix.C[0].length; j++){
+							matrix.C[i][j] = 0;
+						}
+					}
+					
+					System.out.println("A = ");
+					matrix.print_matrix(matrix.A);
+					
+					System.out.println("B = ");
+					matrix.print_matrix(matrix.B);
+					
+					if (A[0].length != matrix.B.length){
+						System.out.println("Error: number of columns in A does not match the number of rows in B.");
+					}
+					
+					SysDevice sys = IOFactory.getFactory().getSysDevice();
+
+					for(int i = 0 ; i < sys.nrCpu-1;i++){
+						Runnable r = new matrix(i+1);
+						Startup.setRunnable(r,i);
+					}
+
+					//do the first row
+					matrix.matrix_mult(matrix.A[0],0,matrix.B,matrix.C);
+
+					sys.signal = 1;
+
+
+					//wait for other JOPs to finish
+					RtThread.sleepMs(1000);
+
+					System.out.println("A x B = ");
+					matrix.print_matrix(matrix.C);
+					
+					System.out.println("END");
+
+					break;
+
 				default:
 					System.out.println("Unknown datacall code");
 
