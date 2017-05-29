@@ -28,7 +28,7 @@ A simple case switch is implemented for parsing those packets.
 3. Then JOP will send a `mac` command to ASP to perform an `mac` operation from addresses `0` to `511`. The expected result is `0x190` and it will be printed to both terminal and seven seg display.
    1. Since ASP that we implemented will send 3 packets to JOP, this program will also handle the concatenation of those 3 packets and produce a `long` number. 
 
-## `0xCCC`
+### `0xCCC`
 
 1. JOP will perform the identical matrix multiplication computation described in `multi_jop_program` document. This is to demonstrate multi-jop communication and computation. 
 
