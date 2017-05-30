@@ -10,7 +10,7 @@ import joprt.RtThread;
 public class ASPCommunication {
 
 	public static void sendPacket(int packet){
-		System.out.println("Sending Packet: " + Integer.toBinaryString(packet));
+		//System.out.println("Sending Packet: " + Integer.toBinaryString(packet));
 		Native.setDatacallResult(packet);
 	}
 
@@ -43,7 +43,7 @@ public class ASPCommunication {
 		int packet = 0 | (0x3 << 30) | (1 << 22) | ((memSel & 1) << 17) | (data.length << 0);
 
 		sendPacket(packet);
-
+		
 		for (int i = 0; i < data.length; i++){
 			packet = 0 | (0x3 << 30) | ((i + start) << 16) | (data[i] << 0);
 
@@ -68,6 +68,7 @@ public class ASPCommunication {
 
 		// MAC command
 		int packet = 0 | (0x3 << 30) | (0x4 << 22) | (end << 9) | (start << 0);
+		int temp = 0;
 
 		sendPacket(packet);
 

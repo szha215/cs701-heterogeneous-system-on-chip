@@ -6,18 +6,21 @@ import com.jopdesign.sys.Const;
 import com.jopdesign.sys.Native;
 import joprt.RtThread;
 
+import com.jopdesign.io.IOFactory;
+import com.jopdesign.io.SysDevice;
+import com.jopdesign.sys.Startup;
 
 public class PacketSender{
 	
 	public static int pollReCOPResponse(){
 		int datacallWord = 0;
-		System.out.println("Started Polling response");
+		System.out.println("Started Polling for Response");
 
 		while(true){
 			datacallWord = Native.getDatacall();
 
 			if ((datacallWord & (1 << 31)) != 0){  // Valid
-				System.out.println("Response Recieved: " + int2hexString(datacallWord & 0xFFFF));
+				System.out.println("Response Recieved: 0x" + int2hexString(datacallWord & 0xFFFF) + " = " + (datacallWord & 0xFFFF));
 				return datacallWord;
 			}
 		}
@@ -60,72 +63,16 @@ public class PacketSender{
 		int dataCallReCOP;
 
 		while(true){
+			System.out.println("\n=== Awaiting ReCOP ===");
 			dataCallReCOP = pollReCOPResponse() & 0xFFFF;
 
 			switch (dataCallReCOP) {
-				case 0xAAA:
-
-					dataResult = ASPCommunication.store(arrayB, 0, 1);  // Store array to B on ASP
-
-					if ((dataResult & 0xFFFF) == 1){
-						System.out.println("Store B success");
-					} else {
-						System.out.println("ERROR: Store failed");
-					}
-					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
-
-
-					RtThread.sleepMs(2000);  // sleep for 2 sec
-
-
-					dataResult = ASPCommunication.xor(1, 0, 7) & 0xFFFF;  // XOR B 0 to 7, expect 400 (0x190)
-					
-					System.out.println("XOR res = " + dataResult + " = 0x" + int2hexString(dataResult));
-					SevenSeg.writeToSevenSegHex(dataResult);  // 190 should be printed
-
-					RtThread.sleepMs(2000);  // sleep for 2 sec
-
-					ASPCommunication.sendPacket(0x80000003);  // reply back to ReCOP 0
-
-
-					break;
-
-				case 0xBBB:
-					dataResult = ASPCommunication.ave(4, 1);  // AVE B, Window size = 4
-
-					if ((dataResult & 0xFFFF) == 1){
-						System.out.println("AVE success");
-					} else {
-						System.out.println("ERROR: AVE failed");
-					}
-					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
-
-
-					RtThread.sleepMs(2000);  // sleep for 2 sec
-
-
-					dataResult = ASPCommunication.store(arrayA, 0, 0);  // Store array to A on ASP
-
-					if ((dataResult & 0xFFFF) == 1){
-						System.out.println("Store A success");
-					} else {
-						System.out.println("ERROR: Store failed");
-					}
-					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
-
-
-
-					dataResultLong = ASPCommunication.mac(0, 511);  // MAC 0 to 511
-
-					System.out.println("MAC res = " + dataResultLong + " = 0x" + int2hexString(dataResultLong));
-					SevenSeg.writeToSevenSegHex((int)dataResultLong);  // 190 should be printed
-
-					break;
-
-				case 0xCCC:
+				case 1111:
 					//Doing Matrix multiplication
 					// Values from lab 3
-	
+					
+					System.out.println("\n>> START MATRIX MULTIPLICATION");
+
 					matrix.C = new Integer[matrix.A.length][matrix.B[0].length];
 					
 					
@@ -142,7 +89,7 @@ public class PacketSender{
 					System.out.println("B = ");
 					matrix.print_matrix(matrix.B);
 					
-					if (A[0].length != matrix.B.length){
+					if (matrix.A[0].length != matrix.B.length){
 						System.out.println("Error: number of columns in A does not match the number of rows in B.");
 					}
 					
@@ -168,6 +115,75 @@ public class PacketSender{
 					System.out.println("END");
 
 					break;
+
+				case 2222:
+					System.out.println("\n>> Storing into array B");
+					dataResult = ASPCommunication.store(arrayB, 0, 1);  // Store array to B on ASP
+
+					if ((dataResult & 0xFFFF) == 1){
+						System.out.println("Store B success");
+					} else {
+						System.out.println("ERROR: Store failed");
+					}
+					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
+
+					RtThread.sleepMs(2000);  // sleep for 2 sec
+
+					System.out.println("\n>> XOR B");
+					dataResult = ASPCommunication.xor(1, 0, 7) & 0xFFFF;  // XOR B 0 to 7, expect 400 (0x190)
+					
+					System.out.println("XOR res = " + dataResult + " = 0x" + int2hexString(dataResult));
+					SevenSeg.writeToSevenSegHex(dataResult);  // 190 should be printed
+
+					RtThread.sleepMs(2000);  // sleep for 2 sec
+
+					ASPCommunication.sendPacket(0x80000003);  // reply back to ReCOP 0
+
+
+					break;
+
+				case 3333:
+					System.out.println("\n>> Storing into array A");
+					dataResult = ASPCommunication.store(arrayA, 0, 0);  // Store array to A on ASP
+
+					if ((dataResult & 0xFFFF) == 1){
+						System.out.println("Store A success");
+					} else {
+						System.out.println("ERROR: Store failed");
+					}
+					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
+
+					RtThread.sleepMs(2000);  // sleep for 2 sec
+
+					System.out.println("\n>> MAC");
+					dataResultLong = ASPCommunication.mac(0, 511);  // MAC 0 to 511
+
+					System.out.println("MAC res = " + dataResultLong + " = 0x" + int2hexString(dataResultLong));
+					SevenSeg.writeToSevenSegHex((int)dataResultLong);  // 167721 should be printed
+
+					RtThread.sleepMs(2000);  // sleep for 2 sec
+
+					System.out.println("\n>> AVE B, Window = 4");
+					dataResult = ASPCommunication.ave(4, 1);  // AVE B, Window size = 4
+
+					if ((dataResult & 0xFFFF) == 1){
+						System.out.println("AVE success");
+					} else {
+						System.out.println("ERROR: AVE failed");
+					}
+					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
+
+
+					RtThread.sleepMs(2000);  // sleep for 2 sec
+
+					System.out.println("\n>> MAC");
+					dataResultLong = ASPCommunication.mac(0, 511);  // MAC 0 to 511
+
+					System.out.println("MAC res = " + dataResultLong + " = 0x" + int2hexString(dataResultLong));
+					SevenSeg.writeToSevenSegHex((int)dataResultLong);  // 17BEF8 should be printed
+
+					break;
+
 
 				default:
 					System.out.println("Unknown datacall code");
