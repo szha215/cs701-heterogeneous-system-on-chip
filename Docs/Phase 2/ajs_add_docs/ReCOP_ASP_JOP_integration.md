@@ -59,5 +59,10 @@ ENDPROG
 ```
 
 - `start` sends the two data calls
-- `POLL_DPRR` polls for the write back address to be written with result and IRQ, then jumps to `REPLY` when received reply
-- `REPLY` 
+- `POLL_DPRR` polls for the write back address to be written with result and IRQ, then jumps to `REPLY` when reply is received
+- `REPLY` sends another packet
+- `NOOP_LOOP` will loop forever
+
+Data Calls in our ReCOP is the right way around, where the valid, legacy and ID numbers are stored in register, and address information in operand or R7.
+
+This can be 
