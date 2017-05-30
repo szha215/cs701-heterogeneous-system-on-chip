@@ -6,6 +6,8 @@ use ieee.std_logic_arith.all;
 --library lpm;
 --use lpm.lpm_components.all;
 library altera_mf;
+use altera_mf.all;
+
 library work;
 use work.all;
 
@@ -27,39 +29,31 @@ end entity ; -- data_mem
 
 architecture behaviour of data_mem is
 
-component altsyncram
-	generic (
-		address_aclr_b		: string;
-		address_reg_b		: string;
-		clock_enable_input_a		: string;
-		clock_enable_input_b		: string;
-		clock_enable_output_b		: string;
-		init_file	: string;
-		intended_device_family		: string;
-		lpm_type		: string;
-		--numwords_a		: natural;
-		--numwords_b		: natural;
-		operation_mode		: string;
-		outdata_aclr_b		: string;
-		outdata_reg_b		: string;
-		power_up_uninitialized		: string;
-		read_during_write_mode_mixed_ports		: string;
-		widthad_a		: natural;
-		widthad_b		: natural;
-		width_a		: natural;
-		width_b		: natural
-		--width_byteena_a		: natural
+	COMPONENT altsyncram
+	GENERIC (
+		clock_enable_input_a		: STRING;
+		clock_enable_output_a		: STRING;
+		intended_device_family		: STRING;
+		lpm_hint		: STRING;
+		lpm_type		: STRING;
+		numwords_a		: NATURAL;
+		operation_mode		: STRING;
+		outdata_aclr_a		: STRING;
+		outdata_reg_a		: STRING;
+		power_up_uninitialized		: STRING;
+		ram_block_type		: STRING;
+		widthad_a		: NATURAL;
+		width_a		: NATURAL;
+		width_byteena_a		: NATURAL
 	);
-	port (
-			aclr0	: in std_logic ;
-			address_a	: in std_logic_vector (ram_addr_width - 1  downto 0);
-			clock0	: in std_logic ;
-			data_a	: in std_logic_vector (ram_data_width - 1 downto 0);
-			q_b	: out std_logic_vector (ram_data_width - 1 downto 0);
-			wren_a	: in std_logic ;
-			address_b	: in std_logic_vector (ram_addr_width - 1 downto 0)
+	PORT (
+			address_a	: IN STD_LOGIC_VECTOR (11 DOWNTO 0);
+			clock0	: IN STD_LOGIC ;
+			data_a	: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+			wren_a	: IN STD_LOGIC ;
+			q_a	: OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
 	);
-	end component;
+	END COMPONENT;
 
 
 
@@ -81,38 +75,31 @@ begin
 --		q 			=> data_out
 --	);
 
-ram_a : altsyncram
-	generic map (
-		address_aclr_b => "CLEAR0",
-		address_reg_b => "CLOCK0",
+	altsyncram_component : altsyncram
+	GENERIC MAP (
 		clock_enable_input_a => "BYPASS",
-		clock_enable_input_b => "BYPASS",
-		clock_enable_output_b => "BYPASS",
-		init_file => "data_mem.mif",
-		intended_device_family => "Cyclone IV E",
+		clock_enable_output_a => "BYPASS",
+		intended_device_family => "Cyclone II",
+		lpm_hint => "ENABLE_RUNTIME_MOD=NO",
 		lpm_type => "altsyncram",
-		--numwords_a => N,
-		--numwords_b => N,
-		operation_mode => "DUAL_PORT",
-		outdata_aclr_b => "CLEAR0",
-		outdata_reg_b => "UNREGISTERED",
+		numwords_a => 4096,
+		operation_mode => "SINGLE_PORT",
+		outdata_aclr_a => "NONE",
+		outdata_reg_a => "UNREGISTERED",
 		power_up_uninitialized => "FALSE",
-		read_during_write_mode_mixed_ports => "OLD_DATA",
-		widthad_a => ram_addr_width,
-		widthad_b => ram_addr_width,
-		width_a => ram_data_width,
-		width_b => ram_data_width
-		--width_byteena_a => 1
+		ram_block_type => "M4K",
+		widthad_a => 12,
+		width_a => 16,
+		width_byteena_a => 1
 	)
-	port map (
+	PORT MAP (
+		address_a => addr(11 downto 0),
 		clock0 => clk,
-		aclr0 => '0',
-		address_a => addr,
 		data_a => data_in,
 		wren_a => wr_en,
-		address_b => addr,
-		q_b => data_out
+		q_a => data_out
 	);
+
 
 
 

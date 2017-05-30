@@ -188,6 +188,8 @@ begin
 			alu_src_B <= "01";
 			alu_op <= "000";
 			ir_wr <= "01";
+			reset_DPCR <= '1';
+			reset_DPC <= '1';
 
 		when ID1 => -- Instruction Decode
 			alu_src_A <= "00";

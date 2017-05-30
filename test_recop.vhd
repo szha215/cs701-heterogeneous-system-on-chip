@@ -20,7 +20,7 @@ signal t_SIP_in,t_SVOP_out,t_SOP_out : std_logic_vector(15 downto 0) := (others 
 
 
 
-component recop is
+component ReCOP_AJS is
 -- generic and port declration here
 generic(
 	constant recop_id	 : integer := 0
@@ -38,10 +38,10 @@ port(	clk				: in std_logic;
 		SVOP_out		: out std_logic_vector(15 downto 0);
 		SOP_out			: out std_logic_vector(15 downto 0)
 	);
-end component recop;
+end component ReCOP_AJS;
 begin 
 
-t_recop : recop
+t_recop : ReCOP_AJS
 	generic map(
 		recop_id	 => 0
 	)

@@ -10,7 +10,7 @@ USE ieee.numeric_std.ALL;
 use ieee.math_real.all;
 
 ---------------------------------------------------------------------------------------------------
-entity recop is
+entity ReCOP_AJS is
 -- generic and port declration here
 generic(
 	constant recop_id  : integer := 0
@@ -27,10 +27,10 @@ port(	clk				: in std_logic;
 		SVOP_out		: out std_logic_vector(15 downto 0);
 		SOP_out			: out std_logic_vector(15 downto 0)
 	);
-end entity recop;
+end entity ReCOP_AJS;
 
 ---------------------------------------------------------------------------------------------------
-architecture behaviour of recop is
+architecture behaviour of ReCOP_AJS is
 
 	signal s_clk			: std_logic;
 	signal s_am				: std_logic_vector(1 downto 0);
@@ -71,7 +71,8 @@ component recop_datapath
 	generic(
 		constant m_mux_sel_num : positive := 3;
 		constant r_wr_mux_sel_num : positive := 3;
-		constant reg_width : positive := 16
+		constant reg_width : positive := 16;
+		constant recop_id		: integer
 	);
 
 	port (
@@ -180,7 +181,9 @@ datapath_unit : recop_datapath
 	generic map (
 		m_mux_sel_num => 3,
 		r_wr_mux_sel_num => 3,
-		reg_width	=>	16
+		reg_width	=>	16,
+		recop_id		=> recop_id
+
 	)
 	port map (
 		clk => clk,

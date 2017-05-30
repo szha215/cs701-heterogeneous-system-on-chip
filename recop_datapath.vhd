@@ -16,7 +16,8 @@ entity recop_datapath is
 	generic(
 		constant m_mux_sel_num : positive := 3;
 		constant r_wr_mux_sel_num : positive := 3;
-		constant reg_width : positive := 16
+		constant reg_width : positive := 16;
+		constant recop_id		: integer
 	);
 
 
@@ -142,7 +143,8 @@ end component;
 component prog_mem
 	generic(
 		constant ram_addr_width : positive := 16;
-		constant ram_data_width : positive := 16
+		constant ram_data_width : positive := 16;
+		constant recop_id		: integer
 	);
 
 	port (
@@ -244,7 +246,8 @@ data_memory : data_mem
 program_memory : prog_mem
 	generic map(
 		ram_addr_width => s_ram_addr_width,
-		ram_data_width => s_data_width
+		ram_data_width => s_data_width,
+		recop_id			=> recop_id
 	)
 	port map(
 		clk		=>	clk,
