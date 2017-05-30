@@ -1,6 +1,6 @@
 # PHASE TWO Group 8 Overview
 
-***Note: Refer to `ajs_add_docs` directory for additional  documents***
+***Note: Refer to `docs` directory for additional  documents***
 
 ## Compiling the Project
 

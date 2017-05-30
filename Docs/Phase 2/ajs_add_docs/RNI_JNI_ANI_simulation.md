@@ -24,6 +24,6 @@ The testbench `jni_ani_test.vhd` connects RNI, JNI, ANI, TDMA-MIN and ASP togeth
 | 1360 ns |             JOP receives CCC             |
 |         |                                          |
 
-RNI, JNI and ANI works as expected.
+RNI, JNI and ANI all work as expected.
 
 
