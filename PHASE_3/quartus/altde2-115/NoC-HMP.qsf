@@ -1,0 +1,407 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2011 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus II 64-Bit
+# Version 11.0 Build 208 07/03/2011 Service Pack 1 SJ Full Version
+# Date created = 14:16:43  June 16, 2014
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		NoC-HMP_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus II software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE115F29C7
+set_global_assignment -name TOP_LEVEL_ENTITY HCMP_TDM_MINoC
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "11.0 SP1"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "14:16:43  JUNE 16, 2014"
+set_global_assignment -name LAST_QUARTUS_VERSION 13.0
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+set_global_assignment -name EDA_DESIGN_ENTRY_SYNTHESIS_TOOL "<None>"
+set_global_assignment -name EDA_INPUT_VCC_NAME VCC -section_id eda_design_synthesis
+set_global_assignment -name EDA_INPUT_DATA_FORMAT EDIF -section_id eda_design_synthesis
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim (VHDL)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+set_global_assignment -name EDA_TIMING_ANALYSIS_TOOL "PrimeTime (Verilog)"
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_timing_analysis
+set_global_assignment -name USE_CONFIGURATION_DEVICE ON
+set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_ASDO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
+set_global_assignment -name SMART_RECOMPILE OFF
+
+
+#============================================================
+# CLOCK
+#============================================================
+set_location_assignment PIN_Y2 -to clk0_in
+set_location_assignment PIN_AG14 -to clk1_in
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk0_in
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk1_in
+
+#============================================================
+# LED
+#============================================================
+set_location_assignment PIN_E21 -to oLEDG[0]
+set_location_assignment PIN_E22 -to oLEDG[1]
+set_location_assignment PIN_E25 -to oLEDG[2]
+set_location_assignment PIN_E24 -to oLEDG[3]
+set_location_assignment PIN_H21 -to oLEDG[4]
+set_location_assignment PIN_G20 -to oLEDG[5]
+set_location_assignment PIN_G22 -to oLEDG[6]
+set_location_assignment PIN_G21 -to oLEDG[7]
+set_location_assignment PIN_F17 -to oLEDG[8]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[7]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDG[8]
+
+set_location_assignment PIN_G19 -to oLEDR[0]
+set_location_assignment PIN_E19 -to oLEDR[2]
+set_location_assignment PIN_F19 -to oLEDR[1]
+set_location_assignment PIN_F21 -to oLEDR[3]
+set_location_assignment PIN_F18 -to oLEDR[4]
+set_location_assignment PIN_E18 -to oLEDR[5]
+set_location_assignment PIN_J19 -to oLEDR[6]
+set_location_assignment PIN_H19 -to oLEDR[7]
+set_location_assignment PIN_J17 -to oLEDR[8]
+set_location_assignment PIN_G17 -to oLEDR[9]
+set_location_assignment PIN_J15 -to oLEDR[10]
+set_location_assignment PIN_H16 -to oLEDR[11]
+set_location_assignment PIN_J16 -to oLEDR[12]
+set_location_assignment PIN_H17 -to oLEDR[13]
+set_location_assignment PIN_F15 -to oLEDR[14]
+set_location_assignment PIN_G15 -to oLEDR[15]
+set_location_assignment PIN_G16 -to oLEDR[16]
+set_location_assignment PIN_H15 -to oLEDR[17]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[7]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[8]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[9]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[10]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[11]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[12]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[13]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[14]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[15]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[16]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oLEDR[17]
+
+#============================================================
+# KEY
+#============================================================
+set_location_assignment PIN_M23 -to iKEY[0]
+set_location_assignment PIN_M21 -to iKEY[1]
+set_location_assignment PIN_N21 -to iKEY[2]
+set_location_assignment PIN_R24 -to iKEY[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iKEY[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iKEY[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iKEY[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iKEY[3]
+
+#============================================================
+# SW
+#============================================================
+set_location_assignment PIN_AB28 -to iSW[0]
+set_location_assignment PIN_AC28 -to iSW[1]
+set_location_assignment PIN_AC27 -to iSW[2]
+set_location_assignment PIN_AD27 -to iSW[3]
+set_location_assignment PIN_AB27 -to iSW[4]
+set_location_assignment PIN_AC26 -to iSW[5]
+set_location_assignment PIN_AD26 -to iSW[6]
+set_location_assignment PIN_AB26 -to iSW[7]
+set_location_assignment PIN_AC25 -to iSW[8]
+set_location_assignment PIN_AB25 -to iSW[9]
+set_location_assignment PIN_AC24 -to iSW[10]
+set_location_assignment PIN_AB24 -to iSW[11]
+set_location_assignment PIN_AB23 -to iSW[12]
+set_location_assignment PIN_AA24 -to iSW[13]
+set_location_assignment PIN_AA23 -to iSW[14]
+set_location_assignment PIN_AA22 -to iSW[15]
+set_location_assignment PIN_Y24 -to iSW[16]
+set_location_assignment PIN_Y23 -to iSW[17]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[7]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[8]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[9]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[10]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[11]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[12]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[13]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[14]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[15]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[16]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to iSW[17]
+
+#============================================================
+# SEG7
+#============================================================
+set_location_assignment PIN_G18 -to oHEX0[0]
+set_location_assignment PIN_F22 -to oHEX0[1]
+set_location_assignment PIN_E17 -to oHEX0[2]
+set_location_assignment PIN_L26 -to oHEX0[3]
+set_location_assignment PIN_L25 -to oHEX0[4]
+set_location_assignment PIN_J22 -to oHEX0[5]
+set_location_assignment PIN_H22 -to oHEX0[6]
+set_location_assignment PIN_M24 -to oHEX1[0]
+set_location_assignment PIN_Y22 -to oHEX1[1]
+set_location_assignment PIN_W21 -to oHEX1[2]
+set_location_assignment PIN_W22 -to oHEX1[3]
+set_location_assignment PIN_W25 -to oHEX1[4]
+set_location_assignment PIN_U23 -to oHEX1[5]
+set_location_assignment PIN_U24 -to oHEX1[6]
+set_location_assignment PIN_AA25 -to oHEX2[0]
+set_location_assignment PIN_AA26 -to oHEX2[1]
+set_location_assignment PIN_Y25 -to oHEX2[2]
+set_location_assignment PIN_W26 -to oHEX2[3]
+set_location_assignment PIN_Y26 -to oHEX2[4]
+set_location_assignment PIN_W27 -to oHEX2[5]
+set_location_assignment PIN_W28 -to oHEX2[6]
+set_location_assignment PIN_V21 -to oHEX3[0]
+set_location_assignment PIN_U21 -to oHEX3[1]
+set_location_assignment PIN_AB20 -to oHEX3[2]
+set_location_assignment PIN_AA21 -to oHEX3[3]
+set_location_assignment PIN_AD24 -to oHEX3[4]
+set_location_assignment PIN_AF23 -to oHEX3[5]
+set_location_assignment PIN_Y19 -to oHEX3[6]
+set_location_assignment PIN_AB19 -to oHEX4[0]
+set_location_assignment PIN_AA19 -to oHEX4[1]
+set_location_assignment PIN_AG21 -to oHEX4[2]
+set_location_assignment PIN_AH21 -to oHEX4[3]
+set_location_assignment PIN_AE19 -to oHEX4[4]
+set_location_assignment PIN_AF19 -to oHEX4[5]
+set_location_assignment PIN_AE18 -to oHEX4[6]
+set_location_assignment PIN_AD18 -to oHEX5[0]
+set_location_assignment PIN_AC18 -to oHEX5[1]
+set_location_assignment PIN_AB18 -to oHEX5[2]
+set_location_assignment PIN_AH19 -to oHEX5[3]
+set_location_assignment PIN_AG19 -to oHEX5[4]
+set_location_assignment PIN_AF18 -to oHEX5[5]
+set_location_assignment PIN_AH18 -to oHEX5[6]
+set_location_assignment PIN_AA17 -to oHEX6[0]
+set_location_assignment PIN_AB16 -to oHEX6[1]
+set_location_assignment PIN_AA16 -to oHEX6[2]
+set_location_assignment PIN_AB17 -to oHEX6[3]
+set_location_assignment PIN_AB15 -to oHEX6[4]
+set_location_assignment PIN_AA15 -to oHEX6[5]
+set_location_assignment PIN_AC17 -to oHEX6[6]
+set_location_assignment PIN_AD17 -to oHEX7[0]
+set_location_assignment PIN_AE17 -to oHEX7[1]
+set_location_assignment PIN_AG17 -to oHEX7[2]
+set_location_assignment PIN_AH17 -to oHEX7[3]
+set_location_assignment PIN_AF17 -to oHEX7[4]
+set_location_assignment PIN_AG18 -to oHEX7[5]
+set_location_assignment PIN_AA14 -to oHEX7[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX0[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX1[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX2[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX3[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to oHEX3[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX3[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX3[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX3[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX3[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX3[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX4[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX5[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX6[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oHEX7[6]
+
+#============================================================
+# RS232
+#============================================================
+set_location_assignment PIN_G9 -to ser_txd
+set_location_assignment PIN_G12 -to ser_rxd
+set_location_assignment PIN_G14 -to oUART_CTS
+set_location_assignment PIN_J13 -to iUART_RTS
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ser_txd
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ser_rxd
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to oUART_CTS
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to iUART_RTS
+
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ajs_pkgs.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/reg_file_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/recop_datapath_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/recop_control_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/ReCOP_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/prog_mem_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/ins_reg_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/gen_reg_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/data_mem_AJS.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ReCOP_AJS/alu_AJS.vhd
+set_global_assignment -name BDF_FILE ../../vhdl/ReCOPv2/ReCOPv2.bdf
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/various_constants.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/uart.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/registers.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/registerfile_mux.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/registerfile.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/regfile.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/recop_types.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/prog_mem.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/opcodes.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/memory_model.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/mem_mux.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/max.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/dm_data_mux.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/debug_button.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/data_mem.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/control_unit.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/alu.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/ReCOPv2/recop_stepper.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/asp_ani_combined.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/multiplier.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/average_filter.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/asp.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/group8/ani.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/sc_GPIO.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/sc_internal.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/analysis_wrapper_tdm_min.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/min_ports_pkg.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/recop_tdm_min_interface.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/jop_tdm_min_interface.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/min_switch_in_fifo.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/min_switch_in_buffer.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/min_switch.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/min/fifo_ram_cell.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/tdma_minoc.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/HCMP_TDM_MINoC.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/generic_noc_types.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/mesh_ports_pkg.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/combined_pll.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/sys_pll.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/signal_holder.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/reset_counter.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/memory/sdpram.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/memory/sc_ssram32.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/memory/mem_sc.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/altera/cyc2_pll.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/altera/cyc_jbc.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/altera/arom.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/altera/aram.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/cache/ocache.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/sevenSegment.vhd
+set_global_assignment -name VHDL_FILE "../../vhdl/jop/scio/scio_min_DE2-115.vhd"
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/sc_uart.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/sc_sys.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/led_switch.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/fifo.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/scio/cmpsync.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/simpcon/sc_pack.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/simpcon/sc_arbiter_tdma.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/simpcon/sc_arbiter_pack.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/stack.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/shift.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/mul.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/jopcpu.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/jop_types.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/fetch.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/decode.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/core.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/cache.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/core/bcfetch.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/top/jop_config_global.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/top/jop_config_de2.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jop/top/jop_cmp.vhd
+set_global_assignment -name CDF_FILE "NoC-HMP.cdf"
+set_global_assignment -name QIP_FILE ../../vhdl/sys_pll.qip
+set_global_assignment -name QIP_FILE ../../vhdl/combined_pll.qip
+set_global_assignment -name VHDL_FILE ../../vhdl/hcmp_min.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/jtbl.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/tdm_slot_counter.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/noc_tdmamin_tb.vhd
+set_global_assignment -name VHDL_FILE ../../vhdl/noc/hmpsoc_config.vhd
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
