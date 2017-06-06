@@ -7,7 +7,7 @@ package HMPSoC_config is
 	constant num_jop			: integer := 3;
 	constant num_recop		: integer := 1;
 	constant num_asp			: integer := 1;  -- AJS
-	constant USE_AJS_RECOP	: std_logic := '1';  -- AJS
+	constant USE_AJS_RECOP	: std_logic := '0';  -- AJS
 	constant DYNAMIC        : std_logic := '0';
 	constant DYNAMIC_FIFO   : std_logic := '0';
 	constant TDMA_OPTIMIZED : std_logic := '0';

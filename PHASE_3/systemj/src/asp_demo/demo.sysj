@@ -1,0 +1,86 @@
+// When you have made your ASP-related libraries in the systemjx.asp package, import them
+// using the following statement:
+// import systemjx.asp.*;
+import com.systemjx.group8.*;
+
+CD1(output Object channel C1, C2;)->
+{
+	// Sending arrays A and B to CD2 via channels C1 and C2
+	// {
+	// 	int[] A = new int[5];
+	// 	for(int i=0; i<A.length; i++) { A[i] = i; } // Always need brackets for the for-loops (SystemJ-thing)
+	// 	send C1(A);
+	// }
+	// ||
+	// {
+	// 	int[] B = new int[5];
+	// 	for(int i=0; i<B.length; i++) { B[i] = i; }
+	// 	send C2(B);
+	// }
+	{
+		// int[] arrayA = {0xECE, 0x111, 0x222, 0x333, 0x444, 0x555, 0x666, 0x777};
+		// send C1(arrayA);
+	}
+	||
+	{
+		// int[] arrayB = {0x0, 0x99, 0x101, 0x103, 0x105, 0x107, 0x109, 0x0};		
+		// send C2(arrayB);
+	}
+}
+
+CD2(input Object channel C1,C2;)->
+{
+	// Receiving the arrays
+	{receive C1;} || {receive C2;}
+
+
+
+	RTSMain.out.println("Array Data Received");
+	// // Getting the values of channels
+	int[] A = (int[])#C1;
+	int[] B = (int[])#C2;
+
+	// // The followings are just to give you an example 
+	// // how a Java library should be written to enable 
+	// // communication between a JOP and an ASP
+	int dataResult = ASPCommunication.store(0,B,0,1);
+
+	RTSMain.out.println("ASP result = " + Integer.toBinaryString(dataResult));
+
+	while(true){pause;}
+
+	// // Storing the arrays into the ASP memory
+	// StorePacket stPacket = new StorePacket(
+	// 		/* Destination port number */,
+	// 		/* Source port number */,
+	// 		/* Select memory (A or B) */,
+	// 		/* Number of words to store, e.g. A.length */
+	// 		);
+	// // Sending an array B to ASP
+	// // You need to call Native.setDataCallResult() and
+	// // Native.getDataCall() inside the following method.
+	// ASP.Store(stPacket, A);
+
+	// stPacket = new StorePacket(
+	// 		/* Destination port number */,
+	// 		/* Source port number */,
+	// 		/* Select memory (A or B) */,
+	// 		/* Number of words to store, e.g. B.length */
+	// 		);
+	// // Sending an array B to the ASP
+	// ASP.Store(stPacket, B);
+
+	// // Invoking the MAC operation
+	// InvokePacket invPacket = new InvokePacket(
+	// 		/* OP code */,
+	// 		/* Destination port number */,
+	// 		/* Source port number */,
+	// 		/* Start Addr */,
+	// 		/* End Addr */
+	// 		);
+
+	// // Sending InvokeASP packet to perform MAC operation
+	// // You need to call Native.setDataCallResult() and
+	// // Native.getDataCall() inside the following method.
+	// ASP.InvokeASP(stPacket);
+}

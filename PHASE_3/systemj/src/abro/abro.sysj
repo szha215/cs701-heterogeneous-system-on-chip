@@ -1,0 +1,31 @@
+ABRO->{
+	// We are using internal signals to test the program
+	signal A,B,R,O;
+	{ // First (ABRO) reaction
+		while(true) {
+			// Signal R preempts this reaction
+			abort(R){
+				while(true) {
+					// Waits for both A and B
+					{await(A); RTSMain.out.println("Got A"); }||{await(B); RTSMain.out.println("Got B");}
+					emit O;
+					RTSMain.out.println("Received both A and B: entering an inf loop");
+					// After receiving both A and B, the reaction enters an infinite loop until
+					// the signal R is generated
+					while(true) { pause; }
+				}
+			}
+			RTSMain.out.println("Got R: Aborted");
+		}
+	}
+	||
+	{ // Second reaction
+		// TODO: emit signals to the first reaction
+		emit A;
+		emit B;
+		{await(O);
+			RTSMain.out.println("Received O : Emit R next");}
+		emit R;
+		while(true) { pause; }
+	}
+}
