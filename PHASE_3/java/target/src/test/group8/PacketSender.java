@@ -12,6 +12,11 @@ import com.jopdesign.sys.Startup;
 
 public class PacketSender{
 	
+	public static void sendReCOPPacket(int packet){
+		System.out.println("Replying back to ReCOP...");
+		Native.setDatacallResult(packet);
+	}
+
 	public static int pollReCOPResponse(){
 		int datacallWord = 0;
 		System.out.println("Started Polling for Response");
@@ -132,7 +137,7 @@ public class PacketSender{
 
 				case 2222:
 					System.out.println("\n>> Storing into array B");
-					dataResult = ASPCommunication.store(arrayB, 0, 1);  // Store array to B on ASP
+					dataResult = ASPCommunication.store(0, arrayB, 0, 1);  // Store array to B on ASP
 
 					if ((dataResult & 0xFFFF) == 1){
 						System.out.println("Store B success");
@@ -144,7 +149,7 @@ public class PacketSender{
 					System.out.println("\n>> XOR B");
 
 					startTime = Native.rd(Const.IO_US_CNT);
-					dataResult = ASPCommunication.xor(1, 0, 7) & 0xFFFF;  // XOR B 0 to 7, expect 400 (0x190)
+					dataResult = ASPCommunication.xor(0, 1, 0, 7) & 0xFFFF;  // XOR B 0 to 7, expect 400 (0x190)
 					endTime = Native.rd(Const.IO_US_CNT);
 
 					System.out.println("ASP XOR res = " + dataResult + " = 0x" + int2hexString(dataResult) + ", time taken = " + (endTime - startTime));
@@ -152,15 +157,13 @@ public class PacketSender{
 
 					RtThread.sleepMs(2000);  // sleep for 2 sec
 
-					ASPCommunication.sendPacket(0x80000003);  // reply back to ReCOP 0
-					System.out.println("Replying back to ReCOP...");
-
+					sendReCOPPacket(0x80000003);  // reply back to ReCOP 0
 
 					break;
 
 				case 3333:
 					System.out.println("\n>> Storing into array A");
-					dataResult = ASPCommunication.store(arrayA, 0, 0);  // Store array to A on ASP
+					dataResult = ASPCommunication.store(0, arrayA, 0, 0);  // Store array to A on ASP
 
 					if ((dataResult & 0xFFFF) == 1){
 						System.out.println("Store A success");
@@ -172,7 +175,7 @@ public class PacketSender{
 					RtThread.sleepMs(2000);  // sleep for 2 sec
 
 					System.out.println("\n>> MAC");
-					dataResultLong = ASPCommunication.mac(0, 511);  // MAC 0 to 511
+					dataResultLong = ASPCommunication.mac(0, 0, 511);  // MAC 0 to 511
 
 					System.out.println("MAC res = " + dataResultLong + " = 0x" + int2hexString(dataResultLong));
 					SevenSeg.writeToSevenSegHex((int)dataResultLong);  // 167721 should be printed
@@ -180,7 +183,7 @@ public class PacketSender{
 					RtThread.sleepMs(2000);  // sleep for 2 sec
 
 					System.out.println("\n>> AVE B, Window = 4");
-					dataResult = ASPCommunication.ave(4, 1);  // AVE B, Window size = 4
+					dataResult = ASPCommunication.ave(0, 4, 1);  // AVE B, Window size = 4
 
 					if ((dataResult & 0xFFFF) == 1){
 						System.out.println("AVE success");
@@ -193,7 +196,7 @@ public class PacketSender{
 					RtThread.sleepMs(2000);  // sleep for 2 sec
 
 					System.out.println("\n>> MAC");
-					dataResultLong = ASPCommunication.mac(0, 511);  // MAC 0 to 511
+					dataResultLong = ASPCommunication.mac(0, 0, 511);  // MAC 0 to 511
 
 					System.out.println("MAC res = " + dataResultLong + " = 0x" + int2hexString(dataResultLong));
 					SevenSeg.writeToSevenSegHex((int)dataResultLong);  // 17BEF8 should be printed

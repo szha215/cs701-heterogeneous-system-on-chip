@@ -9,7 +9,7 @@ import joprt.RtThread;
 
 public class ASPCommunication {
 
-	public static void sendPacket(int packet){
+	private static void sendPacket(int packet){
 		//System.out.println("Sending Packet: " + Integer.toBinaryString(packet));
 		Native.setDatacallResult(packet);
 	}
@@ -27,25 +27,25 @@ public class ASPCommunication {
 		}
 	}
 
-	public static int storeReset(int memSel){
+	public static int storeReset(int ASPid, int memSel){
 
 		// STORE reset command
-		int packet = 0 | (0x3 << 30) | (memSel & 1 << 17);
+		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | (memSel & 1 << 17);
 
 		sendPacket(packet);
 
 		return pollASPResponse();
 	}
 
-	public static int store(int[] data, int start, int memSel){
+	public static int store(int ASPid, int[] data, int start, int memSel){
 
 		// STORE command
-		int packet = 0 | (0x3 << 30) | (1 << 22) | ((memSel & 1) << 17) | (data.length << 0);
+		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | (1 << 22) | ((memSel & 1) << 17) | (data.length << 0);
 
 		sendPacket(packet);
 		
 		for (int i = 0; i < data.length; i++){
-			packet = 0 | (0x3 << 30) | ((i + start) << 16) | (data[i] << 0);
+			packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | ((i + start) << 16) | (data[i] << 0);
 
 			sendPacket(packet);
 		}
@@ -53,21 +53,21 @@ public class ASPCommunication {
 		return pollASPResponse();
 	}
 
-	public static int xor(int memSel, int start, int end){
+	public static int xor(int ASPid, int memSel, int start, int end){
 
 		// XOR command
-		int packet = 0 | (0x3 << 30) | ((2 + memSel) << 22) | (end << 9) | (start << 0);
+		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | ((2 + memSel) << 22) | (end << 9) | (start << 0);
 
 		sendPacket(packet);
 
 		return pollASPResponse();
 	}
 
-	public static long mac(int start, int end){
+	public static long mac(int ASPid, int start, int end){
 		long macResult = 0L;
 
 		// MAC command
-		int packet = 0 | (0x3 << 30) | (0x4 << 22) | (end << 9) | (start << 0);
+		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | (0x4 << 22) | (end << 9) | (start << 0);
 		int temp = 0;
 
 		sendPacket(packet);
@@ -79,10 +79,10 @@ public class ASPCommunication {
 		return macResult;
 	}
 
-	public static int ave(int windowSize, int memSel){
+	public static int ave(int ASPid, int windowSize, int memSel){
 
 		// AVE command
-		int packet = 0 | (0x3 << 30) | ((5 + memSel) << 22) | (windowSize << 9);
+		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | ((5 + memSel) << 22) | (windowSize << 9);
 
 		sendPacket(packet);
 
