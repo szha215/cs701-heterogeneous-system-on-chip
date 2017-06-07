@@ -1,16 +1,16 @@
-package group8;
-
+package com.systemjx.group8;
+import com.systemj.lang.*;
 import java.util.*;
 import java.io.*;
 import com.jopdesign.sys.Const;
 import com.jopdesign.sys.Native;
 import joprt.RtThread;
 
-
+import hmpsoc.RTSMain;
 public class ASPCommunication {
 
 	private static void sendPacket(int packet){
-		//System.out.println("Sending Packet: " + Integer.toBinaryString(packet));
+		RTSMain.out.println("Sending Packet: " + Integer.toBinaryString(packet));
 		Native.setDatacallResult(packet);
 	}
 
@@ -46,12 +46,14 @@ public class ASPCommunication {
 		
 		for (int i = 0; i < data.length; i++){
 			packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | ((i + start) << 16) | (data[i] & 0xFFFF << 0);
+			// pause;
 			// System.out.println("Packet[" + i + "] sent: " + Integer.toBinaryString(packet));
 			sendPacket(packet);
 		}
 
 		return pollASPResponse();
 	}
+
 
 	public static int xor(int ASPid, int memSel, int start, int end){
 

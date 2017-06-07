@@ -304,7 +304,7 @@ JAVA_RXTX_LIB?=java/lib/RXTXcomm.jar
 # build everything from scratch
 all:
 	make init
-	#make sysjtools sysj
+	make sysjtools sysj
 ifeq ($(USB),true)
 	make jopusb
 else
