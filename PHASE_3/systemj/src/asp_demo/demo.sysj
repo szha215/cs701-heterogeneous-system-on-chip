@@ -1,76 +1,228 @@
 // When you have made your ASP-related libraries in the systemjx.asp package, import them
 // using the following statement:
 // import systemjx.asp.*;
-import com.systemjx.group8.ASPCommunication;
+import com.systemjx.group8.*;
 import com.systemj.lang.*;
 import java.util.*;
-CD1(output Object channel C1, C2;)->
+// CD1(output Object channel C1, C2;)->
+// {
+// 	{
+// 		send C1(1);
+// 		while(true){
+// 			pause;
+// 		}
+// 	}
+// 	||
+// 	{
+// 		send C2(1);
+// 		while(true){
+// 			pause;
+// 		}	
+// 	}
+// }
+
+// CD2(input Object channel C1,C2;)->
+// {
+// 	// Receiving the arrays
+
+
+
+
+// 	{receive C1;} || {receive C2;}
+
+
+
+// 	RTSMain.out.println("Array Data Received");
+
+
+// 	int[] listB = new int[8];
+// 		pause;
+// 		listB[0] = 0x0;
+// 		listB[1] = 0x99;
+// 		pause;
+// 		listB[2] = 0x101;
+// 		listB[3] = 0x103;
+// 		listB[4] = 0x105;
+// 		pause;
+// 		listB[5] = 0x107;
+// 		listB[6] = 0x109;
+// 		listB[7] = 0x0;
+
+// 	int[] listA = new int[8];
+// 		pause;
+// 		listA[0] = 0xECE;
+// 		listA[1] = 0x111;
+// 		pause;
+// 		listA[2] = 0x222;
+// 		listA[3] = 0x333;
+// 		listA[4] = 0x444;
+// 		pause;
+// 		listA[5] = 0x555;
+// 		listA[6] = 0x666;
+// 		listA[7] = 0x777;
+
+
+// 	pause;
+// 	int dataResult = ASPCommunication.store(0,listB,0,1);
+// 	pause;
+// 	RTSMain.out.println("STR result = " + Integer.toBinaryString(dataResult));
+// 	pause;
+// 	dataResult = ASPCommunication.store(0,listA,0,0);
+// 	pause;
+// 	RTSMain.out.println("STR result = " + Integer.toBinaryString(dataResult));
+// 	pause;
+// 	dataResult = ASPCommunication.xor(0,1,0,7);
+// 	RTSMain.out.println("XOR result = " + Integer.toBinaryString(dataResult));
+// 	long macResult = ASPCommunication.mac(0,0,7);
+// 	RTSMain.out.println("MAC result = " + macResult);
+// 	while(true){pause;}
+
+// }
+
+
+CD1(
+	input int channel nextOp;
+	output int channel aspOp;
+	) ->
 {
+	signal init;
 	{
-		send C1(1);
-		while(true){
-			pause;
-		}
+		RTSMain.out.println("Emitting init");
+		emit init;
+		while(true){pause;}
 	}
 	||
 	{
-		send C2(1);
-		while(true){
-			pause;
-		}	
+		loop{
+		 	int op = 0;
+	 		abort(init){
+				{receive nextOp;}
+				op = (int)#nextOp;
+	 		}
+		 	send aspOp(op);
+		 	// RTSMain.out.println("From CD3: " + op);
+		 	pause;
+	 	}
 	}
 }
 
-CD2(input Object channel C1,C2;)->
+
+CD2(
+	input int channel aspOp;
+	output int channel result;
+	) ->
 {
-	// Receiving the arrays
-	{receive C1;} || {receive C2;}
+	loop{
+		{receive aspOp;}
+
+		int op = (int)#aspOp;
 
 
+		if(op == 0){
+			//store a
 
-	RTSMain.out.println("Array Data Received");
+			int[] listA = new int[8];
+			listA[0] = 0xECE;
+			listA[1] = 0x111;
+			listA[2] = 0x222;
+			listA[3] = 0x333;
+			listA[4] = 0x444;
+			listA[5] = 0x555;
+			listA[6] = 0x666;
+			listA[7] = 0x777;
+			pause;
+
+			int dataResult = ASPCommunication.store(0,listA,0,0);
 
 
-	int[] listB = new int[8];
+			RTSMain.out.println("STR A result: " + Integer.toBinaryString(dataResult));
+			send result(op++);
+
+		}else if(op == 1){
+			//store b
+
+			int[] listB = new int[8];
+			listB[0] = 0x0;
+			listB[1] = 0x99;
+			listB[2] = 0x101;
+			listB[3] = 0x103;
+			listB[4] = 0x105;
+			listB[5] = 0x107;
+			listB[6] = 0x109;
+			listB[7] = 0x0;		
+			pause;
+
+			int dataResult = ASPCommunication.store(0,listB,0,1);
+			RTSMain.out.println("STR B result: " + Integer.toBinaryString(dataResult));
+			send result(op++);
+
+		}else if(op == 2){
+
+			int dataResult = ASPCommunication.xor(0,1,0,7);
+			RTSMain.out.println("XOR result: " + (dataResult & 0xFFFF));
+			send result(op++);
+
+		}else if(op == 3){
+			long macResult = ASPCommunication.mac(0,0,7);
+
+			RTSMain.out.println("MAC result: " + macResult);
+			send result(op++);
+
+		}else if(op == 4){
+			int aveResult = ASPCommunication.ave(0, 4, 1);
+			RTSMain.out.println("AVE result: " + Integer.toBinaryString(aveResult));
+
+			send result(op++);
+		}else if(op == 5){
+			long macResult = ASPCommunication.mac(0,0,7);
+			RTSMain.out.println("MAC2 result: " + macResult);
+			send result(op++);
+
+		}else if(op == 6){
+			int resetResult = ASPCommunication.storeReset(0,0);
+			RTSMain.out.println("Reset result: " + Integer.toBinaryString(resetResult));
+			send result(op++);
+
+		}else if(op == 7){
+			long macResult = ASPCommunication.mac(0,0,7);
+			RTSMain.out.println("MAC3 result: " + macResult);
+			send result(op++);
+		
+		}else{
+			while(true){pause;}
+		}
+		RTSMain.out.println("From CD1: " + op);
 		pause;
-		listB[0] = 0x0;
-		listB[1] = 0x99;
-		pause;
-		listB[2] = 0x101;
-		listB[3] = 0x103;
-		listB[4] = 0x105;
-		pause;
-		listB[5] = 0x107;
-		listB[6] = 0x109;
-		listB[7] = 0x0;
-
-	int[] listA = new int[8];
-		pause;
-		listA[0] = 0xECE;
-		listA[1] = 0x111;
-		pause;
-		listA[2] = 0x222;
-		listA[3] = 0x333;
-		listA[4] = 0x444;
-		pause;
-		listA[5] = 0x555;
-		listA[6] = 0x666;
-		listA[7] = 0x777;
+	}
+		
+}
 
 
-	pause;
-	int dataResult = ASPCommunication.store(0,listB,0,1);
-	pause;
-	RTSMain.out.println("STR result = " + Integer.toBinaryString(dataResult));
-	pause;
-	dataResult = ASPCommunication.store(0,listA,0,0);
-	pause;
-	RTSMain.out.println("STR result = " + Integer.toBinaryString(dataResult));
-	pause;
-	dataResult = ASPCommunication.xor(0,1,0,7);
-	RTSMain.out.println("XOR result = " + Integer.toBinaryString(dataResult));
-	long macResult = ASPCommunication.mac(0,0,7);
-	RTSMain.out.println("MAC result = " + macResult);
-	while(true){pause;}
 
+CD3(
+	input int channel aspResult;
+	output int channel nextOp;
+	)->
+{
+	// signal sendNextOp;
+
+		
+		loop{
+			{receive aspResult;}
+			int result = (int)#aspResult;
+			// RTSMain.out.println("From CD2: " + result);
+			send nextOp(result);
+			pause;
+		}
+	
+		// while(true){pause;}
+	
+	// ||
+	// {
+		
+	// 	await(sendNextOp);
+	// 	send nextOp(aspResult);
+	// 	// while(true){pause;}
+
+	// }
 }

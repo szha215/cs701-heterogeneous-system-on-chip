@@ -9,12 +9,16 @@
   <!--</Interconnection>-->
   <SubSystem Name="SS1" Local="true">
     <ClockDomain Name="CD1" Class="CD1">
-      <oChannel Name="C1" To="CD2.C1" />
-      <oChannel Name="C2" To="CD2.C2" />
+      <iChannel Name="nextOp" From="CD3.nextOp" />
+      <oChannel Name="aspOp" To="CD2.aspOp" />
     </ClockDomain>
     <ClockDomain Name="CD2" Class="CD2">
-      <iChannel Name="C1" From="CD1.C1" />
-      <iChannel Name="C2" From="CD1.C2" />
+      <iChannel Name="aspOp" From="CD1.aspOp" />
+      <oChannel Name="result" To="CD3.aspResult" />
+    </ClockDomain>
+    <ClockDomain Name="CD3" Class="CD3">
+      <iChannel Name="aspResult" From="CD2.result" />
+      <oChannel Name="nextOp" To="CD1.nextOp" />
     </ClockDomain>
   </SubSystem>
 </System>
