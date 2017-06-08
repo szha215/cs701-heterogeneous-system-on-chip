@@ -104,9 +104,11 @@ def ani():
     args.append('sim:/test_ani/t_asp/s_packet_id')
     args.append('sim:/test_ani/t_asp/s_words_sent')
     args.append('sim:/test_ani/t_asp/s_d_out')
+    args.append('sim:/test_ani/t_asp/wr_pointer_sel')
+    args.append('sim:/test_ani/t_asp/s_wr_pointer')
     # args.append('sim:/test_ani/t_asp/reg_a/rd_reg1 sim:/test_ani/t_asp/reg_a/rd_reg2
 
-    args.append('; run 3.3 us')
+    args.append('; run 3.6 us')
 
     txt = ' '.join(args)
 

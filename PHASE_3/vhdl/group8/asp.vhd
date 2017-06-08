@@ -484,6 +484,8 @@ begin
 			words_to_send_ld <= '1';
 
 		when STORE_R_INIT =>
+			wr_pointer_sel <= "11";
+
 			start_addr_ld <= '1';
 			src_port_ld <= '1';
 			mem_sel_sel <= "11";
@@ -492,6 +494,7 @@ begin
 
 		when STORE_R =>
 			wr_pointer_sel <= "01";
+			vector_ld <= '1';
 
 			vector_d_sel <= '0';
 			vector_addr_sel <= '1';

@@ -55,7 +55,7 @@ signal packet_sent_inc_en	: std_logic := '0';
 signal op_ld, start_addr_ld, end_addr_ld, src_port_ld, dest_port_ld, reg_a_ld, reg_b_ld, vector_ld, words_to_send_ld	: std_logic := '0';
 
 -- resets
-signal words_stored_reset, vectors_reset, packet_sent_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
+signal words_stored_reset, packet_sent_reset, ave_filter_reset, calc_result_reset	: std_logic := '0';
 
 -- select lines
 signal d_packet_sel, calc_res_sel, mem_sel_sel, rd_pointer_sel, wr_pointer_sel 	: std_logic_vector(1 downto 0) := (others => '0');
@@ -247,10 +247,10 @@ ram_a : altsyncram
 	)
 	port map (
 		clock0 => clk,
-		aclr0 => vectors_reset,
 		address_a => s_addr_to_store(integer(ceil(log2(real(N)))) - 1 downto 0),
 		data_a => s_d_to_store,
 		wren_a => reg_a_ld,
+		aclr0	=> '0',
 		address_b => s_pointer(integer(ceil(log2(real(N)))) - 1 downto 0),
 		q_b => s_reg_a_out
 	);
@@ -280,10 +280,10 @@ ram_b : altsyncram
 	)
 	port map (
 		clock0 => clk,
-		aclr0 => vectors_reset,
 		address_a => s_addr_to_store(integer(ceil(log2(real(N)))) - 1 downto 0),
 		data_a => s_d_to_store,
 		wren_a => reg_b_ld,
+		aclr0	=> '0',
 		address_b => s_pointer(integer(ceil(log2(real(N)))) - 1 downto 0),
 		q_b => s_reg_b_out
 	);	
@@ -451,7 +451,6 @@ begin
 
 	vector_ld <= '0';
 	vector_d_sel <= '0';
-	vectors_reset <= '0';
 	words_stored_reset <= '0';
 
 	rd_pointer_sel <= "00";
@@ -485,7 +484,7 @@ begin
 			words_to_send_ld <= '1';
 
 		when STORE_R_INIT =>
-			vectors_reset <= '1';
+			wr_pointer_sel <= "11";
 
 			start_addr_ld <= '1';
 			src_port_ld <= '1';
@@ -495,8 +494,8 @@ begin
 
 		when STORE_R =>
 			wr_pointer_sel <= "01";
+			vector_ld <= '1';
 
-			vectors_reset <= '1';
 			vector_d_sel <= '0';
 			vector_addr_sel <= '1';
 
@@ -1029,10 +1028,10 @@ with d_out_sel select s_data <=
 	s_packet when '1',  -- data[ID]
 	x"0001" when others;  -- access granted
 
-reg_a_ld <= '1' when (vector_ld = '1' and s_mem_sel = '0') or vectors_reset = '1' else
+reg_a_ld <= '1' when (vector_ld = '1' and s_mem_sel = '0') else
 				'0';
 
-reg_b_ld <= '1' when (vector_ld = '1' and s_mem_sel = '1') or vectors_reset = '1' else
+reg_b_ld <= '1' when (vector_ld = '1' and s_mem_sel = '1') else
 				'0';
 
 s_d_out <=
