@@ -359,18 +359,18 @@ SIP : gen_reg_AJS
 		data_out => s_SIP_out
 	);
 
-DPRR : gen_reg_AJS
-	generic map(
-		reg_width => 32
-	)
-	port map(
-		clk => clk,
-		reset => reset_DPRR,
-		wr_en => DPRR_in(31),
+--DPRR : gen_reg_AJS
+--	generic map(
+--		reg_width => 32
+--	)
+--	port map(
+--		clk => clk,
+--		reset => reset_DPRR,
+--		wr_en => DPRR_in(31),
 
-		data_in => DPRR_in,
-		data_out => s_DPRR_out
-	);
+--		data_in => DPRR_in,
+--		data_out => s_DPRR_out
+--	);
 
 PC : gen_reg_AJS
 	generic map(
@@ -408,7 +408,7 @@ ER: gen_reg_AJS
 		reset => reset_ER,
 		wr_en => ER_in,
 
-		data_in(0) => ER_in,
+		data_in(0) => '1',
 		data_out(0) => s_ER_out
 	);
 
@@ -441,7 +441,7 @@ DPC: gen_reg_AJS
 -- signals to control unit
 am <= s_ir_upper0(7 downto 6);
 opcode <= s_ir_upper0(5 downto 0);
-irq_flag <= s_DPRR_OUT(1);
+irq_flag <= DPRR_in(1) or DPRR_in(31);
 
 -- DPCR write data
 s_DPCR_in <= s_r_rd_mux_b_output & s_regfile_out_b;
@@ -458,7 +458,7 @@ s_m_addr_mux_output <=
 s_ir_lower_0								when m_addr_sel = "00" else
 s_regfile_out_a							when m_addr_sel = "01" else
 s_regfile_out_b							when m_addr_sel = "10" else
-(x"0" & s_DPRR_OUT(23 downto 12))	when m_addr_sel = "11" else
+(x"0" & DPRR_in(23 downto 12))	when m_addr_sel = "11" else
 x"0000";
 
 
@@ -467,7 +467,7 @@ s_m_data_mux_output <=
 s_ir_lower_0								when m_data_sel = "00" else
 s_pc_output									when m_data_sel = "01" else
 s_regfile_out_b							when m_data_sel = "10" else
-("00000000000000" & s_DPRR_OUT(1 downto 0)) when m_data_sel = "11" else
+("0000" & DPRR_in(11 downto 0))		when m_data_sel = "11" else
 x"0000";
 
 -- register read a mux
@@ -496,7 +496,7 @@ s_mem_data_out								when r_wr_sel = "001" else
 ("000000000000000" & s_ER_out)			when r_wr_sel = "010" else
 s_SIP_out									when r_wr_sel = "011" else
 s_ir_lower_0								when r_wr_sel = "100" else
-("00000000000000" & s_DPRR_OUT(1 downto 0))	when r_wr_sel = "101" else
+("00000000000000" & DPRR_in(1 downto 0))	when r_wr_sel = "101" else
 x"0000";
 
 -- alu src a mux

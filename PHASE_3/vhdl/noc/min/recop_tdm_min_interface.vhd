@@ -426,9 +426,25 @@ begin
 			end loop;
 		end process;
 	end generate;
-		
+	
+
+	-- AJS
 	dprr_interface: for i in 0 to recop_cnt-1 generate
-		dprr_out(i) <= dprr_in(i);
+		dprr_fifo : min_switch_in_fifo
+		generic map(
+			gen_depth => fifo_depth
+		)
+		port map(
+			aclr	=>	reset,
+			clock	=> clk,
+			data	=> dprr_in(i),
+			rdreq => dprr_ack(i),
+			wrreq => dprr_in(i)(31),
+			empty	=> open,
+			full	=> open,
+			q		=> dprr_out(i)
+		
+		);
 	end generate;
 	
 	
