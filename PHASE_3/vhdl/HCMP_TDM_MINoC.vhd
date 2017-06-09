@@ -252,7 +252,8 @@ architecture rtl of HCMP_TDM_MINoC is
 			EOT_out			: out std_logic;
 			DPCR_out			: out std_logic_vector(31 downto 0);
 			SVOP_out			: out std_logic_vector(15 downto 0);
-			SOP_out			: out std_logic_vector(15 downto 0)
+			SOP_out			: out std_logic_vector(15 downto 0);
+			DPRR_ack			: out std_logic
 		);
 	end component;
 	
@@ -530,7 +531,8 @@ begin
 				EOT_out		=> eot(i),
 				DPCR_out		=> datacall_recop_array(i),
 				SVOP_out		=> open,
-				SOP_out		=> sop_array(i)
+				SOP_out		=> sop_array(i),
+				DPRR_ack		=> result_recop_ack(i)
 			);
 
 		end generate;

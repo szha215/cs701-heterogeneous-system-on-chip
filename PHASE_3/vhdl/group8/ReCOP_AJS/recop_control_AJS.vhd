@@ -45,7 +45,8 @@ port(	clk				: in std_logic;
 		wr_DPCR			: out std_logic;
 		wr_SVOP			: out std_logic;
 		wr_SOP 			: out std_logic;
-		wr_Z 				: out std_logic
+		wr_Z 				: out std_logic;
+		dprr_ack			: out std_logic
 
 	);
 end entity recop_control_AJS;
@@ -54,7 +55,7 @@ end entity recop_control_AJS;
 architecture behaviour of recop_control_AJS is
 -- type, signal, constant declarations here
 
-type states is (IF1, IF1S, ID1, IF2, ID2, EX, LR, MA, SM, JP, DS, DR, NOOP, RST); -- states
+type states is (IF1, IF1S, ID1, IF2, ID2, EX, LR, MA, SM, JP, DC, DCS, DCC, DS, DR, NOOP, RST); -- states
 -- 
 signal CS, NS : states := IF1;
 
@@ -102,6 +103,8 @@ begin
 		 		NS <= SM;
 		 	elsif (opcode = jmp_op) then
 		 		NS <= JP;
+		 	elsif (opcode = dcallbl_op or opcode = dcallnb_op) then
+		 		NS <= DC;
 		 	elsif (opcode = noop_op) then
 		 		NS <= NOOP;
 		 	else
@@ -109,9 +112,10 @@ begin
 		 	end if;
 
 		when ID2 => -- Decode Operand
-		 	if ((opcode = ldr_op and am = immediate_am) or
-		 		opcode = dcallbl_op or opcode = dcallnb_op) then
+		 	if (opcode = ldr_op and am = immediate_am) then
 		 		NS <= LR;
+		 	elsif (opcode = dcallbl_op or opcode = dcallnb_op) then
+		 		NS <= DC;
 		 	elsif (opcode = ldr_op and am = direct_am) then
 		 		NS <= MA;
 		 	elsif (opcode = str_op or opcode = strpc_op) then
@@ -126,21 +130,34 @@ begin
 			NS <= LR;
 
 		when LR => -- Load Register
-			if (opcode = dcallbl_op and irq_flag = '0') then
-				NS <= LR;
-			elsif (irq_flag = '1') then
+			if (irq_flag = '1') then
 				NS <= DS;
 			else
 				NS <= IF1;
 			end if;
 		
-		when DS => -- Data Call Stall
+		when DC => -- Data Call Invoke
+			NS <= DCS;
+
+		when DCS => -- Data Call Stall
+			NS <= DCC;
+
+		when DCC => -- Data Call (DPCR) Clear
+			if (opcode = dcallbl_op and irq_flag = '0') then
+				NS <= DCC;
+			elsif (irq_flag = '1') then
+				NS <= DS;
+			else
+				NS <= IF1;
+			end if;
+
+		when DS => -- Data Call Result Store
 			NS <= DR;				
 		
-		when DR => -- Data Call Reset
+		when DR => -- Data Call (DPRR) Reset
 			NS <= IF1;
 		
-		when others =>
+		when others => -- EX, JP, LR, NOOP, SM
 			if (irq_flag = '1')then
 				NS <= DS;
 			else
@@ -167,7 +184,7 @@ begin
 	pc_wr 			<= '0';		pc_wr_cond_z 	<= '0';
 	pc_wr_cond_p 	<= '0';		wr_DPCR 			<= '0';
 	wr_SVOP 			<= '0';		wr_SOP 			<= '0';
-	
+	dprr_ack			<= '0';
 
 
 	case CS is	-- must cover all states
@@ -188,8 +205,6 @@ begin
 			alu_src_B <= "01";
 			alu_op <= "000";
 			ir_wr <= "01";
-			reset_DPCR <= '1';
-			reset_DPC <= '1';
 
 		when ID1 => -- Instruction Decode
 			alu_src_A <= "00";
@@ -276,12 +291,6 @@ begin
 						r_wr <= '1';
 					end if;	
 
-				when dcallbl_op =>
-					wr_DPCR <= '1';
-					set_DPC <= '1';
-					
-				when dcallnb_op =>
-					wr_DPCR <= '1';
 				when clfz_op =>
 					reset_Z <= '1';
 
@@ -311,7 +320,21 @@ begin
 				when others =>
 					null;
 
-			end case;		
+			end case;
+
+		when DC => -- Data Call Invoke
+			if (opcode = dcallbl_op) then
+				wr_DPCR <= '1';
+				set_DPC <= '1';
+			elsif (opcode = dcallnb_op) then
+				wr_DPCR <= '1';
+			end if;
+
+		when DCS => -- Data Call Stall
+			null;
+
+		when DCC => -- Data Call (DPCR) Clear
+			reset_DPCR <= '1';
 
 		when MA => -- Memory Access
 			if (am = register_am) then
@@ -370,7 +393,7 @@ begin
 			end case;
 
 
-		when DS => -- Data Call Store
+		when DS => -- Data Call Result Store
 			if (opcode = dcallbl_op) then -- blocking
 				r_wr_r_sel <= '1';
 				r_wr_d_sel <= "101";
@@ -379,13 +402,16 @@ begin
 				m_addr_sel <= "11";
 				m_data_sel <= "11";
 				m_wr <= '1';
-			end if;	
+			end if;
+
 			
-		when DR => -- 
+		when DR => -- Data Call (DPRR) Reset
 			-- D-Type: Reset DPRR, DPCR and DPC
-			reset_DPRR <= '1';
+			--reset_DPRR <= '1';
+			dprr_ack	<= '1';
 			reset_DPCR <= '1';
 			reset_DPC <= '1';
+			
 
 		when NOOP =>
 			null;
@@ -397,6 +423,7 @@ begin
 			reset_EOT <= '1';
 			reset_ER <= '1';
 			reset_Z	 <= '1';
+
 
 		when others =>
 			report "STATE OUTPUT: BAD STATE";

@@ -25,7 +25,8 @@ port(	clk				: in std_logic;
 		EOT_out			: out std_logic;
 		DPCR_out		: out std_logic_vector(31 downto 0);
 		SVOP_out		: out std_logic_vector(15 downto 0);
-		SOP_out			: out std_logic_vector(15 downto 0)
+		SOP_out			: out std_logic_vector(15 downto 0);
+		DPRR_ack			: out std_logic
 	);
 end entity ReCOP_AJS;
 
@@ -169,7 +170,8 @@ component recop_control_AJS
 		wr_DPCR			: out std_logic;
 		wr_SVOP			: out std_logic;
 		wr_SOP 			: out std_logic;
-		wr_Z 			: out std_logic
+		wr_Z 			: out std_logic;
+		dprr_ack		: out std_logic
 
 	);
 end component;
@@ -275,7 +277,8 @@ control_unit : recop_control_AJS
 		wr_DPCR => s_wr_DPCR,
 		wr_SVOP => s_wr_SVOP,
 		wr_SOP => s_wr_SOP,
-		wr_Z => s_wr_Z
+		wr_Z => s_wr_Z,
+		dprr_ack => DPRR_ack
 	);
 	
 ---------------------------------------------------------------------------------------------------
