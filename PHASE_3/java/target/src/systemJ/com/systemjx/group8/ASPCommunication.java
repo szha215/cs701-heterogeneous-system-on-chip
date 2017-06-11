@@ -10,13 +10,11 @@ import hmpsoc.RTSMain;
 public class ASPCommunication {
 
 	private static void sendPacket(int packet){
-		RTSMain.out.println("Sending Packet: " + Integer.toBinaryString(packet));
 		Native.setDatacallResult(packet);
 	}
 
 	public static int pollASPResponse(){
 		int datacallWord = 0;
-		System.out.println("Started Polling response");
 
 		while(true){
 			datacallWord = Native.getDatacall();
@@ -38,16 +36,12 @@ public class ASPCommunication {
 	}
 
 	public static int store(int ASPid, int[] data, int start, int memSel){
-		System.out.println("STORE COMMAND, LENGTH = " + data.length);
 		// STORE command
 		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | (1 << 22) | ((memSel & 1) << 17) | (data.length << 0);
-		System.out.println("STORE COMMAND = " + Integer.toBinaryString(packet));
 		sendPacket(packet);
 		
 		for (int i = 0; i < data.length; i++){
 			packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | ((i + start) << 16) | (data[i] & 0xFFFF << 0);
-			// pause;
-			// System.out.println("Packet[" + i + "] sent: " + Integer.toBinaryString(packet));
 			sendPacket(packet);
 		}
 

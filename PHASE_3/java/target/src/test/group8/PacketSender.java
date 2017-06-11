@@ -9,9 +9,20 @@ import joprt.RtThread;
 import com.jopdesign.io.IOFactory;
 import com.jopdesign.io.SysDevice;
 import com.jopdesign.sys.Startup;
+import util.Timer;
 
 public class PacketSender{
 	
+
+	public static int getTimeUS(){
+		return Native.rd(Const.IO_US_CNT);
+	}
+
+
+	public static void printTimingResult(String item,int startTime, int endTime){
+		System.out.println("\n" + item + " timing result: " + (endTime - startTime) + "us\n");
+	}
+
 	public static void sendReCOPPacket(int packet){
 		System.out.println("Replying back to ReCOP...");
 		Native.setDatacallResult(packet);
@@ -57,6 +68,61 @@ public class PacketSender{
 		return hex;
 	}
 
+	public static void aveJOP(int[] vec, int windowSize){
+		int[] temp = new int[vec.length];
+		int sum;
+
+		for (int i = 0; i+windowSize-1 < vec.length; i++){
+			sum = 0;
+
+			for (int j = 0; j < windowSize; j++){
+				sum += vec[i+j];
+			}
+
+			temp[i] = sum / windowSize;
+		}
+	}
+
+
+	public static int xorJOP(int[] vecA){
+		int xorResult = 0;
+
+		for(int i = 0; i < vecA.length; i++){
+			xorResult ^= vecA[i]; 
+		}
+
+		return xorResult;
+	}
+
+	public static int xorJOP(int[] vecA, int end){
+		int xorResult = 0;
+
+		for(int i = 0; i < end; i++){
+			xorResult ^= vecA[i]; 
+		}
+
+		return xorResult;
+	}
+
+	public static long macJOP(int[] vecA, int[] vecB){
+		long macResult = 0;
+
+		for(int i = 0 ; i < vecA.length; i++){
+			macResult += (vecA[i]*vecB[i]);
+		}
+
+		return macResult;
+	}
+
+	public static long macJOP(int[] vecA, int[] vecB, int end){
+		long macResult = 0;
+
+		for(int i = 0; i < end; i++){
+			macResult += (vecA[i] * vecB[i]);
+		}
+
+		return macResult;
+	}
 
 	public static void main(String args[]){
 		int[] arrayA = {0xECE, 0x111, 0x222, 0x333, 0x444, 0x555, 0x666, 0x777};
@@ -66,21 +132,8 @@ public class PacketSender{
 		long dataResultLong;
 
 		int dataCallReCOP;
-
-		int jopXorResult = 0;
+		int startTime = 0;
 		int endTime = 0;
-		int startTime = Native.rd(Const.IO_US_CNT);
-
-		for (int i = 0; i < arrayA.length; i++) {
-			jopXorResult = jopXorResult + arrayA[i] * arrayB[i];
-		}
-
-		endTime = Native.rd(Const.IO_US_CNT);
-
-		System.out.println("JOP MAC time = " + (endTime - startTime));
-
-
-
 		while(true){
 			System.out.println("\n=== Awaiting ReCOP ===");
 			dataCallReCOP = pollReCOPResponse() & 0xFFFF;
@@ -126,7 +179,7 @@ public class PacketSender{
 
 
 					//wait for other JOPs to finish
-					RtThread.sleepMs(1000);
+					RtThread.sleepMs(500);
 
 					System.out.println("A x B = ");
 					matrix.print_matrix(matrix.C);
@@ -148,20 +201,22 @@ public class PacketSender{
 
 					System.out.println("\n>> XOR B");
 
-					startTime = Native.rd(Const.IO_US_CNT);
 					dataResult = ASPCommunication.xor(0, 1, 0, 7) & 0xFFFF;  // XOR B 0 to 7, expect 400 (0x190)
-					endTime = Native.rd(Const.IO_US_CNT);
 
-					System.out.println("ASP XOR res = " + dataResult + " = 0x" + int2hexString(dataResult) + ", time taken = " + (endTime - startTime));
+					System.out.println("ASP XOR res = " + dataResult + " = 0x" + int2hexString(dataResult));
 					SevenSeg.writeToSevenSegHex(dataResult);  // 190 should be printed
-
-					RtThread.sleepMs(2000);  // sleep for 2 sec
-
+					startTime = getTimeUS();
+					RtThread.sleepMs(500); 
+					endTime = getTimeUS();
+					printTimingResult("Sleep",startTime,endTime);
+					startTime = Native.rd(Const.IO_US_CNT);
 					sendReCOPPacket(0x80000003);  // reply back to ReCOP 0
 
 					break;
 
 				case 3333:
+					endTime = Native.rd(Const.IO_US_CNT);
+					System.out.println("\n\n ReCOP response Time: " + (endTime - startTime) + "us\n\n" );
 					System.out.println("\n>> Storing into array A");
 					dataResult = ASPCommunication.store(0, arrayA, 0, 0);  // Store array to A on ASP
 
@@ -172,7 +227,7 @@ public class PacketSender{
 					}
 					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
 
-					RtThread.sleepMs(2000);  // sleep for 2 sec
+					RtThread.sleepMs(500); 
 
 					System.out.println("\n>> MAC");
 					dataResultLong = ASPCommunication.mac(0, 0, 511);  // MAC 0 to 511
@@ -180,9 +235,10 @@ public class PacketSender{
 					System.out.println("MAC res = " + dataResultLong + " = 0x" + int2hexString(dataResultLong));
 					SevenSeg.writeToSevenSegHex((int)dataResultLong);  // 167721 should be printed
 
-					RtThread.sleepMs(2000);  // sleep for 2 sec
+					RtThread.sleepMs(500); 
 
 					System.out.println("\n>> AVE B, Window = 4");
+					startTime = getTimeUS();
 					dataResult = ASPCommunication.ave(0, 4, 1);  // AVE B, Window size = 4
 
 					if ((dataResult & 0xFFFF) == 1){
@@ -190,10 +246,16 @@ public class PacketSender{
 					} else {
 						System.out.println("ERROR: AVE failed");
 					}
+					endTime = getTimeUS();
+					printTimingResult("AVE_ASP",startTime,endTime);	
+
+
+				
+
 					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
 
 
-					RtThread.sleepMs(2000);  // sleep for 2 sec
+					RtThread.sleepMs(500); 
 
 					System.out.println("\n>> MAC");
 					dataResultLong = ASPCommunication.mac(0, 0, 511);  // MAC 0 to 511
@@ -203,10 +265,181 @@ public class PacketSender{
 
 					break;
 
+				case 4444:  
+					System.out.println("\n>> JOP vs ASP Performance test");
+
+					int numWords = 512;
+					int[] multiA, multiB;
+					multiA = new int[numWords];
+					multiB = new int[numWords];
+					long macResultJOP = 0;
+					long macResultASP = 0;
+					int  xorResultJOP = 0;
+					int aveASP = 0;
+					int aveJOP = 0;
+					Random rand = new Random();
+
+					for (int i = 0; i < numWords; i++){
+						multiA[i] = rand.nextInt();
+						multiB[i] = rand.nextInt();
+					}
+
+					System.out.println("Storing into ASPs...");
+
+					ASPCommunication.store(0, multiA, 0, 0);  // Store ASP 0, A
+					int storeTime = ASPCommunication.store(0, multiB, 0, 1);  // Store ASP 0, B
+
+					System.out.println("==============================================================64");	
+					
+
+
+
+					startTime = getTimeUS();
+					macResultJOP = macJOP(multiA,multiB,64);
+					endTime = getTimeUS();
+					printTimingResult("MAC_JOP_64",startTime,endTime);
+
+					startTime = getTimeUS();
+					macResultASP = ASPCommunication.mac(0,0,63);
+					endTime = getTimeUS();
+					printTimingResult("MAC_ASP_64",startTime,endTime);
+					
+
+					System.out.println("==================");
+
+					startTime = getTimeUS();
+					xorResultJOP = xorJOP(multiA,64);
+					endTime = getTimeUS();
+					printTimingResult("XOR_JOP_64",startTime,endTime);
+
+					startTime = getTimeUS();					
+					dataResult = ASPCommunication.xor(1, 0, 0, 63);
+					endTime = getTimeUS();
+					printTimingResult("XOR_ASP_1",startTime,endTime);
+					System.out.println("ASP 1 XOR res = " + (dataResult & 0xFFFF));
+
+
+					System.out.println("==============================================================128");	
+					
+
+
+					startTime = getTimeUS();
+					macResultJOP = macJOP(multiA,multiB,128);
+					endTime = getTimeUS();
+					printTimingResult("MAC_JOP_128",startTime,endTime);
+
+					startTime = getTimeUS();
+					macResultASP = ASPCommunication.mac(0,0,127);
+					endTime = getTimeUS();
+					printTimingResult("MAC_ASP_128",startTime,endTime);
+					
+
+					System.out.println("==================");
+
+					startTime = getTimeUS();
+					xorResultJOP = xorJOP(multiA,128);
+					endTime = getTimeUS();
+					printTimingResult("XOR_JOP_128",startTime,endTime);
+
+					startTime = getTimeUS();					
+					dataResult = ASPCommunication.xor(1, 0, 0, 127);
+					endTime = getTimeUS();
+					printTimingResult("XOR_ASP_1",startTime,endTime);
+					System.out.println("ASP 1 XOR res = " + (dataResult & 0xFFFF));
+
+
+					System.out.println("==============================================================256");	
+					
+
+
+
+
+					startTime = getTimeUS();
+					macResultJOP = macJOP(multiA,multiB,256);
+					endTime = getTimeUS();
+					printTimingResult("MAC_JOP_256",startTime,endTime);
+
+					startTime = getTimeUS();
+					macResultASP = ASPCommunication.mac(0,0,255);
+					endTime = getTimeUS();
+					printTimingResult("MAC_ASP_256",startTime,endTime);
+					
+
+					System.out.println("==================");
+
+					startTime = getTimeUS();
+					xorResultJOP = xorJOP(multiA,256);
+					endTime = getTimeUS();
+					printTimingResult("XOR_JOP_256",startTime,endTime);
+
+					startTime = getTimeUS();					
+					dataResult = ASPCommunication.xor(1, 0, 0, 255);
+					endTime = getTimeUS();
+					printTimingResult("XOR_ASP_256",startTime,endTime);
+					System.out.println("ASP 1 XOR res = " + (dataResult & 0xFFFF));
+
+
+					System.out.println("==============================================================512");	
+					System.out.println("\nStore Time: " + storeTime + "us\n");
+
+					System.out.println("==================");
+					startTime = getTimeUS();
+					aveJOP(multiB,4);
+					endTime = getTimeUS();
+					printTimingResult("AVE_JOP_512_4", startTime,endTime);
+
+
+					startTime = getTimeUS();
+					aveASP = ASPCommunication.ave(0,4,0);
+					endTime = getTimeUS();
+					printTimingResult("AVE_ASP_512_4", startTime, endTime);
+
+
+					System.out.println("==================");
+					startTime = getTimeUS();
+					aveJOP(multiB,8);
+					endTime = getTimeUS();
+					printTimingResult("AVE_JOP_512_8", startTime,endTime);
+
+
+					startTime = getTimeUS();
+					aveASP = ASPCommunication.ave(0,8,0);
+					endTime = getTimeUS();
+					printTimingResult("AVE_ASP_512_8", startTime, endTime);
+
+
+					System.out.println("==================");
+
+					startTime = getTimeUS();
+					macResultJOP = macJOP(multiA,multiB);
+					endTime = getTimeUS();
+					printTimingResult("MAC_JOP_512",startTime,endTime);
+
+					startTime = getTimeUS();
+					macResultASP = ASPCommunication.mac(0,0,numWords-1);
+					endTime = getTimeUS();
+					printTimingResult("MAC_ASP_512",startTime,endTime);
+					
+
+					System.out.println("==================");
+
+					startTime = getTimeUS();
+					xorResultJOP = xorJOP(multiA);
+					endTime = getTimeUS();
+					printTimingResult("XOR_JOP_512",startTime,endTime);
+
+					startTime = getTimeUS();					
+					dataResult = ASPCommunication.xor(1, 0, 0, numWords - 1);
+					endTime = getTimeUS();
+					printTimingResult("XOR_ASP_1",startTime,endTime);
+					System.out.println("ASP 1 XOR res = " + (dataResult & 0xFFFF));
+
+
+
+					break;
 
 				default:
-					System.out.println("Unknown datacall code");
-
+					System.out.println("Unknown datacall code, " + Integer.toBinaryString(dataCallReCOP));
 					break;
 			}
 		}
