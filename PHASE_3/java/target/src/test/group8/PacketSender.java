@@ -135,7 +135,7 @@ public class PacketSender{
 		int startTime = 0;
 		int endTime = 0;
 		while(true){
-			System.out.println("\n=== Awaiting ReCOP ===");
+			System.out.println("\n=============== Awaiting ReCOP ===============");
 			dataCallReCOP = pollReCOPResponse() & 0xFFFF;
 
 			switch (dataCallReCOP) {
@@ -192,11 +192,6 @@ public class PacketSender{
 					System.out.println("\n>> Storing into array B");
 					dataResult = ASPCommunication.store(0, arrayB, 0, 1);  // Store array to B on ASP
 
-					if ((dataResult & 0xFFFF) == 1){
-						System.out.println("Store B success");
-					} else {
-						System.out.println("ERROR: Store failed");
-					}
 					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
 
 					System.out.println("\n>> XOR B");
@@ -209,22 +204,14 @@ public class PacketSender{
 					RtThread.sleepMs(500); 
 					endTime = getTimeUS();
 					printTimingResult("Sleep",startTime,endTime);
-					startTime = Native.rd(Const.IO_US_CNT);
 					sendReCOPPacket(0x80000003);  // reply back to ReCOP 0
 
 					break;
 
 				case 3333:
-					endTime = Native.rd(Const.IO_US_CNT);
-					System.out.println("\n\n ReCOP response Time: " + (endTime - startTime) + "us\n\n" );
 					System.out.println("\n>> Storing into array A");
 					dataResult = ASPCommunication.store(0, arrayA, 0, 0);  // Store array to A on ASP
 
-					if ((dataResult & 0xFFFF) == 1){
-						System.out.println("Store A success");
-					} else {
-						System.out.println("ERROR: Store failed");
-					}
 					SevenSeg.writeToSevenSegHex(dataResult);  // write access granted to 7 seg
 
 					RtThread.sleepMs(500); 
@@ -434,7 +421,7 @@ public class PacketSender{
 					printTimingResult("XOR_ASP_1",startTime,endTime);
 					System.out.println("ASP 1 XOR res = " + (dataResult & 0xFFFF));
 
-
+					System.out.println("================= DONE ==================");
 
 					break;
 

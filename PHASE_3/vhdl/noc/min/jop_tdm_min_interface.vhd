@@ -105,7 +105,7 @@ begin
 	asp_interface: for i in 0 to jop_cnt-1 generate
 		asp_fifo : min_switch_in_fifo
 		generic map(
-			gen_depth => 4
+			gen_depth => 16
 		)
 		port map(
 			aclr	=>	reset,

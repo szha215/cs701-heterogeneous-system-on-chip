@@ -39,7 +39,6 @@ public class ASPCommunication {
 		System.out.println("STORE COMMAND, LENGTH = " + data.length);
 		// STORE command
 		int packet = 0 | (ASPid & 0xF << 26) | (0x3 << 30) | (1 << 22) | ((memSel & 1) << 17) | (data.length << 0);
-		System.out.println("STORE COMMAND = " + Integer.toBinaryString(packet));
 		sendPacket(packet);
 		
 		int startTime = Native.rd(Const.IO_US_CNT);
