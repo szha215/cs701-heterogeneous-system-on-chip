@@ -51,7 +51,7 @@
 	\maketitle
 	
 	\begin{abstract}
-		With Moore’s Law becoming more difficult to achieve, multi-core or multiprocessor systems are becoming more popular ways to improve performance rather than focusing on architecture size or maximum frequency for single-core chips. This report presents a heterogeneous multiprocessor system design using the Network-on-Chip approach implemented in System-on-Chip, including designing a new hardware acceleration processor, network interfaces and integrating them alongside processors using the SystemJ programming language -- which can run system-level and Java programmes on hardware-accelerated Jave Optimised Processors (JOP).
+		With Moore’s Law becoming more difficult to achieve, multi-core or multiprocessor systems are becoming more popular ways to improve performance rather than focusing on architecture size or maximum frequency for single-core chips. This report presents a heterogeneous multiprocessor system design using the Network-on-Chip approach implemented in System-on-Chip, including designing a new hardware acceleration processor, network interfaces and integrating them alongside processors using the SystemJ programming language -- which can run system-level and Java programmes on hardware-accelerated Java Optimised Processors (JOP).
 	\end{abstract}
 	
 	%     \begin{IEEEkeywords}
@@ -304,6 +304,8 @@
 	
 	\texttt{SEND\_ACC} sends \texttt{Operation Complete} packet.
 	
+	For complete state transition logic, see \texttt{ASP\_state\_transition\_table.html}.
+	
 	\newpage
 	\enlargethispage{2in}
 	\subsection{Datapath}
@@ -336,12 +338,12 @@
 	\subsubsection{Store}
 	This operation will store a fixed number of words to the ASP internal memory. It will send two types of packets -- a Store Invoke packet, followed by a series of Data packets (see section \ref{sec:asp_data_format}). The Store Invoke packet contains information on the number of words and which vector to be stored in. Data packets contain the 16-bit data and 9-bit address indicating the memory location to be stored at. The number of data packets must match the store invoke packet's specified number of words. Returns \texttt{Operation Complete}.
 	
-	$$T_{execution} = n_{words} + 2 \text{ clock cycles}$$
+	$$T_{execution} = n_{words}(T_{communication} + 2) \text{ clock cycles}$$
 	
 	\subsubsection{XOR}
-	This function will perform a bit-wise XOR operation to the specified vector from index \texttt{begin\_address} ($m$) to \texttt{end\_address} ($n$) inclusively. After the operation, ASP will send the result to the back.
+	This function will perform a bit-wise XOR operation to the specified vector from index \texttt{begin\_address} ($n$) to \texttt{end\_address} ($m$) inclusively. After the operation, ASP will send the result to the back.
 	
-	$$T_{execution} = n - m + 3 \text{ clock cycles}$$
+	$$T_{execution} = m - n + 3 \text{ clock cycles}$$
 	
 	\subsubsection{MAC}
 	Multiply and Accumulate will perform a dot product opertion between index \texttt{m} to \texttt{n} for vector A and B. 
