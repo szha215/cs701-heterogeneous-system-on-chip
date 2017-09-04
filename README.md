@@ -1,20 +1,22 @@
-# heterogeneous-system-on-chip
-COMPSYS 701 (Advanced Digital Design) 2017 Heterogeneous Multiprocessor System on Network-on-Chip Design.
+# C0MPSYS 7O1 Heterogeneous Multiprocessor System on Network-on-Chip 2O17
 
-Group members:
+Design of a CISC Reactive Co-processor (ReCOP), Application Specific Processor (ASP), Java Optimised Processor (JOP, provided) and their network interfaces, interconnected using the Network-on-Chip (NoC) model and Time-division Multiple Access (TDMA) to intercommunicate.
 
-John Zhang
+The system consists of:
 
-Andrew (Kuan-Hao) Lai
+-  ReCOP(s): Schedules JOP(s) to run Java microcode.
+- JOP(s): Runs Java programs, assembled using the SystemJ language.
+- ASP(s): accelerate certain operations, such as vector XOR, dot product of vectors, and apply moving average filter on the vectors.
 
-Sean (Shiyang) Wu
+## Group members 
 
-See Docs/Phase 3/group8_report.pdf for details.
+- Andrew (Kuan-Hao) Lai
+- John Zhang
+- Shiyang Wu
 
-See PHASE_3/NoC-HMP_ve57305b/vhdl/group8/ for VHDL source code.
+## Skills involved
 
-Phase1: ReCOP, ASP, ANI simulation, ASP/ANI on board.
-
-Phase2: Modifications to existing JNI (JOP Network Interface), simulation and on board.
-
-Phase3: Everything on board, running a SystemJ program.
+- Datapath and Control design
+- VHDL
+- Test-bench simulation using ModelSim
+- FPGA integration on DE2-115 board
